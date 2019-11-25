@@ -34,7 +34,6 @@ import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import Typography from "@material-ui/core/Typography";
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
-import DeleteIcon from "@material-ui/icons/Delete";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccount";
 import InfoIcon from "@material-ui/icons/Info";
 import ForumIcon from "@material-ui/icons/Forum";
@@ -252,6 +251,7 @@ const useTableStyles = makeStyles((theme: Theme) =>
     iconCell: {
       width: 25,
     },
+    actions: { whiteSpace: "nowrap" },
   }),
 );
 
@@ -333,7 +333,11 @@ const ArticlesTable = ({ rows }: { rows: Article[] }) => {
                       <TableCell align="left">
                         {moment(row.modifiedTime).format("lll")}
                       </TableCell>
-                      <TableCell align="center" size="small">
+                      <TableCell
+                        align="center"
+                        size="small"
+                        className={classes.actions}
+                      >
                         <IconButton size="small">
                           <EditIcon fontSize="small" />
                         </IconButton>

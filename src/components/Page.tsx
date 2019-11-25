@@ -3,7 +3,6 @@ import Typography from "@material-ui/core/typography";
 import Paper from "@material-ui/core/paper";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import GlobalContext from "../GlobalContext";
-import DocumentTitle from "react-document-title";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -26,22 +25,19 @@ interface PageProps extends React.Props<{}> {
 
 export default (props: PageProps): JSX.Element => {
   const classes = useStyles({});
+  const { currentApp } = React.useContext(GlobalContext);
+  React.useEffect(() => {
+    document.title =
+      props.documentTitle ?? `${currentApp.label} » ${props.title}`;
+  });
   return (
-    <GlobalContext.Consumer>
-      {({ currentApp }) => (
-        <DocumentTitle
-          title={props.documentTitle ?? `${currentApp.label} » ${props.title}`}
-        >
-          <main className={classes.main}>
-            <Paper className={classes.content}>
-              <Typography variant="h4" noWrap className={classes.title}>
-                {props.title}
-              </Typography>
-              {props.children}
-            </Paper>
-          </main>
-        </DocumentTitle>
-      )}
-    </GlobalContext.Consumer>
+    <main className={classes.main}>
+      <Paper className={classes.content}>
+        <Typography variant="h4" noWrap className={classes.title}>
+          {props.title}
+        </Typography>
+        {props.children}
+      </Paper>
+    </main>
   );
 };

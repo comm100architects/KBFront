@@ -15,14 +15,14 @@ const useStyles = makeStyles(theme => ({
   root: {
     width: 240,
     flexShrink: 0,
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: theme.palette.background.paper,
   },
   expander: {
-    fontWeight: 700
-  }
+    fontWeight: 700,
+  },
 }));
 
-const MenuItem = (item: RawMenuItem): JSX.Element => (
+const renderMenuItem = (item: RawMenuItem): JSX.Element => (
   <SelectedMenuItem.Consumer>
     {({ appName, selected }) => (
       <ListItemLink
@@ -37,7 +37,7 @@ const MenuItem = (item: RawMenuItem): JSX.Element => (
 
 const SubMenuComponent = ({
   menu,
-  open
+  open,
 }: {
   menu: RawSubMenu;
   open: boolean;
@@ -59,7 +59,7 @@ const SubMenuComponent = ({
       </ListItem>
       <Collapse in={isOpen} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
-          {menu.items.map(MenuItem)}
+          {menu.items.map(renderMenuItem)}
         </List>
       </Collapse>
     </>
@@ -68,7 +68,7 @@ const SubMenuComponent = ({
 
 const SelectedMenuItem = React.createContext({
   appName: "",
-  selected: ""
+  selected: "",
 });
 
 function AppMenuComponent(props: { app: RawApp; selected: string }) {
@@ -77,7 +77,7 @@ function AppMenuComponent(props: { app: RawApp; selected: string }) {
 
   const children = app.menu.map(item => {
     if ((item as RawMenuItem).name) {
-      return MenuItem(item as RawMenuItem);
+      return renderMenuItem(item as RawMenuItem);
     }
     const submenu = item as RawSubMenu;
     const open = submenu.items.some(item => item.name === selected);

@@ -11,25 +11,33 @@ import { rawApps, RawApp } from "./Pages";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     grow: {
-      flexGrow: 1
+      flexGrow: 1,
     },
     horizontalList: {
       display: "flex",
       flexDirection: "row",
       padding: 0,
-      flexGrow: 0
+      flexGrow: 0,
     },
     header: {
-      zIndex: theme.zIndex.drawer + 1
-    }
-  })
+      zIndex: theme.zIndex.drawer + 1,
+    },
+    link: {
+      borderRadius: theme.shape.borderRadius,
+    },
+  }),
 );
 
-const AppName = (currentApp: string, app: RawApp): JSX.Element => (
+const AppName = (
+  currentApp: string,
+  app: RawApp,
+  className: string,
+): JSX.Element => (
   <ListItemLink
     primary={app.label}
     to={`/${app.name}/${app.defaultPage}/`}
     selected={app.name === currentApp}
+    className={className}
   />
 );
 
@@ -49,7 +57,7 @@ export default ({ currentApp }: { currentApp: string }): JSX.Element => {
         </div>
         <Typography component="div" noWrap>
           <List component="nav" className={classes.horizontalList}>
-            {rawApps.map(app => AppName(currentApp, app))}
+            {rawApps.map(app => AppName(currentApp, app, classes.link))}
           </List>
         </Typography>
       </Toolbar>

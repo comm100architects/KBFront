@@ -4,7 +4,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import {
   Link as RouterLink,
-  LinkProps as RouterLinkProps
+  LinkProps as RouterLinkProps,
 } from "react-router-dom";
 
 export interface ListItemLinkProps {
@@ -12,13 +12,15 @@ export interface ListItemLinkProps {
   primary: string;
   to: string;
   selected: boolean;
+  className?: string;
 }
 
 export const ListItemLink = ({
   icon,
   primary,
   to,
-  selected
+  selected,
+  className,
 }: ListItemLinkProps) => {
   const renderLink = React.useMemo(
     () =>
@@ -30,11 +32,16 @@ export const ListItemLink = ({
         // See https://github.com/ReactTraining/react-router/issues/6056
         <RouterLink to={to} {...itemProps} innerRef={ref} />
       )),
-    [to]
+    [to],
   );
 
   return (
-    <ListItem button component={renderLink} selected={selected}>
+    <ListItem
+      className={className}
+      button
+      component={renderLink}
+      selected={selected}
+    >
       {icon ? <ListItemIcon>{icon}</ListItemIcon> : null}
       <ListItemText primary={primary} />
     </ListItem>

@@ -6,16 +6,15 @@ import {
   createStyles,
   ThemeProvider,
   createMuiTheme,
-  Theme
+  Theme,
 } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/drawer";
 import AppHeader from "./AppHeader";
 import AppMenu from "./AppMenu";
-import { rawApps, isMenuExist, getMenuLabel, RawApp } from "./Pages";
+import { rawApps, isMenuExist, RawApp } from "./Pages";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import PageRouter from "./PageRouter";
-import DocumentTitle from "react-document-title";
 import GlobalContext from "./GlobalContext";
 
 const theme = createMuiTheme();
@@ -26,31 +25,30 @@ interface AppParam {
 }
 
 function Page404() {
-  return (
-    <DocumentTitle title="404 Not Found">
-      <h1>404 Not Found</h1>
-    </DocumentTitle>
-  );
+  React.useEffect(() => {
+    document.title = "404 Not Found";
+  });
+  return <h1>404 Not Found</h1>;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      display: "flex"
+      display: "flex",
     },
     body: {
       flexDirection: "row",
-      flexWrap: "nowrap"
+      flexWrap: "nowrap",
     },
     appMenu: {
       flexShrink: 0,
-      width: 240
+      width: 240,
     },
     content: {
-      flexGrow: 1
+      flexGrow: 1,
     },
-    toolbar: theme.mixins.toolbar
-  })
+    toolbar: theme.mixins.toolbar,
+  }),
 );
 
 function Root({ app, currentPage }: { app: RawApp; currentPage: string }) {
@@ -109,5 +107,5 @@ ReactDOM.render(
       </Switch>
     </Router>
   </ThemeProvider>,
-  document.querySelector("#main")
+  document.querySelector("#main"),
 );
