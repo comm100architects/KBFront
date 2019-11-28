@@ -5,7 +5,12 @@ import {
   Cancel,
   ExternalLinkButton,
 } from "../../../components/Buttons";
-import { Article, ArticleCategory } from "./State";
+import {
+  Article,
+  displayCategories,
+  testCategories,
+  DisplayCategory,
+} from "./State";
 import { Formik, Field, Form } from "formik";
 import { TextField } from "formik-material-ui";
 import FormControl from "@material-ui/core/FormControl";
@@ -14,11 +19,7 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import HtmlEditor from "../../../components/HtmlEditor";
 import ChipInput from "material-ui-chip-input";
 
-const categories: ArticleCategory[] = [
-  { id: "1", label: "/" },
-  { id: "2", label: "Live Chat" },
-  { id: "3", label: "Ticket" },
-];
+const categories: DisplayCategory[] = displayCategories(testCategories);
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -142,7 +143,7 @@ export default (props: EditArticleProps): JSX.Element => {
               >
                 {categories.map(c => (
                   <MenuItem key={c.id} value={c.id}>
-                    {c.label}
+                    {c.path}
                   </MenuItem>
                 ))}
               </Field>

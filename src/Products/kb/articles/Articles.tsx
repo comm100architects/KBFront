@@ -16,13 +16,14 @@ import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import ThumbDownIcon from "@material-ui/icons/ThumbDown";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
+import DeleteIcon from "@material-ui/icons/Delete";
 import ViewIcon from "@material-ui/icons/Pageview";
 import {
-  createArticle,
   Article,
-  ArticleStatus,
+  ArticleCategory,
   testArticles,
   testTags,
+  testCategories,
 } from "./State";
 import StarIcon from "@material-ui/icons/Star";
 import DotIcon from "@material-ui/icons/FiberManualRecord";
@@ -34,14 +35,11 @@ import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import Typography from "@material-ui/core/Typography";
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
-import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccount";
-import InfoIcon from "@material-ui/icons/Info";
-import ForumIcon from "@material-ui/icons/Forum";
-import LocalOfferIcon from "@material-ui/icons/LocalOffer";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import Divider from "@material-ui/core/Divider";
+import AddIcon from "@material-ui/icons/Add";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -256,7 +254,7 @@ const useTableStyles = makeStyles((theme: Theme) =>
 );
 
 const ArticlesTable = ({ rows }: { rows: Article[] }) => {
-  const classes = useTableStyles();
+  const classes = useTableStyles({});
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<keyof Article>("title");
   const [page, setPage] = React.useState(0);
@@ -302,7 +300,7 @@ const ArticlesTable = ({ rows }: { rows: Article[] }) => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map(row => {
                   return (
-                    <TableRow hover tabIndex={-1} key={row.id}>
+                    <TableRow hover tabIndex={-1} key={row.id as string}>
                       <TableCell align="left" size="small">
                         {row.featured ? (
                           <StarIcon
@@ -327,11 +325,13 @@ const ArticlesTable = ({ rows }: { rows: Article[] }) => {
                       </TableCell>
                       <TableCell align="left">{row.title}</TableCell>
                       <TableCell align="left">{row.category}</TableCell>
-                      <TableCell align="left">{row.tags.join(", ")}</TableCell>
+                      <TableCell align="left">
+                        {(row.tags as string[]).join(", ")}
+                      </TableCell>
                       <TableCell align="left">{row.helpful}</TableCell>
                       <TableCell align="left">{row.notHelpful}</TableCell>
                       <TableCell align="left">
-                        {moment(row.modifiedTime).format("lll")}
+                        {moment(row.modifiedTime as Date).format("lll")}
                       </TableCell>
                       <TableCell
                         align="center"
@@ -341,7 +341,11 @@ const ArticlesTable = ({ rows }: { rows: Article[] }) => {
                         <IconButton size="small">
                           <EditIcon fontSize="small" />
                         </IconButton>
-                        <LinkIcon size="small" to={row.url} target="_blank">
+                        <LinkIcon
+                          size="small"
+                          to={row.url as string}
+                          target="_blank"
+                        >
                           <ViewIcon fontSize="small" />
                         </LinkIcon>
                         <IconButton size="small">
@@ -370,29 +374,18 @@ const ArticlesTable = ({ rows }: { rows: Article[] }) => {
 
 // Category Tree
 
-declare module "csstype" {
-  interface Properties {
-    "--tree-view-color"?: string;
-    "--tree-view-bg-color"?: string;
-  }
-}
-
 type StyledTreeItemProps = TreeItemProps & {
   bgColor?: string;
   color?: string;
   labelIcon: React.ElementType<SvgIconProps>;
-  labelInfo?: string;
   labelText: string;
+  tools?: React.ReactNode;
 };
 
 const useTreeItemStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       color: theme.palette.text.secondary,
-      "&:focus > $content": {
-        backgroundColor: `var(--tree-view-bg-color, ${theme.palette.grey[400]})`,
-        color: "var(--tree-view-color)",
-      },
     },
     content: {
       color: theme.palette.text.secondary,
@@ -419,6 +412,10 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
       display: "flex",
       alignItems: "center",
       padding: theme.spacing(0.5, 0),
+      "&:hover > $tools": {
+        display: "block",
+      },
+      height: 34,
     },
     labelIcon: {
       marginRight: theme.spacing(1),
@@ -427,19 +424,15 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
       fontWeight: "inherit",
       flexGrow: 1,
     },
+    tools: {
+      display: "none",
+    },
   }),
 );
 
 function StyledTreeItem(props: StyledTreeItemProps) {
   const classes = useTreeItemStyles();
-  const {
-    labelText,
-    labelIcon: LabelIcon,
-    labelInfo,
-    color,
-    bgColor,
-    ...other
-  } = props;
+  const { labelText, labelIcon: LabelIcon, color, bgColor, ...other } = props;
 
   return (
     <TreeItem
@@ -449,15 +442,9 @@ function StyledTreeItem(props: StyledTreeItemProps) {
           <Typography variant="body2" className={classes.labelText}>
             {labelText}
           </Typography>
-          <Typography variant="caption" color="inherit">
-            {labelInfo}
-          </Typography>
+          <div className={classes.tools}>{props.tools}</div>
         </div>
       }
-      style={{
-        "--tree-view-color": color,
-        "--tree-view-bg-color": bgColor,
-      }}
       classes={{
         root: classes.root,
         content: classes.content,
@@ -487,8 +474,49 @@ const useTreeStyles = makeStyles(
   }),
 );
 
+const renderTreeItems = (
+  expandedNodes: string[],
+  selectedNode: string,
+  setSelectedNode: (n: string) => void,
+  { id, label, children }: ArticleCategory,
+): JSX.Element => {
+  const handleClick = (_: React.MouseEvent<HTMLElement>) => {
+    console.log("select " + id);
+    setSelectedNode(id);
+  };
+  return (
+    <StyledTreeItem
+      nodeId={id}
+      labelText={label}
+      labelIcon={expandedNodes.indexOf(id) === -1 ? FolderIcon : FolderOpenIcon}
+      onClick={handleClick}
+      tools={
+        <>
+          <IconButton tabIndex={-1} size="small">
+            <AddIcon fontSize="small" />
+          </IconButton>
+          <IconButton tabIndex={-1} size="small">
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton tabIndex={-1} size="small">
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </>
+      }
+    >
+      {children.map(c =>
+        renderTreeItems(expandedNodes, selectedNode, setSelectedNode, c),
+      )}
+    </StyledTreeItem>
+  );
+};
+
 const CategoriesTree = (): JSX.Element => {
-  const classes = useTreeStyles();
+  const classes = useTreeStyles({});
+  const [expandedNodes, setExpandedNodes] = React.useState([] as string[]);
+  const [selectedNode, setSelectedNode] = React.useState("");
+  const handleNodeToggle = (_: React.ChangeEvent<{}>, ids: string[]) =>
+    setExpandedNodes(ids);
 
   return (
     <>
@@ -497,61 +525,17 @@ const CategoriesTree = (): JSX.Element => {
       </MenuItem>
       <TreeView
         className={classes.root}
-        defaultExpanded={["3"]}
         defaultCollapseIcon={<ArrowDropDownIcon />}
         defaultExpandIcon={<ArrowRightIcon />}
         defaultEndIcon={<div style={{ width: 24 }} />}
+        onNodeToggle={handleNodeToggle}
       >
-        <StyledTreeItem
-          nodeId="1"
-          labelText="Live Chat"
-          labelIcon={FolderIcon}
-          labelInfo="90"
-        />
-        <StyledTreeItem
-          nodeId="2"
-          labelText="Ticket"
-          labelIcon={FolderIcon}
-          labelInfo="80"
-        />
-        <StyledTreeItem
-          nodeId="3"
-          labelText="Others"
-          labelIcon={FolderOpenIcon}
-        >
-          <StyledTreeItem
-            nodeId="5"
-            labelText="Social"
-            labelIcon={FolderIcon}
-            labelInfo="90"
-            color="#1a73e8"
-            bgColor="#e8f0fe"
-          />
-          <StyledTreeItem
-            nodeId="6"
-            labelText="Updates"
-            labelIcon={FolderIcon}
-            labelInfo="2,294"
-            color="#e3742f"
-            bgColor="#fcefe3"
-          />
-          <StyledTreeItem
-            nodeId="7"
-            labelText="Forums"
-            labelIcon={FolderIcon}
-            labelInfo="3,566"
-            color="#a250f5"
-            bgColor="#f3e8fd"
-          />
-          <StyledTreeItem
-            nodeId="8"
-            labelText="Promotions"
-            labelIcon={FolderIcon}
-            labelInfo="733"
-            color="#3c8039"
-            bgColor="#e6f4ea"
-          />
-        </StyledTreeItem>
+        {renderTreeItems(
+          expandedNodes,
+          selectedNode,
+          setSelectedNode,
+          testCategories,
+        )}
       </TreeView>
     </>
   );
