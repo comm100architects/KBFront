@@ -111,7 +111,7 @@ export default (props: EditArticleProps): JSX.Element => {
               >
                 Save
               </Submit>
-              <Cancel to="" className={classes.formControl}>
+              <Cancel to="." className={classes.formControl}>
                 Cancel
               </Cancel>
               <ExternalLinkButton

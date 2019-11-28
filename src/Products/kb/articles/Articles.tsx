@@ -338,9 +338,9 @@ const ArticlesTable = ({ rows }: { rows: Article[] }) => {
                         size="small"
                         className={classes.actions}
                       >
-                        <IconButton size="small">
+                        <LinkIcon size="small" to={`edit?id=${row.id}`}>
                           <EditIcon fontSize="small" />
-                        </IconButton>
+                        </LinkIcon>
                         <LinkIcon
                           size="small"
                           to={row.url as string}
