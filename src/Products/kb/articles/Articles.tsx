@@ -1,10 +1,9 @@
 import * as React from "react";
 import Page from "../../../components/Page";
-import { New, LinkIcon } from "../../../components/Buttons";
+import { CLinkButton, LinkIcon } from "../../../components/Buttons";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import IconButton from "@material-ui/core/IconButton";
 import Table from "@material-ui/core/Table";
-import Select from "@material-ui/core/Select";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
@@ -18,13 +17,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ViewIcon from "@material-ui/icons/Pageview";
-import {
-  Article,
-  ArticleCategory,
-  testArticles,
-  testTags,
-  testCategories,
-} from "./State";
+import { Article, ArticleCategory } from "./Model";
 import StarIcon from "@material-ui/icons/Star";
 import DotIcon from "@material-ui/icons/FiberManualRecord";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -40,6 +33,8 @@ import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import Divider from "@material-ui/core/Divider";
 import AddIcon from "@material-ui/icons/Add";
+import { CSelect } from "../../../components/Select";
+import { CTable } from "../../../components/Table";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,7 +43,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexDirection: "row",
     },
     categoryTree: {
-      width: 240,
+      width: 200,
       flexShrink: 0,
       display: "flex",
       flexDirection: "column",
@@ -78,297 +73,162 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export default (): JSX.Element => {
+const distinct = (strs: string[]) =>
+  Object.keys(strs.reduce((a, b) => ({ ...a, [b]: b }), {}));
+
+const getTags = (articles: Article[]): string[] => {
+  return distinct(
+    articles.map(article => article.tags).reduce((a, b) => a.concat(b), []),
+  );
+};
+
+const ArticleStatusPublishIcon = (props: SvgIconProps) => (
+  <DotIcon {...props} color="primary" titleAccess="Draft" />
+);
+
+const ArticleStatusDraftIcon = (props: SvgIconProps) => (
+  <DotIcon {...props} color="secondary" titleAccess="Draft" />
+);
+
+const getCategory = (
+  id: string,
+  root: ArticleCategory,
+): ArticleCategory | undefined => {
+  if (root.id === id) {
+    return root;
+  }
+  return root.children.find(category => getCategory(id, category));
+};
+
+const ArticlesTable = ({
+  rows,
+  category,
+}: {
+  rows: Article[];
+  category: ArticleCategory;
+}) => {
+  return (
+    <CTable
+      columns={[
+        {
+          id: "featured",
+          content: (row: Article) => {
+            return (
+              <StarIcon
+                color={row.featured ? "primary" : "action"}
+                fontSize="small"
+                titleAccess="Featured"
+              />
+            );
+          },
+        },
+        {
+          id: "status",
+          content: (row: Article) => {
+            if (row.status === "draft") {
+              return <ArticleStatusDraftIcon color="secondary" />;
+            }
+            return <ArticleStatusPublishIcon color="primary" />;
+          },
+        },
+        { id: "title", header: "Title", sortable: true },
+        {
+          id: "category",
+          header: "Category",
+          sortable: true,
+          content: (row: Article) => getCategory(row.category, category)?.label,
+        },
+        {
+          id: "tags",
+          header: "Tag",
+          sortable: true,
+          content: (row: Article) => row.tags.toString(),
+        },
+        {
+          id: "helpful",
+          header: <ThumbUpIcon fontSize="small" />,
+          sortable: true,
+        },
+        {
+          id: "notHelpful",
+          header: <ThumbDownIcon fontSize="small" />,
+          sortable: true,
+        },
+        {
+          id: "modifiedTime",
+          header: "Modified Time",
+          sortable: true,
+          content: (row: Article) =>
+            moment(row.modifiedTime as Date).format("lll"),
+        },
+      ]}
+      defaultSort={{ column: "title", asc: true }}
+      rows={rows}
+      actions={[
+        {
+          icon: <EditIcon fontSize="small" />,
+          link: row => `edit?id=${row.id}`,
+        },
+        { icon: <ViewIcon fontSize="small" />, link: row => row.url },
+        { icon: <DeleteForeverIcon fontSize="small" /> },
+      ]}
+    />
+  );
+};
+
+export default ({
+  articles,
+  category,
+}: {
+  articles: Article[];
+  category: ArticleCategory;
+}): JSX.Element => {
   const classes = useStyles({});
+  const tags = getTags(articles);
   return (
     <Page title="Articles">
       <div className={classes.root}>
         <div className={classes.categoryTree}>
           <MenuItem>All Articles</MenuItem>
-          <CategoriesTree />
+          <CategoriesTree root={category} />
         </div>
         <Divider orientation="vertical" className={classes.divider} />
         <div className={classes.articles}>
           <div className={classes.articlesToolbar}>
             <div>
-              <New to="new">New Article</New>
+              <CLinkButton color="primary" path="new" text="New Article" />
             </div>
-            <Select multiple value={[]} title="Category">
-              {testTags.map(tag => (
-                <MenuItem value={tag}>{tag}</MenuItem>
-              ))}
-            </Select>
-            <Select value="all" title="Status">
-              <MenuItem value="all">All Status</MenuItem>;
-              <MenuItem value="draft">Draft</MenuItem>;
-              <MenuItem value="published">Published</MenuItem>;
-            </Select>
+            <CSelect
+              value="all"
+              items={[{ value: "all", text: "All Tags" }].concat(
+                tags.map(tag => ({ value: tag, text: tag })),
+              )}
+            />
+            <CSelect
+              value="all"
+              items={[
+                {
+                  value: "all",
+                  text: "All Status",
+                },
+                {
+                  value: "published",
+                  text: "Published",
+                  icon: ArticleStatusPublishIcon,
+                },
+                {
+                  value: "draft",
+                  text: "Draft",
+                  icon: ArticleStatusDraftIcon,
+                },
+              ]}
+            ></CSelect>
             <SearchBox onSearch={(_: string) => {}} />
           </div>
-          <ArticlesTable rows={testArticles} />
+          <ArticlesTable rows={articles} category={category} />
         </div>
       </div>
     </Page>
-  );
-};
-
-// Article Table
-
-function desc<T>(a: T, b: T, orderBy: keyof T) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function stableSort<T>(array: T[], cmp: (a: T, b: T) => number) {
-  const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
-  stabilizedThis.sort((a, b) => {
-    const order = cmp(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map(el => el[0]);
-}
-
-type Order = "asc" | "desc";
-
-function getSorting<K extends keyof any>(
-  order: Order,
-  orderBy: K,
-): (
-  a: { [key in K]: number | string | string[] | Date | boolean },
-  b: { [key in K]: number | string | string[] | Date | boolean },
-) => number {
-  return order === "desc"
-    ? (a, b) => desc(a, b, orderBy)
-    : (a, b) => -desc(a, b, orderBy);
-}
-
-interface HeadCell {
-  id: keyof Article;
-  label: string | JSX.Element;
-  numeric: boolean;
-}
-
-const headCells: HeadCell[] = [
-  { id: "title", numeric: false, label: "Title" },
-  { id: "category", numeric: false, label: "Category" },
-  { id: "tags", numeric: false, label: "Tag" },
-  { id: "helpful", numeric: true, label: <ThumbUpIcon fontSize="small" /> },
-  {
-    id: "notHelpful",
-    numeric: true,
-    label: <ThumbDownIcon fontSize="small" />,
-  },
-  { id: "modifiedTime", numeric: true, label: "Modified Time" },
-];
-
-interface EnhancedTableProps {
-  classes: ReturnType<typeof useTableStyles>;
-  onRequestSort: (
-    event: React.MouseEvent<unknown>,
-    property: keyof Article,
-  ) => void;
-  order: Order;
-  orderBy: string;
-}
-
-function EnhancedTableHead(props: EnhancedTableProps) {
-  const { classes, order, orderBy, onRequestSort } = props;
-  const createSortHandler = (property: keyof Article) => (
-    event: React.MouseEvent<unknown>,
-  ) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        <TableCell key="featured" className={classes.iconCell}></TableCell>
-        <TableCell key="status" className={classes.iconCell}></TableCell>
-        {headCells.map(headCell => (
-          <TableCell
-            key={headCell.id}
-            align="left"
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={order}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </span>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-        <TableCell key="actions" align="center" size="small">
-          Actions
-        </TableCell>
-      </TableRow>
-    </TableHead>
-  );
-}
-
-const useTableStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: "100%",
-      marginTop: theme.spacing(3),
-    },
-    paper: {
-      width: "100%",
-      marginBottom: theme.spacing(2),
-      border: `solid 1px ${theme.palette.divider}`,
-    },
-    table: {
-      minWidth: 750,
-    },
-    tableWrapper: {
-      overflowX: "auto",
-    },
-    visuallyHidden: {
-      border: 0,
-      clip: "rect(0 0 0 0)",
-      height: 1,
-      margin: -1,
-      overflow: "hidden",
-      padding: 0,
-      position: "absolute",
-      top: 20,
-      width: 1,
-    },
-    iconCell: {
-      width: 25,
-    },
-    actions: { whiteSpace: "nowrap" },
-  }),
-);
-
-const ArticlesTable = ({ rows }: { rows: Article[] }) => {
-  const classes = useTableStyles({});
-  const [order, setOrder] = React.useState<Order>("asc");
-  const [orderBy, setOrderBy] = React.useState<keyof Article>("title");
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-
-  const handleRequestSort = (
-    _: React.MouseEvent<unknown>,
-    property: keyof Article,
-  ) => {
-    const isDesc = orderBy === property && order === "desc";
-    setOrder(isDesc ? "asc" : "desc");
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (_: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  return (
-    <div className={classes.root}>
-      <Paper elevation={0} className={classes.paper}>
-        <div className={classes.tableWrapper}>
-          <Table
-            className={classes.table}
-            aria-labelledby="tableTitle"
-            aria-label="enhanced table"
-          >
-            <EnhancedTableHead
-              classes={classes}
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-            />
-            <TableBody>
-              {stableSort(rows, getSorting(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(row => {
-                  return (
-                    <TableRow hover tabIndex={-1} key={row.id as string}>
-                      <TableCell align="left" size="small">
-                        {row.featured ? (
-                          <StarIcon
-                            color="primary"
-                            fontSize="small"
-                            titleAccess="Featured"
-                          />
-                        ) : (
-                          ""
-                        )}
-                      </TableCell>
-                      <TableCell align="left" padding="none" size="small">
-                        <DotIcon
-                          fontSize="small"
-                          color={
-                            row.status === "draft" ? "secondary" : "primary"
-                          }
-                          titleAccess={
-                            row.status === "draft" ? "Draft" : "Published"
-                          }
-                        />
-                      </TableCell>
-                      <TableCell align="left">{row.title}</TableCell>
-                      <TableCell align="left">{row.category}</TableCell>
-                      <TableCell align="left">
-                        {(row.tags as string[]).join(", ")}
-                      </TableCell>
-                      <TableCell align="left">{row.helpful}</TableCell>
-                      <TableCell align="left">{row.notHelpful}</TableCell>
-                      <TableCell align="left">
-                        {moment(row.modifiedTime as Date).format("lll")}
-                      </TableCell>
-                      <TableCell
-                        align="center"
-                        size="small"
-                        className={classes.actions}
-                      >
-                        <LinkIcon size="small" to={`edit?id=${row.id}`}>
-                          <EditIcon fontSize="small" />
-                        </LinkIcon>
-                        <LinkIcon
-                          size="small"
-                          to={row.url as string}
-                          target="_blank"
-                        >
-                          <ViewIcon fontSize="small" />
-                        </LinkIcon>
-                        <IconButton size="small">
-                          <DeleteForeverIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </div>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-        />
-      </Paper>
-    </div>
   );
 };
 
@@ -486,6 +346,7 @@ const renderTreeItems = (
   };
   return (
     <StyledTreeItem
+      key={id}
       nodeId={id}
       labelText={label}
       labelIcon={expandedNodes.indexOf(id) === -1 ? FolderIcon : FolderOpenIcon}
@@ -511,7 +372,7 @@ const renderTreeItems = (
   );
 };
 
-const CategoriesTree = (): JSX.Element => {
+const CategoriesTree = ({ root }: { root: ArticleCategory }): JSX.Element => {
   const classes = useTreeStyles({});
   const [expandedNodes, setExpandedNodes] = React.useState([] as string[]);
   const [selectedNode, setSelectedNode] = React.useState("");
@@ -530,12 +391,7 @@ const CategoriesTree = (): JSX.Element => {
         defaultEndIcon={<div style={{ width: 24 }} />}
         onNodeToggle={handleNodeToggle}
       >
-        {renderTreeItems(
-          expandedNodes,
-          selectedNode,
-          setSelectedNode,
-          testCategories,
-        )}
+        {renderTreeItems(expandedNodes, selectedNode, setSelectedNode, root)}
       </TreeView>
     </>
   );

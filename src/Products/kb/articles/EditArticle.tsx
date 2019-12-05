@@ -1,16 +1,7 @@
 import * as React from "react";
 import Page from "../../../components/Page";
-import {
-  Submit,
-  Cancel,
-  ExternalLinkButton,
-} from "../../../components/Buttons";
-import {
-  Article,
-  displayCategories,
-  testCategories,
-  DisplayCategory,
-} from "./State";
+import { CLinkButton, CButton } from "../../../components/Buttons";
+import { Article, rootCategory, ArticleCategory } from "./Model";
 import { Formik, Field, Form } from "formik";
 import { TextField } from "formik-material-ui";
 import FormControl from "@material-ui/core/FormControl";
@@ -18,30 +9,62 @@ import MenuItem from "@material-ui/core/MenuItem";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import HtmlEditor from "../../../components/HtmlEditor";
 import ChipInput from "material-ui-chip-input";
+import Chip from "@material-ui/core/Chip";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import IconButton from "@material-ui/core/IconButton";
+import StarIcon from "@material-ui/icons/Star";
 
-const categories: DisplayCategory[] = displayCategories(testCategories);
+type DisplayCategory = {
+  id: string;
+  path: string;
+};
+
+const displayCategories = ({
+  id,
+  label,
+  children,
+}: ArticleCategory): DisplayCategory[] => {
+  const sep = label === "/" ? "" : "/";
+  const result = children
+    .map(child => displayCategories(child))
+    .reduce((res, list) => res.concat(list), [])
+    .map(c => ({ id: c.id, path: label + sep + c.path }));
+  result.unshift({ id: id, path: label });
+  return result;
+};
+
+const categories: DisplayCategory[] = displayCategories(rootCategory);
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     form: {
       display: "flex",
     },
-    formControl: {
-      marginTop: theme.spacing(2),
-    },
     formLeft: {
       flexGrow: 1,
       display: "flex",
       flexDirection: "column",
       marginRight: theme.spacing(2),
+      "& > *": {
+        marginTop: theme.spacing(2),
+      },
     },
     formRight: {
       width: 240,
       display: "flex",
       flexDirection: "column",
+      "& > *": {
+        marginTop: theme.spacing(2),
+      },
     },
     chip: {
       margin: theme.spacing(0.5),
+    },
+    urlPrefix: {
+      userSelect: "none",
+      height: 24,
+      fontSize: "inherit",
+      marginRight: theme.spacing(0.5),
     },
   }),
 );
@@ -49,6 +72,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export interface EditArticleProps extends React.Props<{}> {
   title?: string | undefined;
   state: Article;
+  onSave(article: Article): void;
 }
 
 interface Values {
@@ -75,7 +99,8 @@ export default (props: EditArticleProps): JSX.Element => {
         onSubmit={(values, { setSubmitting }) => {
           setTimeout(() => {
             setSubmitting(false);
-            alert(JSON.stringify(values, null, 2));
+            // alert(JSON.stringify(values, null, 2));
+            props.onSave(values);
           }, 500);
         }}
         render={({ submitForm, isSubmitting, setFieldValue, values }) => (
@@ -85,8 +110,25 @@ export default (props: EditArticleProps): JSX.Element => {
                 name="title"
                 type="text"
                 label="Title"
+                InputProps={{
+                  "aria-label": "title",
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="featured"
+                        size="small"
+                        onClick={() =>
+                          setFieldValue("featured", !values.featured)
+                        }
+                      >
+                        <StarIcon
+                          color={values.featured ? "primary" : "action"}
+                        />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
                 component={TextField}
-                className={classes.formControl}
                 autoFocus
               />
               <Field
@@ -94,9 +136,17 @@ export default (props: EditArticleProps): JSX.Element => {
                 type="url"
                 label="URL"
                 component={TextField}
-                className={classes.formControl}
+                InputProps={{
+                  "aria-label": "title",
+                  startAdornment: (
+                    <Chip
+                      className={classes.urlPrefix}
+                      label="https://mycompany.comm100.io/kb/"
+                    />
+                  ),
+                }}
               />
-              <FormControl className={classes.formControl}>
+              <FormControl>
                 <HtmlEditor
                   value={values.content}
                   onChange={html => setFieldValue("content", html)}
@@ -104,29 +154,19 @@ export default (props: EditArticleProps): JSX.Element => {
               </FormControl>
             </div>
             <div className={classes.formRight}>
-              <Submit
+              <CButton
                 disabled={isSubmitting}
                 onClick={submitForm}
-                className={classes.formControl}
-              >
-                Save
-              </Submit>
-              <Cancel to="." className={classes.formControl}>
-                Cancel
-              </Cancel>
-              <ExternalLinkButton
-                to="//ent.comm100.com/kb/1000007-25-a459?preview=true&source=edit"
-                className={classes.formControl}
-              >
-                Preview
-              </ExternalLinkButton>
-              <Field
-                select
-                name="status"
-                label="Status"
-                component={TextField}
-                className={classes.formControl}
-              >
+                text="Save"
+                primary
+              />
+              <CLinkButton path="." text="Cancel" />
+              <CLinkButton
+                external
+                path="//ent.comm100.com/kb/1000007-25-a459?preview=true&source=edit"
+                text="Preview"
+              />
+              <Field select name="status" label="Status" component={TextField}>
                 <MenuItem key="draft" value="draft">
                   Draft
                 </MenuItem>
@@ -139,7 +179,6 @@ export default (props: EditArticleProps): JSX.Element => {
                 name="category"
                 label="Category"
                 component={TextField}
-                className={classes.formControl}
               >
                 {categories.map(c => (
                   <MenuItem key={c.id} value={c.id}>
@@ -147,7 +186,7 @@ export default (props: EditArticleProps): JSX.Element => {
                   </MenuItem>
                 ))}
               </Field>
-              <FormControl className={classes.formControl}>
+              <FormControl>
                 <ChipInput
                   label="Tags"
                   defaultValue={["foo", "bar"]}

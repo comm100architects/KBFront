@@ -1,4 +1,4 @@
-export interface Article {
+export type Article = {
   id: string;
   status: ArticleStatus;
   featured: boolean;
@@ -10,7 +10,9 @@ export interface Article {
   content: string;
   modifiedTime: Date;
   tags: string[];
-}
+};
+
+export type Articles = { [id: string]: Article };
 
 export type ArticleStatus = "draft" | "published";
 
@@ -29,7 +31,7 @@ export const createArticle = (
     category: category,
     title: title,
     content: "<h1>New</h1>",
-    url: `//ent.comm100.com/kb/1000007-25-a${id}?preview=true`,
+    url: id,
     helpful: helpful,
     notHelpful: notHelpful,
     modifiedTime: new Date(),
@@ -41,14 +43,14 @@ export const createArticle = (
 
 // get from server
 // convert to ArticleCategory tree
-export interface RawArticleCategory {
+export type RawArticleCategory = {
   id: string;
   label: string;
   parentCategory?: string;
   index: number;
-}
+};
 
-const testRawCategories: RawArticleCategory[] = [
+export const testRawCategories: RawArticleCategory[] = [
   { id: "1", label: "/", index: 0 },
   { id: "2", label: "test", parentCategory: "1", index: 0 },
   { id: "3", label: "test2", parentCategory: "1", index: 1 },
@@ -72,37 +74,16 @@ const findRootCategory = (
   categories: RawArticleCategory[],
 ): RawArticleCategory => categories.find(c => !Boolean(c.parentCategory))!;
 
-export interface ArticleCategory {
-  id: string;
-  label: string;
-  children: ArticleCategory[];
-}
-
-export const testCategories: ArticleCategory = makeCategoryTree(
+export const rootCategory = makeCategoryTree(
   testRawCategories,
   findRootCategory(testRawCategories),
 );
 
-export interface DisplayCategory {
+export type ArticleCategory = {
   id: string;
-  path: string;
-}
-
-export const displayCategories = ({
-  id,
-  label,
-  children,
-}: ArticleCategory): DisplayCategory[] => {
-  const sep = label === "/" ? "" : "/";
-  const result = children
-    .map(child => displayCategories(child))
-    .reduce((res, list) => res.concat(list), [])
-    .map(c => ({ id: c.id, path: label + sep + c.path }));
-  result.unshift({ id: id, path: label });
-  return result;
+  label: string;
+  children: ArticleCategory[];
 };
-
-console.log(displayCategories(testCategories));
 
 export const testArticles: Article[] = [
   createArticle("305", "1", "Cupcake", 67, 43, ["Live Chat", "Ticket"]),
@@ -120,4 +101,10 @@ export const testArticles: Article[] = [
   createArticle("437", "3", "Oreo", 63, 40, ["Live Chat"]),
 ];
 
-export const testTags: string[] = ["Live Chat", "Ticket"];
+const getArticles = (): Articles =>
+  testArticles.reduce((prev: Articles, article: Article) => {
+    prev[article.id] = article;
+    return prev;
+  }, {});
+
+export const dictArticles: Articles = getArticles();

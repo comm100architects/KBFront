@@ -5,22 +5,25 @@ import {
   Link as RouterLink,
   LinkProps as RouterLinkProps,
 } from "react-router-dom";
+import { PropTypes } from "@material-ui/core";
 
 interface ButtonProps extends React.Props<{}> {
   onClick?: React.MouseEventHandler<{}>;
   disabled?: boolean;
-  className?: string;
+  primary?: boolean;
+  text: string;
+  id?: string;
 }
 
-export const Submit = (props: ButtonProps) => (
+export const CButton = (props: ButtonProps) => (
   <Button
-    className={props.className}
+    id={props.id}
     variant="contained"
     disabled={props.disabled}
-    color="primary"
+    color={props.primary ? "primary" : "default"}
     onClick={props.onClick}
   >
-    {props.children}
+    {props.text}
   </Button>
 );
 
@@ -29,9 +32,24 @@ const Link = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
 );
 
 interface LinkButtonProps extends React.Props<{}> {
-  className?: string;
-  to: string;
+  path: string;
+  text: string;
+  disabled?: boolean;
+  external?: boolean;
+  color?: PropTypes.Color;
 }
+
+export const CLinkButton = (props: LinkButtonProps) => (
+  <Button
+    variant="contained"
+    to={props.path}
+    target={props.external ? "_blank" : ""}
+    component={Link}
+    color={props.color}
+  >
+    {props.text}
+  </Button>
+);
 
 interface LinkIconProps extends React.Props<{}> {
   to: string;
@@ -49,39 +67,4 @@ export const LinkIcon = (props: LinkIconProps) => (
   >
     {props.children}
   </IconButton>
-);
-
-export const ExternalLinkButton = (props: LinkButtonProps) => (
-  <Button
-    className={props.className}
-    variant="contained"
-    to={props.to}
-    target="_blank"
-    component={Link}
-  >
-    {props.children}
-  </Button>
-);
-
-export const New = (props: LinkButtonProps) => (
-  <Button
-    className={props.className}
-    variant="contained"
-    color="primary"
-    to={props.to}
-    component={Link}
-  >
-    {props.children}
-  </Button>
-);
-
-export const Cancel = (props: LinkButtonProps) => (
-  <Button
-    className={props.className}
-    variant="contained"
-    to={props.to}
-    component={Link}
-  >
-    {props.children}
-  </Button>
 );
