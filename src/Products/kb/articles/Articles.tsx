@@ -1,23 +1,15 @@
 import * as React from "react";
 import Page from "../../../components/Page";
-import { CLinkButton, LinkIcon } from "../../../components/Buttons";
+import { CLinkButton } from "../../../components/Buttons";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import IconButton from "@material-ui/core/IconButton";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TablePagination from "@material-ui/core/TablePagination";
-import TableRow from "@material-ui/core/TableRow";
-import TableSortLabel from "@material-ui/core/TableSortLabel";
-import Paper from "@material-ui/core/Paper";
 import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import ThumbDownIcon from "@material-ui/icons/ThumbDown";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ViewIcon from "@material-ui/icons/Pageview";
-import { Article, ArticleCategory } from "./Model";
+import { Article, CategoryTree } from "./Model";
 import StarIcon from "@material-ui/icons/Star";
 import DotIcon from "@material-ui/icons/FiberManualRecord";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -35,6 +27,7 @@ import Divider from "@material-ui/core/Divider";
 import AddIcon from "@material-ui/icons/Add";
 import { CSelect } from "../../../components/Select";
 import { CTable } from "../../../components/Table";
+import { LocalTableSource } from "../../../components/Table/CTableSource";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -92,8 +85,8 @@ const ArticleStatusDraftIcon = (props: SvgIconProps) => (
 
 const getCategory = (
   id: string,
-  root: ArticleCategory,
-): ArticleCategory | undefined => {
+  root: CategoryTree,
+): CategoryTree | undefined => {
   if (root.id === id) {
     return root;
   }
@@ -105,10 +98,10 @@ const ArticlesTable = ({
   category,
 }: {
   rows: Article[];
-  category: ArticleCategory;
+  category: CategoryTree;
 }) => {
   return (
-    <CTable
+    <CTable<Article>
       columns={[
         {
           id: "featured",
@@ -162,8 +155,8 @@ const ArticlesTable = ({
             moment(row.modifiedTime as Date).format("lll"),
         },
       ]}
-      defaultSort={{ column: "title", asc: true }}
-      rows={rows}
+      defaultSort={{ key: "title", asc: true }}
+      dataSource={new LocalTableSource(rows)}
       actions={[
         {
           icon: <EditIcon fontSize="small" />,
@@ -181,7 +174,7 @@ export default ({
   category,
 }: {
   articles: Article[];
-  category: ArticleCategory;
+  category: CategoryTree;
 }): JSX.Element => {
   const classes = useStyles({});
   const tags = getTags(articles);
@@ -338,7 +331,7 @@ const renderTreeItems = (
   expandedNodes: string[],
   selectedNode: string,
   setSelectedNode: (n: string) => void,
-  { id, label, children }: ArticleCategory,
+  { id, label, children }: CategoryTree,
 ): JSX.Element => {
   const handleClick = (_: React.MouseEvent<HTMLElement>) => {
     console.log("select " + id);
@@ -372,7 +365,7 @@ const renderTreeItems = (
   );
 };
 
-const CategoriesTree = ({ root }: { root: ArticleCategory }): JSX.Element => {
+const CategoriesTree = ({ root }: { root: CategoryTree }): JSX.Element => {
   const classes = useTreeStyles({});
   const [expandedNodes, setExpandedNodes] = React.useState([] as string[]);
   const [selectedNode, setSelectedNode] = React.useState("");

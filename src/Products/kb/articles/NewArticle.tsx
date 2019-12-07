@@ -10,7 +10,7 @@ export interface NewArticleProps extends React.Props<{}> {
 export default (props: NewArticleProps) => (
   <EditArticle
     onSave={props.onSave}
-    state={createArticle("0", props.category)}
+    state={createArticle("", props.category)}
     title="New Article"
   />
 );

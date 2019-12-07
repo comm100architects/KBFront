@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     appMenu: {
       flexShrink: 0,
-      width: 240,
+      width: 200,
     },
     content: {
       flexGrow: 1,

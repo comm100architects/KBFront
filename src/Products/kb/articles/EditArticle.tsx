@@ -1,7 +1,7 @@
 import * as React from "react";
 import Page from "../../../components/Page";
 import { CLinkButton, CButton } from "../../../components/Buttons";
-import { Article, rootCategory, ArticleCategory } from "./Model";
+import { Article, rootCategory, CategoryTree } from "./Model";
 import { Formik, Field, Form } from "formik";
 import { TextField } from "formik-material-ui";
 import FormControl from "@material-ui/core/FormControl";
@@ -23,7 +23,7 @@ const displayCategories = ({
   id,
   label,
   children,
-}: ArticleCategory): DisplayCategory[] => {
+}: CategoryTree): DisplayCategory[] => {
   const sep = label === "/" ? "" : "/";
   const result = children
     .map(child => displayCategories(child))

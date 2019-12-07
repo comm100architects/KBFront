@@ -1,4 +1,4 @@
-export type Article = {
+export interface Article {
   id: string;
   status: ArticleStatus;
   featured: boolean;
@@ -10,7 +10,7 @@ export type Article = {
   content: string;
   modifiedTime: Date;
   tags: string[];
-};
+}
 
 export type Articles = { [id: string]: Article };
 
@@ -42,7 +42,7 @@ export const createArticle = (
 };
 
 // get from server
-// convert to ArticleCategory tree
+// convert to CategoryTree tree
 export type RawArticleCategory = {
   id: string;
   label: string;
@@ -61,7 +61,7 @@ export const testRawCategories: RawArticleCategory[] = [
 const makeCategoryTree = (
   categories: RawArticleCategory[],
   currentCategory: RawArticleCategory,
-): ArticleCategory => ({
+): CategoryTree => ({
   id: currentCategory.id,
   label: currentCategory.label,
   children: categories
@@ -79,10 +79,10 @@ export const rootCategory = makeCategoryTree(
   findRootCategory(testRawCategories),
 );
 
-export type ArticleCategory = {
+export type CategoryTree = {
   id: string;
   label: string;
-  children: ArticleCategory[];
+  children: CategoryTree[];
 };
 
 export const testArticles: Article[] = [

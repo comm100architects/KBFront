@@ -13,7 +13,7 @@ import { ListItemLink } from "./Components/ListItemLink";
 
 const useStyles = makeStyles(theme => ({
   root: {
-    width: 240,
+    width: 200,
     flexShrink: 0,
     backgroundColor: theme.palette.background.paper,
   },
