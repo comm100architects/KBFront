@@ -26,10 +26,15 @@ import Divider from "@material-ui/core/Divider";
 import AddIcon from "@material-ui/icons/Add";
 import { CSelect } from "../../../components/Select";
 import { CTable } from "../../../components/Table";
-import { LocalTableSource } from "../../../components/Table/CTableSource";
-import { Category } from "./Entity/Category";
+import { emptyTableSource } from "../../../components/Table/CTableSource";
 import { Article, ArticleStatus } from "./Entity/Article";
 import { DomainContext } from "./context";
+import { ArticleFilter } from "./Domain/ArticleDomain";
+import {
+  makeCategoryTree,
+  findRootCategory,
+  CategoryTree,
+} from "./Domain/CategoryDomain";
 import {
   toPath,
   goToSearch,
@@ -37,6 +42,7 @@ import {
 } from "../../../framework/locationHelper";
 import { useHistory } from "react-router";
 import * as Query from "query-string";
+import { ITableSource } from "../../../components/Table/CTableSource";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -103,11 +109,11 @@ const getCategory = (
 };
 
 const ArticlesTable = ({
-  rows,
+  source,
   category,
   onDelete,
 }: {
-  rows: Article[];
+  source: ITableSource<Article>;
   category?: CategoryTree;
   onDelete?: (id: string) => void;
 }) => {
@@ -172,7 +178,7 @@ const ArticlesTable = ({
         },
       ]}
       defaultSort={{ key: "title", asc: true }}
-      dataSource={new LocalTableSource(rows)}
+      dataSource={source}
       actions={[
         {
           icon: <EditIcon fontSize="small" />,
@@ -221,61 +227,26 @@ const StatusSelect = ({
   );
 };
 
-type CategoryTree = {
-  id: string;
-  title: string;
-  children: CategoryTree[];
-};
-
-const makeCategoryTree = (
-  categories: Category[],
-  currentCategory: Category,
-): CategoryTree => ({
-  id: currentCategory.id,
-  title: currentCategory.title,
-  children: categories
-    .filter(c => c.parentCategoryId === currentCategory.id)
-    .sort((a, b) => a.index - b.index)
-    .map(c => makeCategoryTree(categories, c)),
-});
-
-const findRootCategory = (categories: Category[]): Category =>
-  categories.find(c => !Boolean(c.parentCategoryId))!;
-
-interface ArticleFilter {
-  status: ArticleStatus;
-  tag: string;
-  categoryId?: string;
-}
-
 export default (): JSX.Element => {
-  const { articleDomain, categoryDomain } = React.useContext(DomainContext)!;
+  const history = useHistory();
+  const keyword = Query.parse(history.location.search).keyword as string;
+  const [filter, setFilter] = React.useState({
+    status: ArticleStatus.all,
+    keyword,
+  } as ArticleFilter);
+  React.useEffect(() => setFilter({ ...filter, keyword }), [keyword]);
 
-  const [articles, setArticles] = React.useState([] as Article[]);
+  const { articleDomain, categoryDomain } = React.useContext(DomainContext)!;
+  const [articles, setArticles] = React.useState(
+    () => emptyTableSource as ITableSource<Article>,
+  );
+  React.useEffect(() => {
+    setArticles(articleDomain.tableSource(filter));
+  }, [filter, articleDomain]);
+
   const [categoryTree, setCategoryTree] = React.useState(
     undefined as CategoryTree | undefined,
   );
-  const [tags, setTags] = React.useState([] as string[]);
-  const history = useHistory();
-  const keyword = Query.parse(history.location.search).keyword as string;
-  const handleSearchKeyword = (q: string) => {
-    goToSearch(history, withQueryParam("keyword", q || undefined));
-  };
-
-  const [filter, setFilter] = React.useState({
-    status: ArticleStatus.all,
-    tag: "__allTags",
-  } as ArticleFilter);
-
-  React.useEffect(() => {
-    articleDomain.getArticles(keyword).then(articles => {
-      setArticles(articles);
-      setTags(
-        articles.map(article => article.tags).reduce((a, b) => a.concat(b), []),
-      );
-    });
-  }, [keyword, articleDomain]);
-
   React.useEffect(() => {
     categoryDomain.getCategories().then(categories => {
       const tree = makeCategoryTree(categories, findRootCategory(categories));
@@ -283,44 +254,20 @@ export default (): JSX.Element => {
     });
   }, [categoryDomain]);
 
+  const handleSearchKeyword = (q: string) => {
+    const keyword = q || undefined;
+    goToSearch(history, withQueryParam("keyword", keyword));
+    setFilter({ ...filter, keyword });
+  };
+
   const handleDelete = async (articleId: string) => {
     if (window.confirm("Are you sure you want to delete the article?")) {
       await articleDomain.deleteArticle(articleId);
-      setArticles(articles.filter(article => article.id !== articleId));
+      setFilter({ ...filter }); // force refresh current component
     }
   };
 
-  const filterArticles = (filter: ArticleFilter) => {
-    return articles
-      .filter(article => {
-        if (filter.categoryId) {
-          return article.categoryId === filter.categoryId!;
-        }
-        return true;
-      })
-      .filter(article => {
-        if (filter.status === ArticleStatus.all) {
-          return true;
-        }
-        return article.status === filter.status;
-      })
-      .filter(article => {
-        if (filter.tag === "__allTags") {
-          return true;
-        }
-        return article.tags.indexOf(filter.tag!) !== -1;
-      });
-  };
-
-  const handleFilterTag = (tag: string) => {
-    setFilter({ ...filter, tag });
-  };
-
-  const handleFilterStatus = (status: ArticleStatus) => {
-    setFilter({ ...filter, status });
-  };
-
-  const classes = useStyles({});
+  const classes = useStyles();
   return (
     <Page title="Articles">
       <div className={classes.root}>
@@ -338,20 +285,17 @@ export default (): JSX.Element => {
                 text="New Article"
               />
             </div>
-            <CSelect
-              value={filter.tag}
-              items={[{ value: "__allTags", text: "All Tags" }].concat(
-                tags
-                  .filter(tag => !!tag)
-                  .map(tag => ({ value: tag, text: tag })),
-              )}
-              onChange={handleFilterTag}
+            <StatusSelect
+              value={filter.status}
+              onChange={status => setFilter({ ...filter, status })}
             />
-            <StatusSelect value={filter.status} onChange={handleFilterStatus} />
-            <SearchBox onSearch={handleSearchKeyword} value={keyword} />
+            <SearchBox
+              onSearch={handleSearchKeyword}
+              value={filter.keyword || ""}
+            />
           </div>
           <ArticlesTable
-            rows={filterArticles(filter)}
+            source={articles}
             category={categoryTree}
             onDelete={handleDelete}
           />
@@ -494,7 +438,7 @@ const renderTreeItems = (
 };
 
 const CategoriesTree = ({ root }: { root: CategoryTree }): JSX.Element => {
-  const classes = useTreeStyles({});
+  const classes = useTreeStyles();
   const [expandedNodes, setExpandedNodes] = React.useState([
     root.id,
   ] as string[]);

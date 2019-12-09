@@ -1,6 +1,27 @@
 import { ICategoryRepository } from "../Repository/CategoryRepository";
 import { Category, CategoryPosition } from "../Entity/Category";
 
+export interface CategoryTree {
+  id: string;
+  title: string;
+  children: CategoryTree[];
+}
+
+export const makeCategoryTree = (
+  categories: Category[],
+  currentCategory: Category,
+): CategoryTree => ({
+  id: currentCategory.id,
+  title: currentCategory.title,
+  children: categories
+    .filter(c => c.parentCategoryId === currentCategory.id)
+    .sort((a, b) => a.index - b.index)
+    .map(c => makeCategoryTree(categories, c)),
+});
+
+export const findRootCategory = (categories: Category[]): Category =>
+  categories.find(c => !Boolean(c.parentCategoryId))!;
+
 export class CategoryDomain {
   categoryRepository: ICategoryRepository;
 

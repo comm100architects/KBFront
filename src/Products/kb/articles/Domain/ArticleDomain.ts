@@ -1,15 +1,21 @@
 import { IArticleRepository } from "../Repository/ArticleRepository";
-import { Article } from "../Entity/Article";
+import { Article, ArticleStatus } from "../Entity/Article";
+import {
+  ITableSource,
+  LocalTableSource,
+} from "../../../../components/Table/CTableSource";
+
+export interface ArticleFilter {
+  status: ArticleStatus;
+  categoryId?: string;
+  keyword?: string;
+}
 
 export class ArticleDomain {
   private articleRepository: IArticleRepository;
 
   constructor(articleRepository: IArticleRepository) {
     this.articleRepository = articleRepository;
-    // this.getArticleCached = _.memoize((keyword: string) => {
-    //   const query = keyword ? [{ key: "keyword", value: keyword! }] : [];
-    //   return this.articleRepository.list(query);
-    // });
   }
 
   addArticle(article: Article): Promise<Article> {
@@ -20,10 +26,25 @@ export class ArticleDomain {
     return this.articleRepository.update(article.id, article);
   }
 
-  getArticles(keyword?: string): Promise<Article[]> {
-    const query = keyword ? [{ key: "keyword", value: keyword! }] : [];
+  async getArticles(filter: ArticleFilter): Promise<Article[]> {
+    const query = filter.keyword
+      ? [{ key: "keyword", value: filter.keyword! }]
+      : [];
 
-    return this.articleRepository.list(query);
+    const articles = await this.articleRepository.list(query);
+    return articles
+      .filter(article => {
+        if (filter.categoryId) {
+          return article.categoryId === filter.categoryId!;
+        }
+        return true;
+      })
+      .filter(article => {
+        if (filter.status === ArticleStatus.all) {
+          return true;
+        }
+        return article.status === filter.status;
+      });
   }
 
   getArticle(id: string): Promise<Article> {
@@ -32,5 +53,9 @@ export class ArticleDomain {
 
   deleteArticle(id: string): Promise<void> {
     return this.articleRepository.delete(id);
+  }
+
+  tableSource(filter: ArticleFilter): ITableSource<Article> {
+    return new LocalTableSource(this.getArticles(filter));
   }
 }

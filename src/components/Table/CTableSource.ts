@@ -6,17 +6,37 @@ export interface ITableSource<T> {
     paginationState?: Pagination,
   ): Promise<{ rows: T[]; count: number }>;
 }
+
+export class EmptyTableSource<T> implements ITableSource<T> {
+  private count: number;
+  constructor(count: number = 0) {
+    this.count = count;
+  }
+  getData(
+    sort?: Sort<T> | undefined,
+    paginationState?: Pagination | undefined,
+  ): Promise<{ rows: T[]; count: number }> {
+    return Promise.resolve({ rows: [], count: this.count });
+  }
+}
+
+export const emptyTableSource = new EmptyTableSource(0);
+
 export class LocalTableSource<T> implements ITableSource<T> {
-  private rows: T[];
-  constructor(rows: T[]) {
-    this.rows = rows;
+  private rows: Promise<T[]>;
+  constructor(rows: T[] | Promise<T[]>) {
+    if (rows instanceof Promise) {
+      this.rows = rows;
+    } else {
+      this.rows = Promise.resolve(rows as T[]);
+    }
   }
 
-  sortRows(rows: T[], sort?: Sort<T>) {
+  private sortRows(rows: T[], sort?: Sort<T>) {
     return sort ? stableSort(rows, getSorting<T>(sort!)) : rows;
   }
 
-  paginationRows(rows: T[], pagination?: Pagination) {
+  private paginationRows(rows: T[], pagination?: Pagination) {
     if (pagination) {
       const page =
         pagination.page * pagination.pageSize > rows.length
@@ -28,15 +48,19 @@ export class LocalTableSource<T> implements ITableSource<T> {
     return rows;
   }
 
-  getData(
+  async getData(
     sort?: Sort<T>,
     pagination?: Pagination,
   ): Promise<{ rows: T[]; count: number }> {
-    const rows = this.paginationRows(
-      this.sortRows(this.rows, sort),
+    const rows = await this.rows;
+    const displayRows = this.paginationRows(
+      this.sortRows(rows, sort),
       pagination,
     );
-    return Promise.resolve({ rows, count: this.rows.length });
+    return {
+      rows: displayRows,
+      count: rows.length,
+    };
   }
 }
 
