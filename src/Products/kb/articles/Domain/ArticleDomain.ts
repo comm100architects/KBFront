@@ -1,18 +1,15 @@
 import { IArticleRepository } from "../Repository/ArticleRepository";
-import { Article, ArticleStatus } from "../Entity/Article";
-
-interface ArticleFilter {
-  status?: ArticleStatus;
-  tag?: string;
-  keyword?: string;
-  categoryId?: string;
-}
+import { Article } from "../Entity/Article";
 
 export class ArticleDomain {
   private articleRepository: IArticleRepository;
 
   constructor(articleRepository: IArticleRepository) {
     this.articleRepository = articleRepository;
+    // this.getArticleCached = _.memoize((keyword: string) => {
+    //   const query = keyword ? [{ key: "keyword", value: keyword! }] : [];
+    //   return this.articleRepository.list(query);
+    // });
   }
 
   addArticle(article: Article): Promise<Article> {
@@ -23,33 +20,10 @@ export class ArticleDomain {
     return this.articleRepository.update(article.id, article);
   }
 
-  async getArticles(filter: ArticleFilter): Promise<Article[]> {
-    const query = filter.keyword
-      ? [{ key: "q", value: filter.categoryId! }]
-      : [];
+  getArticles(keyword?: string): Promise<Article[]> {
+    const query = keyword ? [{ key: "keyword", value: keyword! }] : [];
 
-    // FIXME: cache articles??
-    const result = await this.articleRepository.list(query);
-
-    return result
-      .filter(article => {
-        if (filter.categoryId) {
-          return article.categoryId === filter.categoryId!;
-        }
-        return true;
-      })
-      .filter(article => {
-        if (filter.status) {
-          return article.status === filter.status!;
-        }
-        return true;
-      })
-      .filter(article => {
-        if (filter.tag) {
-          return article.tags.indexOf(filter.tag!) !== -1;
-        }
-        return true;
-      });
+    return this.articleRepository.list(query);
   }
 
   getArticle(id: string): Promise<Article> {

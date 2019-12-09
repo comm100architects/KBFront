@@ -2,26 +2,26 @@ import * as React from "react";
 import { createArticle } from "./Entity/Article";
 import { ArticleComponent } from "./EditArticle";
 import { useHistory } from "react-router";
-import { newArticleDomain } from "./dependency";
+import { DomainContext } from "./context";
 import * as Query from "query-string";
+import { goToPath, toPath } from "../../../framework/locationHelper";
 
-export interface NewArticleProps extends React.Props<{}> {
+export interface NewArticleProps {
   category: string;
 }
 
 export default (props: NewArticleProps) => {
-  const { kbId } = Query.parse(location.search);
-  const articleDomain = newArticleDomain(kbId as string);
-
+  const { articleDomain } = React.useContext(DomainContext)!;
   const history = useHistory();
+  const kbId = Query.parse(history.location.search).kbId as string;
+
   return (
     <ArticleComponent
       onSave={async article => {
-        // dispatch({ type: ActionType.newArticle, payload: article });
         await articleDomain.addArticle(article);
-        history.push(".");
+        goToPath(history, toPath("."));
       }}
-      article={createArticle("", props.category)}
+      article={createArticle("", kbId, props.category)}
       title="New Article"
     />
   );

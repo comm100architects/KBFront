@@ -30,7 +30,13 @@ import { LocalTableSource } from "../../../components/Table/CTableSource";
 import { Category } from "./Entity/Category";
 import { Article, ArticleStatus } from "./Entity/Article";
 import { DomainContext } from "./context";
-import { toPath, withQueryParam } from "../../../framework/locationHelper";
+import {
+  toPath,
+  goToSearch,
+  withQueryParam,
+} from "../../../framework/locationHelper";
+import { useHistory } from "react-router";
+import * as Query from "query-string";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -79,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const ArticleStatusPublishIcon = (props: SvgIconProps) => (
-  <DotIcon {...props} color="primary" titleAccess="Draft" />
+  <DotIcon {...props} color="primary" titleAccess="Published" />
 );
 
 const ArticleStatusDraftIcon = (props: SvgIconProps) => (
@@ -99,9 +105,11 @@ const getCategory = (
 const ArticlesTable = ({
   rows,
   category,
+  onDelete,
 }: {
   rows: Article[];
   category?: CategoryTree;
+  onDelete?: (id: string) => void;
 }) => {
   return (
     <CTable<Article>
@@ -171,28 +179,40 @@ const ArticlesTable = ({
           link: row => toPath("edit", withQueryParam("id", row.id)),
         },
         { icon: <ViewIcon fontSize="small" />, link: row => row.url },
-        { icon: <DeleteForeverIcon fontSize="small" /> },
+        {
+          icon: <DeleteForeverIcon fontSize="small" />,
+          onClick(row: Article) {
+            onDelete && onDelete!(row.id);
+          },
+        },
       ]}
     />
   );
 };
 
-const StatusSelect = () => {
+const StatusSelect = ({
+  value,
+  onChange,
+}: {
+  value: ArticleStatus;
+  onChange: (status: ArticleStatus) => void;
+}) => {
   return (
     <CSelect
-      value="all"
+      value={value}
+      onChange={onChange}
       items={[
         {
-          value: "all",
+          value: ArticleStatus.all,
           text: "All Status",
         },
         {
-          value: "published",
+          value: ArticleStatus.published,
           text: "Published",
           icon: ArticleStatusPublishIcon,
         },
         {
-          value: "draft",
+          value: ArticleStatus.draft,
           text: "Draft",
           icon: ArticleStatusDraftIcon,
         },
@@ -222,6 +242,12 @@ const makeCategoryTree = (
 const findRootCategory = (categories: Category[]): Category =>
   categories.find(c => !Boolean(c.parentCategoryId))!;
 
+interface ArticleFilter {
+  status: ArticleStatus;
+  tag: string;
+  categoryId?: string;
+}
+
 export default (): JSX.Element => {
   const { articleDomain, categoryDomain } = React.useContext(DomainContext)!;
 
@@ -230,10 +256,19 @@ export default (): JSX.Element => {
     undefined as CategoryTree | undefined,
   );
   const [tags, setTags] = React.useState([] as string[]);
-  const [keyword, setKeyword] = React.useState("");
+  const history = useHistory();
+  const keyword = Query.parse(history.location.search).keyword as string;
+  const handleSearchKeyword = (q: string) => {
+    goToSearch(history, withQueryParam("keyword", q || undefined));
+  };
+
+  const [filter, setFilter] = React.useState({
+    status: ArticleStatus.all,
+    tag: "__allTags",
+  } as ArticleFilter);
 
   React.useEffect(() => {
-    articleDomain.getArticles({ keyword }).then(articles => {
+    articleDomain.getArticles(keyword).then(articles => {
       setArticles(articles);
       setTags(
         articles.map(article => article.tags).reduce((a, b) => a.concat(b), []),
@@ -247,6 +282,43 @@ export default (): JSX.Element => {
       setCategoryTree(tree);
     });
   }, [categoryDomain]);
+
+  const handleDelete = async (articleId: string) => {
+    if (window.confirm("Are you sure you want to delete the article?")) {
+      await articleDomain.deleteArticle(articleId);
+      setArticles(articles.filter(article => article.id !== articleId));
+    }
+  };
+
+  const filterArticles = (filter: ArticleFilter) => {
+    return articles
+      .filter(article => {
+        if (filter.categoryId) {
+          return article.categoryId === filter.categoryId!;
+        }
+        return true;
+      })
+      .filter(article => {
+        if (filter.status === ArticleStatus.all) {
+          return true;
+        }
+        return article.status === filter.status;
+      })
+      .filter(article => {
+        if (filter.tag === "__allTags") {
+          return true;
+        }
+        return article.tags.indexOf(filter.tag!) !== -1;
+      });
+  };
+
+  const handleFilterTag = (tag: string) => {
+    setFilter({ ...filter, tag });
+  };
+
+  const handleFilterStatus = (status: ArticleStatus) => {
+    setFilter({ ...filter, status });
+  };
 
   const classes = useStyles({});
   return (
@@ -267,15 +339,22 @@ export default (): JSX.Element => {
               />
             </div>
             <CSelect
-              value="all"
-              items={[{ value: "all", text: "All Tags" }].concat(
-                Object.values(tags).map(tag => ({ value: tag, text: tag })),
+              value={filter.tag}
+              items={[{ value: "__allTags", text: "All Tags" }].concat(
+                tags
+                  .filter(tag => !!tag)
+                  .map(tag => ({ value: tag, text: tag })),
               )}
+              onChange={handleFilterTag}
             />
-            <StatusSelect />
-            <SearchBox onSearch={setKeyword} />
+            <StatusSelect value={filter.status} onChange={handleFilterStatus} />
+            <SearchBox onSearch={handleSearchKeyword} value={keyword} />
           </div>
-          <ArticlesTable rows={articles} category={categoryTree} />
+          <ArticlesTable
+            rows={filterArticles(filter)}
+            category={categoryTree}
+            onDelete={handleDelete}
+          />
         </div>
       </div>
     </Page>

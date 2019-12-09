@@ -13,7 +13,7 @@ export interface CSelectOption {
 interface SelectProps {
   value: string | number;
   items: CSelectOption[];
-  onChange?(value: string): void;
+  onChange?(value: string | number): void;
 }
 
 const useSelectStyle = makeStyles((theme: Theme) =>
@@ -31,7 +31,7 @@ export const CSelect = (props: SelectProps) => {
       value={props.value}
       onChange={
         props.onChange
-          ? event => props.onChange!(event.target.value as string)
+          ? event => props.onChange!(event.target.value as string | number)
           : undefined
       }
     >

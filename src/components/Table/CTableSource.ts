@@ -17,12 +17,15 @@ export class LocalTableSource<T> implements ITableSource<T> {
   }
 
   paginationRows(rows: T[], pagination?: Pagination) {
-    return pagination
-      ? rows.slice(
-          pagination!.page * pagination!.pageSize,
-          pagination!.page * pagination!.pageSize + pagination!.pageSize,
-        )
-      : rows;
+    if (pagination) {
+      const page =
+        pagination.page * pagination.pageSize > rows.length
+          ? 0
+          : pagination.page;
+      const pageSize = pagination!.pageSize;
+      return rows.slice(page * pageSize, page * pageSize + pageSize);
+    }
+    return rows;
   }
 
   getData(

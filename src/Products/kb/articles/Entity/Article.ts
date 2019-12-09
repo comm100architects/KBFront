@@ -1,10 +1,12 @@
 export enum ArticleStatus {
+  all = -1,
   draft = 0,
   published = 1,
 }
 
 export type Article = {
   id: string;
+  kbId: string;
   status: ArticleStatus;
   featured: boolean;
   url: string;
@@ -19,6 +21,7 @@ export type Article = {
 
 export const createArticle = (
   id: string,
+  kbId: string,
   categoryId: string,
   title: string = "",
   helpful: number = 0,
@@ -29,6 +32,7 @@ export const createArticle = (
 ): Article => {
   return {
     id,
+    kbId,
     categoryId,
     title,
     content: "<h1>New</h1>",

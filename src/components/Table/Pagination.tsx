@@ -23,13 +23,18 @@ export function CTablePagination(props: CTablePaginationProps) {
     });
   };
 
+  const page =
+    props.pagination.page * props.pagination.pageSize > props.count
+      ? 0
+      : props.pagination.page;
+
   return (
     <TablePagination
       rowsPerPageOptions={props.pageSizeOptions}
       component="div"
       count={props.count}
       rowsPerPage={props.pagination.pageSize}
-      page={props.pagination.page}
+      page={page}
       onChangePage={handleChangePage}
       onChangeRowsPerPage={handleChangeRowsPerPage}
     />

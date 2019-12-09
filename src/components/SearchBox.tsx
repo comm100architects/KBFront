@@ -5,20 +5,31 @@ import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 
-interface SearchBoxProps extends React.Props<{}> {
+interface SearchBoxProps {
   label?: string;
-  onSearch(keywords: string): void;
+  value: string;
+  onSearch(keyword: string): void;
 }
 
-export default ({ label = "Keyword", onSearch }: SearchBoxProps) => {
-  const [keywords, setKeywords] = React.useState("");
-  const handleSearch = (_: React.FormEvent) => onSearch(keywords);
+export default ({
+  label = "Keyword",
+  value = "",
+  onSearch,
+}: SearchBoxProps) => {
+  const [keyword, setKeyword] = React.useState(value);
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    onSearch(keyword);
+  };
   const handleInput = (event: React.ChangeEvent<{ value: string }>) =>
-    setKeywords(event.target.value);
+    setKeyword(event.target.value);
+
+  React.useEffect(() => setKeyword(value), [value]);
 
   return (
     <Paper elevation={0} component="form" onSubmit={handleSearch}>
       <TextField
+        value={keyword}
         placeholder={label}
         InputProps={{
           "aria-label": label,

@@ -1,17 +1,14 @@
 import * as Query from "query-string";
 import * as H from "history";
 
-export const withQueryParam = (key: string, value: string) => (
+export const withQueryParam = (key: string, value?: string) => (
   search: string,
 ) => {
   const query = Query.parse(search);
   return `?${Query.stringify({ ...query, [key]: value })}`;
 };
 
-export const removeQueryParam = (key: string) => (search: string) => {
-  const query = Query.parse(search);
-  return `?${Query.stringify({ ...query, [key]: undefined })}`;
-};
+export const removeQueryParam = (key: string) => withQueryParam(key);
 
 export const toPath = (
   path: string,
