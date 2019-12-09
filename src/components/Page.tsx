@@ -33,7 +33,7 @@ export default (props: PageProps): JSX.Element => {
   return (
     <main className={classes.main}>
       <Paper className={classes.content}>
-        <Typography variant="h5" noWrap className={classes.title}>
+        <Typography variant="h4" noWrap className={classes.title}>
           {props.title}
         </Typography>
         {props.children}

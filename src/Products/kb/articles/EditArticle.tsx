@@ -1,7 +1,6 @@
 import * as React from "react";
 import Page from "../../../components/Page";
 import { CLinkButton, CButton } from "../../../components/Buttons";
-import { CategoryTree } from "./Model";
 import { Article } from "./Entity/Article";
 import { Formik, Field, Form } from "formik";
 import { TextField } from "formik-material-ui";
@@ -27,20 +26,6 @@ interface DisplayCategory {
   id: string;
   path: string;
 }
-
-const displayCategories = ({
-  id,
-  label,
-  children,
-}: CategoryTree): DisplayCategory[] => {
-  const sep = label === "/" ? "" : "/";
-  const result = children
-    .map(child => displayCategories(child))
-    .reduce((res, list) => res.concat(list), [])
-    .map(c => ({ id: c.id, path: label + sep + c.path }));
-  result.unshift({ id: id, path: label });
-  return result;
-};
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

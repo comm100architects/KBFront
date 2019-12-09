@@ -387,21 +387,14 @@ const useTreeStyles = makeStyles(
 
 const renderTreeItems = (
   expandedNodes: string[],
-  selectedNode: string,
-  setSelectedNode: (n: string) => void,
   { id, title, children }: CategoryTree,
 ): JSX.Element => {
-  const handleClick = (_: React.MouseEvent<HTMLElement>) => {
-    console.log("select " + id);
-    setSelectedNode(id);
-  };
   return (
     <StyledTreeItem
       key={id}
       nodeId={id}
       labelText={title}
       labelIcon={expandedNodes.indexOf(id) === -1 ? FolderIcon : FolderOpenIcon}
-      onClick={handleClick}
       tools={
         <>
           <IconButton tabIndex={-1} size="small">
@@ -416,17 +409,16 @@ const renderTreeItems = (
         </>
       }
     >
-      {children.map(c =>
-        renderTreeItems(expandedNodes, selectedNode, setSelectedNode, c),
-      )}
+      {children.map(c => renderTreeItems(expandedNodes, c))}
     </StyledTreeItem>
   );
 };
 
 const CategoriesTree = ({ root }: { root: CategoryTree }): JSX.Element => {
   const classes = useTreeStyles({});
-  const [expandedNodes, setExpandedNodes] = React.useState([] as string[]);
-  const [selectedNode, setSelectedNode] = React.useState("");
+  const [expandedNodes, setExpandedNodes] = React.useState([
+    root.id,
+  ] as string[]);
   const handleNodeToggle = (_: React.ChangeEvent<{}>, ids: string[]) =>
     setExpandedNodes(ids);
 
@@ -441,8 +433,9 @@ const CategoriesTree = ({ root }: { root: CategoryTree }): JSX.Element => {
         defaultExpandIcon={<ArrowRightIcon />}
         defaultEndIcon={<div style={{ width: 24 }} />}
         onNodeToggle={handleNodeToggle}
+        expanded={expandedNodes}
       >
-        {renderTreeItems(expandedNodes, selectedNode, setSelectedNode, root)}
+        {renderTreeItems(expandedNodes, root)}
       </TreeView>
     </>
   );
