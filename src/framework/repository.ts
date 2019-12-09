@@ -1,4 +1,4 @@
-import { IHttpClient } from "./network";
+import { fetchJson } from "./network";
 
 export interface IRepository<Entity> {
   endPoint: string;
@@ -6,7 +6,7 @@ export interface IRepository<Entity> {
   add(obj: Entity): Promise<Entity>;
   update(id: string, obj: Entity): Promise<Entity>;
   get(id: string): Promise<Entity>;
-  delete(id: string): Promise<{}>;
+  delete(id: string): Promise<void>;
   list(params?: QueryItem[]): Promise<Entity[]>;
 }
 
@@ -17,27 +17,21 @@ export interface QueryItem {
 
 export class RESTfulRepository<Entity> implements IRepository<Entity> {
   endPoint: string;
-  client: IHttpClient;
   constructor(endPoint: string) {
     this.endPoint = endPoint;
-    this.client = { request: () => Promise.resolve({}) };
   }
 
   add(obj: Entity): Promise<Entity> {
-    return this.client.request("POST", this.endPoint, JSON.stringify(obj));
+    return fetchJson(this.endPoint, "POST", obj);
   }
   update(id: string, obj: Entity): Promise<Entity> {
-    return this.client.request(
-      "PUT",
-      `${this.endPoint}/${id}`,
-      JSON.stringify(obj),
-    );
+    return fetchJson(`${this.endPoint}/${id}`, "PUT", obj);
   }
   get(id: string): Promise<Entity> {
-    return this.client.request("GET", `${this.endPoint}/${id}`);
+    return fetchJson(`${this.endPoint}/${id}`, "GET");
   }
-  delete(id: string): Promise<{}> {
-    return this.client.request("DELETE", `${this.endPoint}/${id}`);
+  delete(id: string): Promise<void> {
+    return fetchJson(`${this.endPoint}/${id}`, "DELETE");
   }
   list(params?: QueryItem[]): Promise<Entity[]> {
     const query = params
@@ -46,6 +40,7 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
           `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
       )
       .join("&");
-    return this.client.request("GET", `${this.endPoint}?${query}`);
+    const url = query ? `${this.endPoint}?${query}` : this.endPoint;
+    return fetchJson(url, "GET");
   }
 }

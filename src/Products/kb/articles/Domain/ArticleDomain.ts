@@ -1,12 +1,12 @@
 import { IArticleRepository } from "../Repository/ArticleRepository";
 import { Article, ArticleStatus } from "../Entity/Article";
 
-type ArticleFilter = {
+interface ArticleFilter {
   status?: ArticleStatus;
   tag?: string;
   keyword?: string;
   categoryId?: string;
-};
+}
 
 export class ArticleDomain {
   private articleRepository: IArticleRepository;
@@ -25,7 +25,7 @@ export class ArticleDomain {
 
   async getArticles(filter: ArticleFilter): Promise<Article[]> {
     const query = filter.keyword
-      ? [{ key: "keyword", value: filter.categoryId! }]
+      ? [{ key: "q", value: filter.categoryId! }]
       : [];
 
     // FIXME: cache articles??
@@ -52,7 +52,11 @@ export class ArticleDomain {
       });
   }
 
-  deleteArticle(id: string): Promise<{}> {
+  getArticle(id: string): Promise<Article> {
+    return this.articleRepository.get(id);
+  }
+
+  deleteArticle(id: string): Promise<void> {
     return this.articleRepository.delete(id);
   }
 }

@@ -5,6 +5,7 @@ import {
   Link as RouterLink,
   LinkProps as RouterLinkProps,
 } from "react-router-dom";
+import * as H from "history";
 import { PropTypes } from "@material-ui/core";
 
 interface ButtonProps extends React.Props<{}> {
@@ -32,7 +33,11 @@ const Link = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
 );
 
 interface LinkButtonProps extends React.Props<{}> {
-  path: string;
+  to:
+    | H.LocationDescriptor<H.LocationState>
+    | ((
+        location: H.Location<H.LocationState>,
+      ) => H.LocationDescriptor<H.LocationState>);
   text: string;
   disabled?: boolean;
   external?: boolean;
@@ -42,7 +47,7 @@ interface LinkButtonProps extends React.Props<{}> {
 export const CLinkButton = (props: LinkButtonProps) => (
   <Button
     variant="contained"
-    to={props.path}
+    to={props.to}
     target={props.external ? "_blank" : ""}
     component={Link}
     color={props.color}
@@ -51,8 +56,12 @@ export const CLinkButton = (props: LinkButtonProps) => (
   </Button>
 );
 
-interface LinkIconProps extends React.Props<{}> {
-  to: string;
+interface LinkIconProps extends React.Props<void> {
+  to:
+    | H.LocationDescriptor<H.LocationState>
+    | ((
+        location: H.Location<H.LocationState>,
+      ) => H.LocationDescriptor<H.LocationState>);
   target?: string;
   size?: "small" | "medium";
   title?: string;

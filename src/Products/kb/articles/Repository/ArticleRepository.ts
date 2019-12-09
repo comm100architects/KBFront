@@ -2,7 +2,7 @@ import {
   IRepository,
   RESTfulRepository,
 } from "../../../../framework/repository";
-import { Article } from "../Entity/Article";
+import { createArticle, Article, ArticleStatus } from "../Entity/Article";
 
 export interface IArticleRepository extends IRepository<Article> {
   publish(id: string): Promise<{}>;
@@ -14,3 +14,4 @@ export class ArticleRepository extends RESTfulRepository<Article>
     throw new Error("Method not implemented.");
   }
 }
+

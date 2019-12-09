@@ -12,6 +12,7 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CTablePagination } from "./Pagination";
 import { ITableSource } from "./CTableSource";
 import { Row, Sort } from "./Types";
+import * as H from "history";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface CTableColumn<T extends Row> {
-  id: keyof T;
+  id: string;
   header?: string | JSX.Element;
   content?(arg: T): null | undefined | string | JSX.Element;
   sortable?: boolean;
@@ -43,7 +44,13 @@ export interface CTableColumn<T extends Row> {
 
 export interface CTableAction<T> {
   icon: JSX.Element;
-  link?(row: T): string;
+  link?(
+    row: T,
+  ):
+    | H.LocationDescriptor<H.LocationState>
+    | ((
+        location: H.Location<H.LocationState>,
+      ) => H.LocationDescriptor<H.LocationState>);
   onClick?(row: T): void;
 }
 
@@ -84,7 +91,7 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
 
   React.useEffect(() => {
     props.dataSource.getData(sort, pagination).then(setData);
-  }, [sort, pagination]);
+  }, [sort, pagination, props.dataSource]);
 
   const createSortHandler = (column: keyof T) => () => {
     setSort({
@@ -137,10 +144,14 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                         size="small"
                         className={classes.actions}
                       >
-                        {props.actions?.map(action => {
+                        {props.actions?.map((action, i) => {
                           if (action.link) {
                             return (
-                              <LinkIcon size="small" to={action.link!(row)}>
+                              <LinkIcon
+                                key={i}
+                                size="small"
+                                to={action.link!(row)}
+                              >
                                 {action.icon}
                               </LinkIcon>
                             );

@@ -108,3 +108,4 @@ const getArticles = (): Articles =>
   }, {});
 
 export const dictArticles: Articles = getArticles();
+

@@ -1,4 +1,12 @@
-export interface IHttpClient {
-  request(method: "GET" | "DELETE", path: string): Promise<any>;
-  request(method: "POST" | "PUT", path: string, body: any): Promise<any>;
-}
+export const fetchJson = async (
+  path: string,
+  method: "GET" | "DELETE" | "POST" | "PUT",
+  body?: any,
+): Promise<any> => {
+  const resp = await fetch(path, {
+    method,
+    body: JSON.stringify(body),
+    headers: [["Content-Type", "application/json"]],
+  });
+  return await resp.json();
+};

@@ -4,17 +4,17 @@ import MenuItem from "@material-ui/core/MenuItem";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 
-type SelectOption = {
-  value: string;
+export interface CSelectOption {
+  value: string | number;
   text: string;
   icon?(props: SvgIconProps): JSX.Element;
-};
+}
 
-type SelectProps = {
-  value: string;
-  items: SelectOption[];
+interface SelectProps {
+  value: string | number;
+  items: CSelectOption[];
   onChange?(value: string): void;
-};
+}
 
 const useSelectStyle = makeStyles((theme: Theme) =>
   createStyles({
@@ -37,7 +37,7 @@ export const CSelect = (props: SelectProps) => {
     >
       {props.items.map(({ value, text, icon }) => {
         return (
-          <MenuItem value={value}>
+          <MenuItem key={value} value={value}>
             <span className={classes.icon}>
               {icon && icon({ titleAccess: text, fontSize: "small" })}
             </span>

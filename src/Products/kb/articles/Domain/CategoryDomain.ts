@@ -1,8 +1,6 @@
 import { ICategoryRepository } from "../Repository/CategoryRepository";
 import { Category, CategoryPosition } from "../Entity/Category";
 
-export interface ICategoryDomain {}
-
 export class CategoryDomain {
   categoryRepository: ICategoryRepository;
 
@@ -22,11 +20,11 @@ export class CategoryDomain {
     return this.categoryRepository.list();
   }
 
-  deleteCategory(id: string): Promise<{}> {
+  deleteCategory(id: string): Promise<void> {
     return this.categoryRepository.delete(id);
   }
 
-  moveCategory(id: string, to: CategoryPosition): Promise<{}> {
+  moveCategory(id: string, to: CategoryPosition): Promise<void> {
     return this.categoryRepository.move(id, to);
   }
 }

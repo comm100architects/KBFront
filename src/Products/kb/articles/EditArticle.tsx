@@ -1,11 +1,11 @@
 import * as React from "react";
 import Page from "../../../components/Page";
 import { CLinkButton, CButton } from "../../../components/Buttons";
-import { Article, rootCategory, CategoryTree } from "./Model";
+import { CategoryTree } from "./Model";
+import { Article } from "./Entity/Article";
 import { Formik, Field, Form } from "formik";
 import { TextField } from "formik-material-ui";
 import FormControl from "@material-ui/core/FormControl";
-import MenuItem from "@material-ui/core/MenuItem";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import HtmlEditor from "../../../components/HtmlEditor";
 import ChipInput from "material-ui-chip-input";
@@ -13,11 +13,20 @@ import Chip from "@material-ui/core/Chip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import IconButton from "@material-ui/core/IconButton";
 import StarIcon from "@material-ui/icons/Star";
+import { useHistory, useLocation } from "react-router";
+import { CSelect, CSelectOption } from "../../../components/Select";
+import * as Query from "query-string";
+import { DomainContext } from "./context";
+import {
+  goToPath,
+  toPath,
+  removeQueryParam,
+} from "../../../framework/locationHelper";
 
-type DisplayCategory = {
+interface DisplayCategory {
   id: string;
   path: string;
-};
+}
 
 const displayCategories = ({
   id,
@@ -32,8 +41,6 @@ const displayCategories = ({
   result.unshift({ id: id, path: label });
   return result;
 };
-
-const categories: DisplayCategory[] = displayCategories(rootCategory);
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -70,9 +77,9 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export interface EditArticleProps extends React.Props<{}> {
-  title?: string | undefined;
-  state: Article;
-  onSave(article: Article): void;
+  title: string;
+  article: Article;
+  onSave(article: Article): Promise<void>;
 }
 
 interface Values {
@@ -80,12 +87,47 @@ interface Values {
   url: string;
 }
 
-export default (props: EditArticleProps): JSX.Element => {
-  const classes = useStyles({});
+export const EditArticle = (): JSX.Element => {
+  const location = useLocation();
+  const articleId = Query.parse(location.search).id as string;
+  const { articleDomain } = React.useContext(DomainContext)!;
+
+  const history = useHistory();
+  const [article, setArticle] = React.useState(null as Article | null);
+  React.useEffect(() => {
+    articleDomain.getArticle(articleId).then(setArticle);
+  }, []);
+  if (article) {
+    return (
+      <ArticleComponent
+        title="Edit Article"
+        onSave={async article => {
+          await articleDomain.updateArticle(article);
+          goToPath(history, toPath(".", removeQueryParam("id")));
+          return Promise.resolve();
+        }}
+        article={article!}
+      />
+    );
+  }
+  return <></>;
+};
+
+export function ArticleComponent(props: EditArticleProps): JSX.Element {
+  const classes = useStyles();
+  const { categoryDomain } = React.useContext(DomainContext)!;
+
+  const [categories, setCategories] = React.useState([] as CSelectOption[]);
+  React.useEffect(() => {
+    categoryDomain.getCategories().then(categories => {
+      setCategories(categories.map(c => ({ value: c.id, text: c.title })));
+    });
+  }, [categoryDomain]);
+
   return (
-    <Page title={props.title ?? "Edit Article"}>
+    <Page title={props.title}>
       <Formik
-        initialValues={props.state}
+        initialValues={props.article}
         validate={values => {
           const errors: Partial<Values> = {};
           if (!values.title) {
@@ -96,12 +138,9 @@ export default (props: EditArticleProps): JSX.Element => {
           }
           return errors;
         }}
-        onSubmit={(values, { setSubmitting }) => {
-          setTimeout(() => {
-            setSubmitting(false);
-            // alert(JSON.stringify(values, null, 2));
-            props.onSave(values);
-          }, 500);
+        onSubmit={async (values, { setSubmitting }) => {
+          await props.onSave(values);
+          setSubmitting(false);
         }}
         render={({ submitForm, isSubmitting, setFieldValue, values }) => (
           <Form className={classes.form}>
@@ -160,36 +199,37 @@ export default (props: EditArticleProps): JSX.Element => {
                 text="Save"
                 primary
               />
-              <CLinkButton path="." text="Cancel" />
+              <CLinkButton
+                to={toPath(".", removeQueryParam("id"))}
+                text="Cancel"
+              />
               <CLinkButton
                 external
-                path="//ent.comm100.com/kb/1000007-25-a459?preview=true&source=edit"
+                to="//ent.comm100.com/kb/1000007-25-a459?preview=true&source=edit"
                 text="Preview"
               />
-              <Field select name="status" label="Status" component={TextField}>
-                <MenuItem key="draft" value="draft">
-                  Draft
-                </MenuItem>
-                <MenuItem key="published" value="published">
-                  Published
-                </MenuItem>
-              </Field>
-              <Field
-                select
-                name="category"
-                label="Category"
-                component={TextField}
-              >
-                {categories.map(c => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.path}
-                  </MenuItem>
-                ))}
-              </Field>
+              <FormControl>
+                <CSelect value={values.categoryId} items={categories} />
+              </FormControl>
+              <FormControl>
+                <CSelect
+                  value={values.status}
+                  items={[
+                    {
+                      value: 1,
+                      text: "Published",
+                    },
+                    {
+                      value: 0,
+                      text: "Draft",
+                    },
+                  ]}
+                />
+              </FormControl>
               <FormControl>
                 <ChipInput
                   label="Tags"
-                  defaultValue={["foo", "bar"]}
+                  defaultValue={values.tags}
                   newChipKeyCodes={[32]}
                   onChange={chips => setFieldValue("tags", chips)}
                 />
@@ -200,4 +240,4 @@ export default (props: EditArticleProps): JSX.Element => {
       />
     </Page>
   );
-};
+}

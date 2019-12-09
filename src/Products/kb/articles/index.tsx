@@ -1,50 +1,52 @@
 import * as React from "react";
-import { Switch, Route, useRouteMatch, useLocation } from "react-router";
+import { Switch, Route, useRouteMatch } from "react-router";
 import AllArticles from "./Articles";
 import NewArticle from "./NewArticle";
-import EditArticle from "./EditArticle";
-import { dictArticles, Article, Articles, rootCategory } from "./Model";
-import { parse } from "query-string";
-import { useHistory } from "react-router";
-import { ActionType } from "./Action";
-import reducer from "./Reducer";
+import { EditArticle } from "./EditArticle";
+import { KbSelect } from "./KbSelect";
+import { DomainContext, Domains } from "./context";
+import { newArticleDomain, newCategoryDomain } from "./dependency";
 
-const getArticle = (articles: Articles, search: string): Article => {
-  const { id } = parse(search);
-  return articles[id as string]!;
+const ArticlePage = ({ children }: { children: JSX.Element }) => {
+  const [domains, setDomains] = React.useState(
+    undefined as Domains | undefined,
+  );
+  return (
+    <div style={{ position: "relative" }}>
+      <KbSelect
+        onSelect={kbId =>
+          setDomains({
+            articleDomain: newArticleDomain(kbId),
+            categoryDomain: newCategoryDomain(kbId),
+          })
+        }
+      />
+      <DomainContext.Provider value={domains}>
+        {domains && children}
+      </DomainContext.Provider>
+    </div>
+  );
 };
 
 export default () => {
   const match = useRouteMatch();
-  const location = useLocation();
-  const history = useHistory();
-  const [articles, dispatch] = React.useReducer(reducer, dictArticles);
 
   return (
     <Switch>
       <Route exact path={`${match.url}/`}>
-        <AllArticles
-          articles={Object.values(articles)}
-          category={rootCategory}
-        />
+        <ArticlePage>
+          <AllArticles />
+        </ArticlePage>
       </Route>
       <Route exact path={`${match.url}/new`}>
-        <NewArticle
-          onSave={article => {
-            dispatch({ type: ActionType.newArticle, payload: article });
-            history.push(".");
-          }}
-          category="1"
-        />
+        <ArticlePage>
+          <NewArticle category="1" />
+        </ArticlePage>
       </Route>
       <Route exact path={`${match.url}/edit`}>
-        <EditArticle
-          onSave={article => {
-            dispatch({ type: ActionType.editArticle, payload: article });
-            history.push(".");
-          }}
-          state={getArticle(articles, location.search)}
-        />
+        <ArticlePage>
+          <EditArticle />
+        </ArticlePage>
       </Route>
     </Switch>
   );

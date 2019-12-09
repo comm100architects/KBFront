@@ -9,7 +9,6 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ViewIcon from "@material-ui/icons/Pageview";
-import { Article, CategoryTree } from "./Model";
 import StarIcon from "@material-ui/icons/Star";
 import DotIcon from "@material-ui/icons/FiberManualRecord";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -28,12 +27,25 @@ import AddIcon from "@material-ui/icons/Add";
 import { CSelect } from "../../../components/Select";
 import { CTable } from "../../../components/Table";
 import { LocalTableSource } from "../../../components/Table/CTableSource";
+import { Category } from "./Entity/Category";
+import { Article, ArticleStatus } from "./Entity/Article";
+import { DomainContext } from "./context";
+import { toPath, withQueryParam } from "../../../framework/locationHelper";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       display: "flex",
       flexDirection: "row",
+      position: "relative",
+    },
+    kbs: {
+      position: "absolute",
+      right: 10,
+      top: -50,
+      label: {
+        marginRight: theme.spacing(1),
+      },
     },
     categoryTree: {
       width: 200,
@@ -66,15 +78,6 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const distinct = (strs: string[]) =>
-  Object.keys(strs.reduce((a, b) => ({ ...a, [b]: b }), {}));
-
-const getTags = (articles: Article[]): string[] => {
-  return distinct(
-    articles.map(article => article.tags).reduce((a, b) => a.concat(b), []),
-  );
-};
-
 const ArticleStatusPublishIcon = (props: SvgIconProps) => (
   <DotIcon {...props} color="primary" titleAccess="Draft" />
 );
@@ -98,7 +101,7 @@ const ArticlesTable = ({
   category,
 }: {
   rows: Article[];
-  category: CategoryTree;
+  category?: CategoryTree;
 }) => {
   return (
     <CTable<Article>
@@ -118,7 +121,7 @@ const ArticlesTable = ({
         {
           id: "status",
           content: (row: Article) => {
-            if (row.status === "draft") {
+            if (row.status === ArticleStatus.draft) {
               return <ArticleStatusDraftIcon color="secondary" />;
             }
             return <ArticleStatusPublishIcon color="primary" />;
@@ -129,7 +132,12 @@ const ArticlesTable = ({
           id: "category",
           header: "Category",
           sortable: true,
-          content: (row: Article) => getCategory(row.category, category)?.label,
+          content: (row: Article) => {
+            if (category) {
+              return getCategory(row.categoryId, category!)?.title || "";
+            }
+            return "";
+          },
         },
         {
           id: "tags",
@@ -160,7 +168,7 @@ const ArticlesTable = ({
       actions={[
         {
           icon: <EditIcon fontSize="small" />,
-          link: row => `edit?id=${row.id}`,
+          link: row => toPath("edit", withQueryParam("id", row.id)),
         },
         { icon: <ViewIcon fontSize="small" />, link: row => row.url },
         { icon: <DeleteForeverIcon fontSize="small" /> },
@@ -169,56 +177,105 @@ const ArticlesTable = ({
   );
 };
 
-export default ({
-  articles,
-  category,
-}: {
-  articles: Article[];
-  category: CategoryTree;
-}): JSX.Element => {
+const StatusSelect = () => {
+  return (
+    <CSelect
+      value="all"
+      items={[
+        {
+          value: "all",
+          text: "All Status",
+        },
+        {
+          value: "published",
+          text: "Published",
+          icon: ArticleStatusPublishIcon,
+        },
+        {
+          value: "draft",
+          text: "Draft",
+          icon: ArticleStatusDraftIcon,
+        },
+      ]}
+    ></CSelect>
+  );
+};
+
+type CategoryTree = {
+  id: string;
+  title: string;
+  children: CategoryTree[];
+};
+
+const makeCategoryTree = (
+  categories: Category[],
+  currentCategory: Category,
+): CategoryTree => ({
+  id: currentCategory.id,
+  title: currentCategory.title,
+  children: categories
+    .filter(c => c.parentCategoryId === currentCategory.id)
+    .sort((a, b) => a.index - b.index)
+    .map(c => makeCategoryTree(categories, c)),
+});
+
+const findRootCategory = (categories: Category[]): Category =>
+  categories.find(c => !Boolean(c.parentCategoryId))!;
+
+export default (): JSX.Element => {
+  const { articleDomain, categoryDomain } = React.useContext(DomainContext)!;
+
+  const [articles, setArticles] = React.useState([] as Article[]);
+  const [categoryTree, setCategoryTree] = React.useState(
+    undefined as CategoryTree | undefined,
+  );
+  const [tags, setTags] = React.useState([] as string[]);
+  const [keyword, setKeyword] = React.useState("");
+
+  React.useEffect(() => {
+    articleDomain.getArticles({ keyword }).then(articles => {
+      setArticles(articles);
+      setTags(
+        articles.map(article => article.tags).reduce((a, b) => a.concat(b), []),
+      );
+    });
+  }, [keyword, articleDomain]);
+
+  React.useEffect(() => {
+    categoryDomain.getCategories().then(categories => {
+      const tree = makeCategoryTree(categories, findRootCategory(categories));
+      setCategoryTree(tree);
+    });
+  }, [categoryDomain]);
+
   const classes = useStyles({});
-  const tags = getTags(articles);
   return (
     <Page title="Articles">
       <div className={classes.root}>
         <div className={classes.categoryTree}>
           <MenuItem>All Articles</MenuItem>
-          <CategoriesTree root={category} />
+          {categoryTree && <CategoriesTree root={categoryTree!} />}
         </div>
         <Divider orientation="vertical" className={classes.divider} />
         <div className={classes.articles}>
           <div className={classes.articlesToolbar}>
             <div>
-              <CLinkButton color="primary" path="new" text="New Article" />
+              <CLinkButton
+                color="primary"
+                to={toPath("new")}
+                text="New Article"
+              />
             </div>
             <CSelect
               value="all"
               items={[{ value: "all", text: "All Tags" }].concat(
-                tags.map(tag => ({ value: tag, text: tag })),
+                Object.values(tags).map(tag => ({ value: tag, text: tag })),
               )}
             />
-            <CSelect
-              value="all"
-              items={[
-                {
-                  value: "all",
-                  text: "All Status",
-                },
-                {
-                  value: "published",
-                  text: "Published",
-                  icon: ArticleStatusPublishIcon,
-                },
-                {
-                  value: "draft",
-                  text: "Draft",
-                  icon: ArticleStatusDraftIcon,
-                },
-              ]}
-            ></CSelect>
-            <SearchBox onSearch={(_: string) => {}} />
+            <StatusSelect />
+            <SearchBox onSearch={setKeyword} />
           </div>
-          <ArticlesTable rows={articles} category={category} />
+          <ArticlesTable rows={articles} category={categoryTree} />
         </div>
       </div>
     </Page>
@@ -267,6 +324,7 @@ const useTreeItemStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0.5, 0),
       "&:hover > $tools": {
         display: "block",
+        whiteSpace: "nowrap",
       },
       height: 34,
     },
@@ -331,7 +389,7 @@ const renderTreeItems = (
   expandedNodes: string[],
   selectedNode: string,
   setSelectedNode: (n: string) => void,
-  { id, label, children }: CategoryTree,
+  { id, title, children }: CategoryTree,
 ): JSX.Element => {
   const handleClick = (_: React.MouseEvent<HTMLElement>) => {
     console.log("select " + id);
@@ -341,7 +399,7 @@ const renderTreeItems = (
     <StyledTreeItem
       key={id}
       nodeId={id}
-      labelText={label}
+      labelText={title}
       labelIcon={expandedNodes.indexOf(id) === -1 ? FolderIcon : FolderOpenIcon}
       onClick={handleClick}
       tools={

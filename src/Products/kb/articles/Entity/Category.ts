@@ -1,11 +1,12 @@
-export type Category = {
+export interface Category {
   id: string;
   title: string;
-  position: CategoryPosition;
-};
-
-export type CategoryPosition = {
   parentCategoryId: string;
   index: number;
-};
+}
+
+export interface CategoryPosition {
+  parentCategoryId: string;
+  index: number;
+}
 

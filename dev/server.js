@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.url.indexOf("favicon") !== -1) {
-    res.end("");
+    writeFile("./favicon.ico", res);
     return;
   }
 
