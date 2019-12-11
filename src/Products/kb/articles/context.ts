@@ -2,6 +2,8 @@ import * as React from "react";
 import { ArticleDomain } from "./Domain/ArticleDomain";
 import { CategoryDomain } from "./Domain/CategoryDomain";
 import { RESTfulRepository } from "../../../framework/repository";
+import { Article } from "./Entity/Article";
+import { Category } from "./Entity/Category";
 
 export interface Domains {
   articleDomain: ArticleDomain;
