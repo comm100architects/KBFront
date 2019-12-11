@@ -1,5 +1,5 @@
-import { ICategoryRepository } from "../Repository/CategoryRepository";
 import { Category, CategoryPosition } from "../Entity/Category";
+import { IRepository } from "../../../../framework/repository";
 
 export interface CategoryTree {
   id: string;
@@ -23,9 +23,9 @@ export const findRootCategory = (categories: Category[]): Category =>
   categories.find(c => !Boolean(c.parentCategoryId))!;
 
 export class CategoryDomain {
-  categoryRepository: ICategoryRepository;
+  categoryRepository: IRepository<Category>;
 
-  constructor(categoryRepository: ICategoryRepository) {
+  constructor(categoryRepository: IRepository<Category>) {
     this.categoryRepository = categoryRepository;
   }
 
@@ -38,7 +38,7 @@ export class CategoryDomain {
   }
 
   getCategories(): Promise<Category[]> {
-    return this.categoryRepository.list();
+    return this.categoryRepository.getList();
   }
 
   deleteCategory(id: string): Promise<void> {
@@ -46,6 +46,6 @@ export class CategoryDomain {
   }
 
   moveCategory(id: string, to: CategoryPosition): Promise<void> {
-    return this.categoryRepository.move(id, to);
+    return this.categoryRepository.execute("move", id, to);
   }
 }

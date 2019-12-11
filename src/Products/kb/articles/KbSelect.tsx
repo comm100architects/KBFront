@@ -29,13 +29,13 @@ export const KbSelect = ({ onSelect }: SelectKbProps) => {
   const kbId = Query.parse(location.search).kbId as string;
 
   const [kbRepo] = React.useState(
-    () => new RESTfulRepository<Kb>("//localhost:3000/kb"),
+    () => new RESTfulRepository<Kb>("localhost:3000", "kb"),
   );
 
   const [kbs, setKbs] = React.useState([] as Kb[]);
 
   React.useEffect(() => {
-    kbRepo.list().then(kbs => {
+    kbRepo.getList().then(kbs => {
       setKbs(kbs);
       if (!kbs.find(kb => kb.id === kbId)) {
         onSelect(kbs[0].id);

@@ -1,13 +1,12 @@
 import { fetchJson } from "./network";
 
 export interface IRepository<Entity> {
-  endPoint: string;
-
   add(obj: Entity): Promise<Entity>;
   update(id: string, obj: Entity): Promise<Entity>;
   get(id: string): Promise<Entity>;
   delete(id: string): Promise<void>;
-  list(params?: QueryItem[]): Promise<Entity[]>;
+  getList(params?: QueryItem[]): Promise<Entity[]>;
+  execute(action: string, objectId: string, payload: any): Promise<any>;
 }
 
 export interface QueryItem {
@@ -17,8 +16,8 @@ export interface QueryItem {
 
 export class RESTfulRepository<Entity> implements IRepository<Entity> {
   endPoint: string;
-  constructor(endPoint: string) {
-    this.endPoint = endPoint;
+  constructor(host: string, entityName: string) {
+    this.endPoint = `//${host}/api/v2/${entityName}`;
   }
 
   add(obj: Entity): Promise<Entity> {
@@ -33,7 +32,7 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
   delete(id: string): Promise<void> {
     return fetchJson(`${this.endPoint}/${id}`, "DELETE");
   }
-  list(params?: QueryItem[]): Promise<Entity[]> {
+  getList(params?: QueryItem[]): Promise<Entity[]> {
     const query = params
       ?.map(
         ({ key, value }) =>
@@ -42,5 +41,8 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
       .join("&");
     const url = query ? `${this.endPoint}?${query}` : this.endPoint;
     return fetchJson(url, "GET");
+  }
+  execute(action: string, objectId: string, payload: any): Promise<any> {
+    return fetchJson(`${this.endPoint}/${objectId}:${action}`, "POST", payload);
   }
 }

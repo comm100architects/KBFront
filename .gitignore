@@ -2,3 +2,6 @@ dist/
 node_modules/
 index.html
 dev/db.json
+.vrepl_temp
+.vrepl_temp.v
+

@@ -1,4 +1,5 @@
 import { Row, Sort, Pagination } from "./Types";
+import { QueryItem, IRepository } from "../../framework/repository";
 
 export interface ITableSource<T> {
   getData(
@@ -88,4 +89,30 @@ function getSorting<T>({ asc, key }: Sort<T>): (a: Row, b: Row) => number {
   return asc
     ? (a, b) => -desc(a, b, key as string)
     : (a, b) => desc(a, b, key as string);
+}
+
+export class RemoteTableSource<T> implements ITableSource<T> {
+  private repo: IRepository<T>;
+
+  constructor(repo: IRepository<T>) {
+    this.repo = repo;
+  }
+
+  async getData(
+    sort?: Sort<T> | undefined,
+    paginationState?: Pagination | undefined,
+  ): Promise<{ rows: T[]; count: number }> {
+    const query = [
+      {
+        key: "_page",
+        value: paginationState?.page,
+      },
+      { key: "_limit", value: paginationState?.pageSize },
+      { key: "_sort", value: sort?.key },
+      { key: "_order", value: sort?.asc ? "asc" : "desc" },
+    ].filter(({ value }) => value != null);
+    const rows = await this.repo.getList(query as QueryItem[]);
+    const count = rows.length;
+    return { rows, count };
+  }
 }
