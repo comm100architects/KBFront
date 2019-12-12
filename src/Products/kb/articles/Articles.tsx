@@ -34,6 +34,7 @@ import {
 import { useHistory } from "react-router";
 import * as Query from "query-string";
 import { ITableSource } from "../../../components/Table/CTableSource";
+import FormControl from "@material-ui/core/FormControl";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -77,6 +78,10 @@ const useStyles = makeStyles((theme: Theme) =>
       "& > .MuiInput-root": {
         width: 120,
       },
+    },
+    statusSelect: {
+      width: 150,
+      minWidth: 150,
     },
   }),
 );
@@ -194,6 +199,9 @@ const StatusSelect = ({
       onChange={onChange}
       items={[
         {
+          text: "All Status",
+        },
+        {
           value: ArticleStatus.published,
           text: "Published",
           icon: "dotPrimary",
@@ -267,10 +275,12 @@ export default (): JSX.Element => {
             <div>
               <CButton primary to={toPath("new")} text="New Article" />
             </div>
-            <StatusSelect
-              value={filter.status}
-              onChange={status => setFilter({ ...filter, status })}
-            />
+            <FormControl className={classes.statusSelect}>
+              <StatusSelect
+                value={filter.status}
+                onChange={status => setFilter({ ...filter, status })}
+              />
+            </FormControl>
             <SearchBox
               onSearch={handleSearchKeyword}
               value={filter.keyword || ""}

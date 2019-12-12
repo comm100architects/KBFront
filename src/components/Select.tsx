@@ -7,7 +7,7 @@ import { CIconName, CIcon } from "./Icons";
 import { CElementProps } from "./base";
 
 export interface CSelectOption extends CElementProps {
-  value: string | number;
+  value?: string | number;
   text: string;
   icon?: CIconName;
 }
@@ -19,16 +19,23 @@ interface SelectProps extends CElementProps {
   label?: string;
 }
 
-const useSelectStyle = makeStyles((theme: Theme) =>
+const useStyle = makeStyles((theme: Theme) =>
   createStyles({
+    root: {
+      "& > .MuiSelect-root": {
+        display: "flex",
+        alignItems: "center",
+      },
+    },
     icon: {
       marginRight: theme.spacing(1),
+      lineHeight: 0,
     },
   }),
 );
 
 export const CSelect = (props: SelectProps) => {
-  const classes = useSelectStyle();
+  const classes = useStyle();
   const labelId = props.id ? `${props.id}-label` : undefined;
   return (
     <>
@@ -42,6 +49,7 @@ export const CSelect = (props: SelectProps) => {
             ? event => props.onChange!(event.target.value as string | number)
             : undefined
         }
+        className={classes.root}
       >
         {props.items.map(({ id, value, text, icon }) => {
           return (
