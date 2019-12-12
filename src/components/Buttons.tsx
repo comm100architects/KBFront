@@ -6,74 +6,92 @@ import {
   LinkProps as RouterLinkProps,
 } from "react-router-dom";
 import * as H from "history";
-import { PropTypes } from "@material-ui/core";
+import { CIcon, CIconName } from "./Icons";
+import { CElementProps } from "./Base";
 
-interface ButtonProps extends React.Props<{}> {
+export interface CButtonProps extends CElementProps {
   onClick?: React.MouseEventHandler<{}>;
   disabled?: boolean;
   primary?: boolean;
   text: string;
   id?: string;
+  to?:
+    | H.LocationDescriptor<H.LocationState>
+    | ((
+        location: H.Location<H.LocationState>,
+      ) => H.LocationDescriptor<H.LocationState>);
+  external?: boolean;
 }
 
-export const CButton = (props: ButtonProps) => (
-  <Button
-    id={props.id}
-    variant="contained"
-    disabled={props.disabled}
-    color={props.primary ? "primary" : "default"}
-    onClick={props.onClick}
-  >
-    {props.text}
-  </Button>
-);
+export const CButton = (props: CButtonProps) => {
+  if (props.onClick) {
+    return (
+      <Button
+        id={props.id}
+        variant="contained"
+        disabled={props.disabled}
+        color={props.primary ? "primary" : "default"}
+        onClick={props.onClick}
+      >
+        {props.text}
+      </Button>
+    );
+  }
+
+  if (props.to) {
+    return (
+      <Button
+        id={props.id}
+        variant="contained"
+        disabled={props.disabled}
+        color={props.primary ? "primary" : "default"}
+        to={props.to!}
+        target={props.external ? "_blank" : ""}
+        component={Link}
+      >
+        {props.text}
+      </Button>
+    );
+  }
+
+  return <></>;
+};
+
+export interface CIconButtonProps extends CElementProps {
+  title: string;
+  icon: CIconName;
+  onClick?: React.MouseEventHandler<{}>;
+  to?:
+    | H.LocationDescriptor<H.LocationState>
+    | ((
+        location: H.Location<H.LocationState>,
+      ) => H.LocationDescriptor<H.LocationState>);
+  external?: boolean;
+}
 
 const Link = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
   (props, ref) => <RouterLink innerRef={ref} {...props} />,
 );
 
-interface LinkButtonProps extends React.Props<{}> {
-  to:
-    | H.LocationDescriptor<H.LocationState>
-    | ((
-        location: H.Location<H.LocationState>,
-      ) => H.LocationDescriptor<H.LocationState>);
-  text: string;
-  disabled?: boolean;
-  external?: boolean;
-  color?: PropTypes.Color;
-}
-
-export const CLinkButton = (props: LinkButtonProps) => (
-  <Button
-    variant="contained"
-    to={props.to}
-    target={props.external ? "_blank" : ""}
-    component={Link}
-    color={props.color}
-  >
-    {props.text}
-  </Button>
-);
-
-interface LinkIconProps extends React.Props<void> {
-  to:
-    | H.LocationDescriptor<H.LocationState>
-    | ((
-        location: H.Location<H.LocationState>,
-      ) => H.LocationDescriptor<H.LocationState>);
-  target?: string;
-  size?: "small" | "medium";
-  title?: string;
-}
-export const LinkIcon = (props: LinkIconProps) => (
-  <IconButton
-    component={Link}
-    to={props.to}
-    target={props.target}
-    size={props.size}
-    title={props.title}
-  >
-    {props.children}
-  </IconButton>
-);
+export const CIconButton = (props: CIconButtonProps) => {
+  if (props.onClick) {
+    return (
+      <IconButton title={props.title} onClick={props.onClick}>
+        <CIcon name={props.icon} />
+      </IconButton>
+    );
+  }
+  if (props.to) {
+    return (
+      <IconButton
+        component={Link}
+        to={props.to}
+        target={props.external ? "_blank" : ""}
+        title={props.title}
+      >
+        <CIcon name={props.icon} />
+      </IconButton>
+    );
+  }
+  return <></>;
+};

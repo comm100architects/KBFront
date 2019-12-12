@@ -3,19 +3,19 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import InputLabel from "@material-ui/core/InputLabel";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import { SvgIconProps } from "@material-ui/core/SvgIcon";
+import { CIconName, CIcon } from "./Icons";
+import { CElementProps } from "./base";
 
-export interface CSelectOption {
+export interface CSelectOption extends CElementProps {
   value: string | number;
   text: string;
-  icon?(props: SvgIconProps): JSX.Element;
+  icon?: CIconName;
 }
 
-interface SelectProps {
+interface SelectProps extends CElementProps {
   value: string | number;
   items: CSelectOption[];
   onChange?(value: string | number): void;
-  id?: string;
   label?: string;
 }
 
@@ -34,6 +34,7 @@ export const CSelect = (props: SelectProps) => {
     <>
       {props.label && <InputLabel id={labelId}>{props.label}</InputLabel>}
       <Select
+        id={props.id}
         labelId={labelId}
         value={props.value}
         onChange={
@@ -42,11 +43,11 @@ export const CSelect = (props: SelectProps) => {
             : undefined
         }
       >
-        {props.items.map(({ value, text, icon }) => {
+        {props.items.map(({ id, value, text, icon }) => {
           return (
-            <MenuItem key={value} value={value}>
+            <MenuItem id={id} key={value} value={value}>
               <span className={classes.icon}>
-                {icon && icon({ titleAccess: text, fontSize: "small" })}
+                {icon && <CIcon name={icon} />}
               </span>
               {text}
             </MenuItem>

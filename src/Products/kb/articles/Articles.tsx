@@ -1,16 +1,8 @@
 import * as React from "react";
 import Page from "../../../components/Page";
-import { CLinkButton } from "../../../components/Buttons";
+import { CIconButton, CButton } from "../../../components/Buttons";
+import { CIcon } from "../../../components/Icons";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import IconButton from "@material-ui/core/IconButton";
-import ThumbUpIcon from "@material-ui/icons/ThumbUp";
-import ThumbDownIcon from "@material-ui/icons/ThumbDown";
-import EditIcon from "@material-ui/icons/Edit";
-import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
-import DeleteIcon from "@material-ui/icons/Delete";
-import ViewIcon from "@material-ui/icons/Pageview";
-import StarIcon from "@material-ui/icons/Star";
-import DotIcon from "@material-ui/icons/FiberManualRecord";
 import MenuItem from "@material-ui/core/MenuItem";
 import * as moment from "moment";
 import SearchBox from "../../../components/SearchBox";
@@ -23,7 +15,6 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import Divider from "@material-ui/core/Divider";
-import AddIcon from "@material-ui/icons/Add";
 import { CSelect } from "../../../components/Select";
 import { CTable } from "../../../components/Table";
 import { emptyTableSource } from "../../../components/Table/CTableSource";
@@ -90,14 +81,6 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const ArticleStatusPublishIcon = (props: SvgIconProps) => (
-  <DotIcon {...props} color="primary" titleAccess="Published" />
-);
-
-const ArticleStatusDraftIcon = (props: SvgIconProps) => (
-  <DotIcon {...props} color="secondary" titleAccess="Draft" />
-);
-
 const getCategory = (
   id: string,
   root: CategoryTree,
@@ -122,23 +105,17 @@ const ArticlesTable = ({
       columns={[
         {
           id: "featured",
-          content: (row: Article) => {
-            return (
-              <StarIcon
-                color={row.featured ? "primary" : "action"}
-                fontSize="small"
-                titleAccess="Featured"
-              />
-            );
-          },
+          content: (row: Article) => (
+            <CIcon name={row.featured ? "starPrimary" : "starAction"} />
+          ),
         },
         {
           id: "status",
           content: (row: Article) => {
             if (row.status === ArticleStatus.draft) {
-              return <ArticleStatusDraftIcon color="secondary" />;
+              return <CIcon name="dotSecondary" />;
             }
-            return <ArticleStatusPublishIcon color="primary" />;
+            return <CIcon name="dotPrimary" />;
           },
         },
         { id: "title", header: "Title", sortable: true },
@@ -161,12 +138,12 @@ const ArticlesTable = ({
         },
         {
           id: "helpful",
-          header: <ThumbUpIcon fontSize="small" />,
+          header: <CIcon name="thumbUp" />,
           sortable: true,
         },
         {
           id: "notHelpful",
-          header: <ThumbDownIcon fontSize="small" />,
+          header: <CIcon name="thumbDown" />,
           sortable: true,
         },
         {
@@ -180,17 +157,24 @@ const ArticlesTable = ({
       defaultSort={{ key: "title", asc: true }}
       dataSource={source}
       actions={[
-        {
-          icon: <EditIcon fontSize="small" />,
-          link: row => toPath("edit", withQueryParam("id", row.id)),
-        },
-        { icon: <ViewIcon fontSize="small" />, link: row => row.url },
-        {
-          icon: <DeleteForeverIcon fontSize="small" />,
-          onClick(row: Article) {
+        (row: Article) => ({
+          title: "Edit",
+          to: toPath("edit", withQueryParam("id", row.id)),
+          icon: "edit",
+        }),
+        (row: Article) => ({
+          title: "View",
+          to: row.url,
+          icon: "view",
+          external: true,
+        }),
+        (row: Article) => ({
+          icon: "delete",
+          title: "Delete",
+          onClick() {
             onDelete && onDelete!(row.id);
           },
-        },
+        }),
       ]}
     />
   );
@@ -215,12 +199,12 @@ const StatusSelect = ({
         {
           value: ArticleStatus.published,
           text: "Published",
-          icon: ArticleStatusPublishIcon,
+          icon: "dotPrimary",
         },
         {
           value: ArticleStatus.draft,
           text: "Draft",
-          icon: ArticleStatusDraftIcon,
+          icon: "dotSecondary",
         },
       ]}
     ></CSelect>
@@ -285,11 +269,7 @@ export default (): JSX.Element => {
         <div className={classes.articles}>
           <div className={classes.articlesToolbar}>
             <div>
-              <CLinkButton
-                color="primary"
-                to={toPath("new")}
-                text="New Article"
-              />
+              <CButton primary to={toPath("new")} text="New Article" />
             </div>
             <StatusSelect
               value={filter.status}
@@ -426,15 +406,9 @@ const renderTreeItems = (
       labelIcon={expandedNodes.indexOf(id) === -1 ? FolderIcon : FolderOpenIcon}
       tools={
         <>
-          <IconButton tabIndex={-1} size="small">
-            <AddIcon fontSize="small" />
-          </IconButton>
-          <IconButton tabIndex={-1} size="small">
-            <EditIcon fontSize="small" />
-          </IconButton>
-          <IconButton tabIndex={-1} size="small">
-            <DeleteIcon fontSize="small" />
-          </IconButton>
+          <CIconButton title="Add" icon="add" />
+          <CIconButton title="Edit" icon="edit" />
+          <CIconButton title="Delete" icon="delete" />
         </>
       }
     >

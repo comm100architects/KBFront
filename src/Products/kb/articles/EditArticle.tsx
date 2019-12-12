@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as _ from "lodash";
 import Page from "../../../components/Page";
-import { CLinkButton, CButton } from "../../../components/Buttons";
+import { CButton, CIconButton } from "../../../components/Buttons";
 import { Article } from "./Entity/Article";
 import { Formik, Field, Form, FormikHelpers } from "formik";
 import { TextField } from "formik-material-ui";
@@ -11,8 +11,6 @@ import HtmlEditor from "../../../components/HtmlEditor";
 import ChipInput from "material-ui-chip-input";
 import Chip from "@material-ui/core/Chip";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import IconButton from "@material-ui/core/IconButton";
-import StarIcon from "@material-ui/icons/Star";
 import { useHistory, useLocation } from "react-router";
 import { CSelect, CSelectOption } from "../../../components/Select";
 import * as Query from "query-string";
@@ -176,17 +174,13 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
                   "aria-label": "title",
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton
-                        aria-label="featured"
-                        size="small"
+                      <CIconButton
+                        title="featured"
                         onClick={() =>
                           setFieldValue("featured", !values.featured)
                         }
-                      >
-                        <StarIcon
-                          color={values.featured ? "primary" : "action"}
-                        />
-                      </IconButton>
+                        icon={values.featured ? "starPrimary" : "starAction"}
+                      />
                     </InputAdornment>
                   ),
                 }}
@@ -222,11 +216,8 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
                 text="Save"
                 primary
               />
-              <CLinkButton
-                to={toPath(".", removeQueryParam("id"))}
-                text="Cancel"
-              />
-              <CLinkButton
+              <CButton to={toPath(".", removeQueryParam("id"))} text="Cancel" />
+              <CButton
                 external
                 to="//ent.comm100.com/kb/1000007-25-a459?preview=true&source=edit"
                 text="Preview"

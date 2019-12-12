@@ -1,7 +1,6 @@
 import * as React from "react";
-import { LinkIcon } from "../Buttons";
+import { CIconButton, CIconButtonProps } from "../Buttons";
 import Paper from "@material-ui/core/Paper";
-import IconButton from "@material-ui/core/IconButton";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -12,7 +11,7 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CTablePagination } from "./Pagination";
 import { ITableSource } from "./CTableSource";
 import { Row, Sort } from "./Types";
-import * as H from "history";
+import { CElementProps } from "../base";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,19 +41,9 @@ export interface CTableColumn<T extends Row> {
   sortable?: boolean;
 }
 
-export interface CTableAction<T> {
-  icon: JSX.Element;
-  link?(
-    row: T,
-  ):
-    | H.LocationDescriptor<H.LocationState>
-    | ((
-        location: H.Location<H.LocationState>,
-      ) => H.LocationDescriptor<H.LocationState>);
-  onClick?(row: T): void;
-}
+export type CTableAction<T> = (row: T) => CIconButtonProps;
 
-export interface CTableProps<T> {
+export interface CTableProps<T> extends CElementProps {
   columns: CTableColumn<T>[];
   actions?: CTableAction<T>[];
   dataSource: ITableSource<T>;
@@ -101,7 +90,7 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
   };
 
   return (
-    <div className={classes.root}>
+    <div id={props.id} className={classes.root}>
       <Paper elevation={0} className={classes.paper}>
         <div className={classes.tableWrapper}>
           <Table size="small">
@@ -144,27 +133,9 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                         size="small"
                         className={classes.actions}
                       >
-                        {props.actions?.map((action, i) => {
-                          if (action.link) {
-                            return (
-                              <LinkIcon
-                                key={i}
-                                size="small"
-                                to={action.link!(row)}
-                              >
-                                {action.icon}
-                              </LinkIcon>
-                            );
-                          }
-                          const handleClick = action.onClick
-                            ? () => action.onClick!(row)
-                            : undefined;
-                          return (
-                            <IconButton size="small" onClick={handleClick}>
-                              {action.icon}
-                            </IconButton>
-                          );
-                        })}
+                        {props.actions?.map(action => (
+                          <CIconButton {...action(row)}></CIconButton>
+                        ))}
                       </TableCell>
                     )}
                   </TableRow>
