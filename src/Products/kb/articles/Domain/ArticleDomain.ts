@@ -9,6 +9,7 @@ export interface ArticleFilter {
   status: ArticleStatus;
   categoryId?: string;
   keyword?: string;
+  kbId?: string;
 }
 
 export class ArticleDomain {
@@ -28,6 +29,12 @@ export class ArticleDomain {
 
   getArticles(filter: ArticleFilter): Promise<Article[]> {
     const query = [];
+
+    if (!filter.kbId) {
+      return Promise.resolve([]);
+    }
+
+    query.push({ key: "kbId", value: filter.kbId! });
 
     if (filter.keyword) {
       query.push({ key: "keyword", value: filter.keyword!.toString() });

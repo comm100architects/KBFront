@@ -19,10 +19,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }),
 );
-interface SelectKbProps {
-  onSelect(selectedKb: string): void;
-}
-export const KbSelect = ({ onSelect }: SelectKbProps) => {
+
+export const KbSelect = () => {
   const classes = useStyles({});
   const history = useHistory();
   const location = useLocation();
@@ -38,15 +36,12 @@ export const KbSelect = ({ onSelect }: SelectKbProps) => {
     kbRepo.getList().then(kbs => {
       setKbs(kbs);
       if (!kbs.find(kb => kb.id === kbId)) {
-        onSelect(kbs[0].id);
         goToSearch(history, withQueryParam("kbId", kbs[0].id));
       }
-      onSelect(kbId);
     });
   }, []);
 
   const handleKbChange = (id: string) => {
-    onSelect(id);
     goToSearch(history, withQueryParam("kbId", id));
   };
 

@@ -20,6 +20,12 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.url.indexOf("/dev/entity.json") !== -1) {
+    res.setHeader("content-type", "application/json");
+    writeFile("dev/entity.json", res);
+    return;
+  }
+
   if (req.url.indexOf("favicon") !== -1) {
     writeFile("./favicon.ico", res);
     return;

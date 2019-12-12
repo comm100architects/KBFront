@@ -1,8 +1,9 @@
 import * as React from "react";
+import * as _ from "lodash";
 import Page from "../../../components/Page";
 import { CLinkButton, CButton } from "../../../components/Buttons";
 import { Article } from "./Entity/Article";
-import { Formik, Field, Form } from "formik";
+import { Formik, Field, Form, FormikHelpers } from "formik";
 import { TextField } from "formik-material-ui";
 import FormControl from "@material-ui/core/FormControl";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
@@ -21,11 +22,33 @@ import {
   toPath,
   removeQueryParam,
 } from "../../../framework/locationHelper";
+import {
+  CategoryTree,
+  makeCategoryTree,
+  findRootCategory,
+} from "./Domain/CategoryDomain";
 
-interface DisplayCategory {
+interface CategoryPath {
   id: string;
   path: string;
 }
+
+const buildCategoryPath = (
+  root: CategoryTree,
+  path: string = "",
+): CategoryPath[] => {
+  const p: CategoryPath = {
+    id: root.id,
+    path:
+      path === "/" || root.title === "/"
+        ? path + root.title
+        : `${path}/${root.title}`,
+  };
+  return _.flatten([
+    p,
+    ...root.children.map(tree => buildCategoryPath(tree, p.path)),
+  ]);
+};
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     formRight: {
-      width: 240,
+      minWidth: 200,
       display: "flex",
       flexDirection: "column",
       "& > *": {
@@ -102,31 +125,46 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
   const classes = useStyles();
   const { categoryDomain } = React.useContext(DomainContext)!;
 
+  const location = useLocation();
   const [categories, setCategories] = React.useState([] as CSelectOption[]);
   React.useEffect(() => {
-    categoryDomain.getCategories().then(categories => {
-      setCategories(categories.map(c => ({ value: c.id, text: c.title })));
+    const kbId = Query.parse(location.search).kbId as string;
+    categoryDomain.getCategories(kbId).then(categories => {
+      const tree = makeCategoryTree(categories, findRootCategory(categories));
+      setCategories(
+        buildCategoryPath(tree).map(({ id, path }) => ({
+          value: id,
+          text: path,
+        })),
+      );
     });
-  }, [categoryDomain]);
+  }, [location.search]);
+
+  const handleSubmit = async (
+    values: Article,
+    { setSubmitting }: FormikHelpers<Article>,
+  ) => {
+    await props.onSave(values);
+    setSubmitting(false);
+  };
+
+  const handleValidation = (values: Article) => {
+    const errors: Partial<Values> = {};
+    if (!values.title) {
+      errors.title = "Required";
+    }
+    if (!values.url) {
+      errors.url = "Required";
+    }
+    return errors;
+  };
 
   return (
     <Page title={props.title}>
       <Formik
         initialValues={props.article}
-        validate={values => {
-          const errors: Partial<Values> = {};
-          if (!values.title) {
-            errors.title = "Required";
-          }
-          if (!values.url) {
-            errors.url = "Required";
-          }
-          return errors;
-        }}
-        onSubmit={async (values, { setSubmitting }) => {
-          await props.onSave(values);
-          setSubmitting(false);
-        }}
+        validate={handleValidation}
+        onSubmit={handleSubmit}
         render={({ submitForm, isSubmitting, setFieldValue, values }) => (
           <Form className={classes.form}>
             <div className={classes.formLeft}>
@@ -194,11 +232,22 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
                 text="Preview"
               />
               <FormControl>
-                <CSelect value={values.categoryId} items={categories} />
+                <CSelect
+                  id="editArticle-category"
+                  label="Category"
+                  onChange={categoryId =>
+                    setFieldValue("categoryId", categoryId)
+                  }
+                  value={values.categoryId}
+                  items={categories}
+                />
               </FormControl>
               <FormControl>
                 <CSelect
+                  id="editArticle-status"
+                  label="Status"
                   value={values.status}
+                  onChange={status => setFieldValue("status", status)}
                   items={[
                     {
                       value: 1,

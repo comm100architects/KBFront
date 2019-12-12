@@ -17,7 +17,7 @@ export interface QueryItem {
 export class RESTfulRepository<Entity> implements IRepository<Entity> {
   endPoint: string;
   constructor(host: string, entityName: string) {
-    this.endPoint = `//${host}/api/v2/${entityName}`;
+    this.endPoint = `//${host}/${entityName}`;
   }
 
   add(obj: Entity): Promise<Entity> {

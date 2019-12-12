@@ -1,12 +1,15 @@
+import axios from "axios";
+
 export const fetchJson = async (
-  path: string,
+  url: string,
   method: "GET" | "DELETE" | "POST" | "PUT",
   body?: any,
 ): Promise<any> => {
-  const resp = await fetch(path, {
+  const resp = await axios({
+    url,
     method,
-    body: JSON.stringify(body),
-    headers: [["Content-Type", "application/json"]],
+    responseType: "json",
+    data: body,
   });
-  return await resp.json();
+  return resp.data;
 };

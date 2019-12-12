@@ -229,12 +229,18 @@ const StatusSelect = ({
 
 export default (): JSX.Element => {
   const history = useHistory();
-  const keyword = Query.parse(history.location.search).keyword as string;
+  const query = Query.parse(history.location.search);
+  const keyword = query.keyword as string | undefined;
+  const kbId = query.kbId as string | undefined;
   const [filter, setFilter] = React.useState({
     status: ArticleStatus.all,
     keyword,
+    kbId,
   } as ArticleFilter);
-  React.useEffect(() => setFilter({ ...filter, keyword }), [keyword]);
+  React.useEffect(() => setFilter({ ...filter, keyword, kbId }), [
+    keyword,
+    kbId,
+  ]);
 
   const { articleDomain, categoryDomain } = React.useContext(DomainContext)!;
   const [articles, setArticles] = React.useState(
@@ -242,17 +248,17 @@ export default (): JSX.Element => {
   );
   React.useEffect(() => {
     setArticles(articleDomain.tableSource(filter));
-  }, [filter, articleDomain]);
+  }, [filter]);
 
   const [categoryTree, setCategoryTree] = React.useState(
     undefined as CategoryTree | undefined,
   );
   React.useEffect(() => {
-    categoryDomain.getCategories().then(categories => {
+    categoryDomain.getCategories(filter.kbId).then(categories => {
       const tree = makeCategoryTree(categories, findRootCategory(categories));
       setCategoryTree(tree);
     });
-  }, [categoryDomain]);
+  }, [filter.kbId]);
 
   const handleSearchKeyword = (q: string) => {
     const keyword = q || undefined;

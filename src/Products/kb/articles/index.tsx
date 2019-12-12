@@ -4,15 +4,13 @@ import AllArticles from "./Articles";
 import NewArticle from "./NewArticle";
 import { EditArticle } from "./EditArticle";
 import { KbSelect } from "./KbSelect";
-import { DomainContext, Domains, createDomains } from "./context";
+import { DomainContext, createDomains } from "./context";
 
 const ArticlePage = ({ children }: { children: JSX.Element }) => {
-  const [domains, setDomains] = React.useState(
-    undefined as Domains | undefined,
-  );
+  const [domains] = React.useState(() => createDomains());
   return (
     <div style={{ position: "relative" }}>
-      <KbSelect onSelect={kbId => setDomains(createDomains(kbId))} />
+      <KbSelect />
       <DomainContext.Provider value={domains}>
         {domains && children}
       </DomainContext.Provider>

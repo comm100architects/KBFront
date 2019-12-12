@@ -15,17 +15,17 @@ export const DomainContext = React.createContext(
 
 const host = "localhost:3000";
 
-const newArticleDomain = (kbId: string) => {
-  const repo = new RESTfulRepository<Article>(host, `/kb/${kbId}/articles`);
+const newArticleDomain = () => {
+  const repo = new RESTfulRepository<Article>(host, `articles`);
   return new ArticleDomain(repo);
 };
 
-const newCategoryDomain = (kbId: string) => {
-  const repo = new RESTfulRepository<Category>(host, `/kb/${kbId}/categories`);
+const newCategoryDomain = () => {
+  const repo = new RESTfulRepository<Category>(host, `categories`);
   return new CategoryDomain(repo);
 };
 
-export const createDomains = (kbId: string) => ({
-  articleDomain: newArticleDomain(kbId),
-  categoryDomain: newCategoryDomain(kbId),
+export const createDomains = () => ({
+  articleDomain: newArticleDomain(),
+  categoryDomain: newCategoryDomain(),
 });

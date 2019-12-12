@@ -37,8 +37,12 @@ export class CategoryDomain {
     return this.categoryRepository.update(category.id, category);
   }
 
-  getCategories(): Promise<Category[]> {
-    return this.categoryRepository.getList();
+  getCategories(kbId?: string): Promise<Category[]> {
+    if (!kbId) {
+      return Promise.resolve([]);
+    }
+
+    return this.categoryRepository.getList([{ key: "kbId", value: kbId }]);
   }
 
   deleteCategory(id: string): Promise<void> {
