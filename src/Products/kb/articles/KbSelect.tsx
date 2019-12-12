@@ -39,8 +39,8 @@ export const KbSelect = () => {
     });
   }, []);
 
-  const handleKbChange = (id: string) => {
-    goToSearch(history, withQueryParam("kbId", id));
+  const handleKbChange = (event: React.ChangeEvent<{ value: string }>) => {
+    goToSearch(history, withQueryParam("kbId", event.target.value));
   };
 
   return (

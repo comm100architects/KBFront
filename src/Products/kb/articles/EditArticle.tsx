@@ -4,7 +4,6 @@ import Page from "../../../components/Page";
 import { CButton, CIconButton } from "../../../components/Buttons";
 import { Article } from "./Entity/Article";
 import { Formik, Field, Form, FormikHelpers } from "formik";
-import { TextField } from "formik-material-ui";
 import FormControl from "@material-ui/core/FormControl";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import HtmlEditor from "../../../components/HtmlEditor";
@@ -13,6 +12,7 @@ import Chip from "@material-ui/core/Chip";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import { useHistory, useLocation } from "react-router";
 import { CSelect, CSelectOption } from "../../../components/Select";
+import { CInput } from "../../../components/Input";
 import * as Query from "query-string";
 import { DomainContext } from "./context";
 import {
@@ -53,6 +53,10 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     form: {
       display: "flex",
+      flexDirection: "column",
+      "& > *": {
+        marginTop: theme.spacing(2),
+      },
     },
     formLeft: {
       flexGrow: 1,
@@ -164,53 +168,57 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
         initialValues={props.article}
         validate={handleValidation}
         onSubmit={handleSubmit}
-        render={({ submitForm, isSubmitting, setFieldValue, values }) => (
+        render={({
+          submitForm,
+          isSubmitting,
+          setFieldValue,
+          values,
+          errors,
+        }) => (
           <Form className={classes.form}>
-            <div className={classes.formLeft}>
+            <FormControl required error={!!errors.title}>
               <Field
+                id="articleTitle"
+                as={CInput}
                 name="title"
                 type="text"
-                label="Title"
-                InputProps={{
-                  "aria-label": "title",
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <CIconButton
-                        title="featured"
-                        onClick={() =>
-                          setFieldValue("featured", !values.featured)
-                        }
-                        icon={values.featured ? "starPrimary" : "starAction"}
-                      />
-                    </InputAdornment>
-                  ),
-                }}
-                component={TextField}
+                label={errors.title || "Title"}
                 autoFocus
               />
+            </FormControl>
+            <FormControl required error={!!errors.url}>
               <Field
+                id="articleUrl"
                 name="url"
                 type="url"
-                label="URL"
-                component={TextField}
-                InputProps={{
-                  "aria-label": "title",
-                  startAdornment: (
-                    <Chip
-                      className={classes.urlPrefix}
-                      label="https://mycompany.comm100.io/kb/"
-                    />
-                  ),
-                }}
+                label={errors.url || "URL"}
+                as={CInput}
               />
-              <FormControl>
-                <HtmlEditor
-                  value={values.content}
-                  onChange={html => setFieldValue("content", html)}
-                />
-              </FormControl>
-            </div>
-            <div className={classes.formRight}>
+            </FormControl>
+            <FormControl>
+              <Field as={HtmlEditor} name="content" />
+            </FormControl>
+            <FormControl required>
+              <Field
+                as={CSelect}
+                id="editArticle-category"
+                label="Category"
+                name="categoryId"
+                items={categories}
+              />
+            </FormControl>
+            <FormControl required>
+              <Field as={StatusSelect} name="status" />
+            </FormControl>
+            <FormControl>
+              <ChipInput
+                label="Tags"
+                defaultValue={values.tags}
+                newChipKeyCodes={[32]}
+                onChange={chips => setFieldValue("tags", chips)}
+              />
+            </FormControl>
+            <div>
               <CButton
                 disabled={isSubmitting}
                 onClick={submitForm}
@@ -218,36 +226,6 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
                 primary
               />
               <CButton to={toPath(".", removeQueryParam("id"))} text="Cancel" />
-              <CButton
-                external
-                to="//ent.comm100.com/kb/1000007-25-a459?preview=true&source=edit"
-                text="Preview"
-              />
-              <FormControl>
-                <CSelect
-                  id="editArticle-category"
-                  label="Category"
-                  onChange={categoryId =>
-                    setFieldValue("categoryId", categoryId)
-                  }
-                  value={values.categoryId}
-                  items={categories}
-                />
-              </FormControl>
-              <FormControl>
-                <StatusSelect
-                  value={values.status}
-                  onChange={status => setFieldValue("status", status)}
-                />
-              </FormControl>
-              <FormControl>
-                <ChipInput
-                  label="Tags"
-                  defaultValue={values.tags}
-                  newChipKeyCodes={[32]}
-                  onChange={chips => setFieldValue("tags", chips)}
-                />
-              </FormControl>
             </div>
           </Form>
         )}

@@ -5,6 +5,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CIconName, CIcon } from "./Icons";
 import { CElementProps } from "./base";
+import { FieldInputProps } from "formik";
 
 export interface CSelectOption extends CElementProps {
   value?: string | number;
@@ -12,10 +13,10 @@ export interface CSelectOption extends CElementProps {
   icon?: CIconName;
 }
 
-interface SelectProps extends CElementProps {
-  value?: string | number;
+export interface CSelectProps
+  extends CElementProps,
+    Partial<FieldInputProps<string | number | undefined>> {
   items: CSelectOption[];
-  onChange?(value?: string | number): void;
   label?: string;
 }
 
@@ -34,7 +35,7 @@ const useStyle = makeStyles((theme: Theme) =>
   }),
 );
 
-export const CSelect = (props: SelectProps) => {
+export const CSelect = (props: CSelectProps) => {
   const classes = useStyle();
   const labelId = props.id ? `${props.id}-label` : undefined;
   return (
@@ -44,11 +45,9 @@ export const CSelect = (props: SelectProps) => {
         id={props.id}
         labelId={labelId}
         value={props.value}
-        onChange={
-          props.onChange
-            ? event => props.onChange!(event.target.value as string | number)
-            : undefined
-        }
+        name={props.name}
+        onChange={props.onChange}
+        onBlur={props.onBlur}
         className={classes.root}
       >
         {props.items.map(({ id, value, text, icon }) => {

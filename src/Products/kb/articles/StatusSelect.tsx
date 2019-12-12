@@ -1,32 +1,13 @@
 import * as React from "react";
-import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { ArticleStatus } from "./Entity/Article";
-import { CSelect } from "../../../components/Select";
-import FormControl from "@material-ui/core/FormControl";
+import { CSelect, CSelectProps } from "../../../components/Select";
 
-const useStyles = makeStyles((_: Theme) =>
-  createStyles({
-    statusSelect: {
-      width: 150,
-      minWidth: 150,
-    },
-  }),
-);
-
-export const StatusSelect = ({
-  value,
-  onChange,
-}: {
-  value?: ArticleStatus;
-  onChange: (status: ArticleStatus) => void;
-}) => {
-  const classes = useStyles();
+export const StatusSelect = (props: Partial<CSelectProps>) => {
   return (
     <CSelect
+      {...props}
       id="article-status"
       label="Status"
-      value={value}
-      onChange={onChange}
       items={[
         {
           text: "All Status",

@@ -246,7 +246,9 @@ export default (): JSX.Element => {
             <FormControl className={classes.statusSelect}>
               <StatusSelect
                 value={filter.status}
-                onChange={status => setFilter({ ...filter, status })}
+                onChange={(
+                  event: React.ChangeEvent<{ value: ArticleStatus }>,
+                ) => setFilter({ ...filter, status: event.target.value })}
               />
             </FormControl>
             <SearchBox

@@ -30,11 +30,9 @@ import InsertPhotoIcon from "@material-ui/icons/InsertPhoto";
 import InsertLinkIcon from "@material-ui/icons/InsertLink";
 import GridOnIcon from "@material-ui/icons/GridOn";
 import LinkTool from "./LinkTool";
+import { FieldInputProps } from "formik";
 
-interface HtmlEditorProps {
-  value: string;
-  onChange(html: string): void;
-}
+interface HtmlEditorProps extends FieldInputProps<string> {}
 
 const StyledToggleButtonGroup = withStyles(theme => ({
   grouped: {
@@ -227,7 +225,7 @@ const Tools = () => {
 };
 
 export default (props: HtmlEditorProps): JSX.Element => {
-  const classes = useStyles({});
+  const classes = useStyles();
   const [editorState, setEditorState] = React.useState(
     EditorState.createWithContent(convertFromHTML({})(props.value)),
   );
@@ -243,7 +241,11 @@ export default (props: HtmlEditorProps): JSX.Element => {
     <Paper elevation={0} className={classes.editorRoot}>
       <Tools />
       <div className={classes.editorBody}>
-        <Editor editorState={editorState} onChange={handleChange} />
+        <Editor
+          editorState={editorState}
+          onChange={handleChange}
+          onBlur={props.onBlur}
+        />
       </div>
     </Paper>
   );
