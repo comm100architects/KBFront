@@ -13,9 +13,9 @@ export interface CSelectOption extends CElementProps {
 }
 
 interface SelectProps extends CElementProps {
-  value: string | number;
+  value?: string | number;
   items: CSelectOption[];
-  onChange?(value: string | number): void;
+  onChange?(value?: string | number): void;
   label?: string;
 }
 

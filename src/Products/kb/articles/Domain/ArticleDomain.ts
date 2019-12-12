@@ -6,7 +6,7 @@ import {
 import { IRepository } from "../../../../framework/repository";
 
 export interface ArticleFilter {
-  status: ArticleStatus;
+  status?: ArticleStatus;
   categoryId?: string;
   keyword?: string;
   kbId?: string;
@@ -44,8 +44,8 @@ export class ArticleDomain {
       query.push({ key: "categoryId", value: filter.categoryId! as string });
     }
 
-    if (filter.status !== ArticleStatus.all) {
-      query.push({ key: "status", value: filter.status.toString() });
+    if (filter.status != null) {
+      query.push({ key: "status", value: filter.status!.toString() });
     }
 
     return this.articleRepository.getList(query);

@@ -1,5 +1,4 @@
 export enum ArticleStatus {
-  all = -1,
   draft = 0,
   published = 1,
 }

@@ -123,18 +123,17 @@ const ArticlesTable = ({
           id: "category",
           header: "Category",
           sortable: true,
-          content: (row: Article) => {
+          content: row => {
             if (category) {
               return getCategory(row.categoryId, category!)?.title || "";
             }
-            return "";
           },
         },
         {
           id: "tags",
           header: "Tag",
           sortable: true,
-          content: (row: Article) => row.tags.toString(),
+          content: row => row.tags.toString(),
         },
         {
           id: "helpful",
@@ -184,18 +183,16 @@ const StatusSelect = ({
   value,
   onChange,
 }: {
-  value: ArticleStatus;
+  value?: ArticleStatus;
   onChange: (status: ArticleStatus) => void;
 }) => {
   return (
     <CSelect
+      id="article-status"
+      label="Status"
       value={value}
       onChange={onChange}
       items={[
-        {
-          value: ArticleStatus.all,
-          text: "All Status",
-        },
         {
           value: ArticleStatus.published,
           text: "Published",
@@ -217,7 +214,6 @@ export default (): JSX.Element => {
   const keyword = query.keyword as string | undefined;
   const kbId = query.kbId as string | undefined;
   const [filter, setFilter] = React.useState({
-    status: ArticleStatus.all,
     keyword,
     kbId,
   } as ArticleFilter);

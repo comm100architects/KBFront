@@ -6,6 +6,7 @@ import { useHistory, useLocation } from "react-router";
 import * as Query from "query-string";
 import { Kb } from "./Entity/Kb";
 import { goToSearch, withQueryParam } from "../../../framework/locationHelper";
+import FormControl from "@material-ui/core/FormControl";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -13,9 +14,6 @@ const useStyles = makeStyles((theme: Theme) =>
       position: "absolute",
       right: 56,
       top: 35,
-      "& > label": {
-        marginRight: theme.spacing(1),
-      },
     },
   }),
 );
@@ -49,12 +47,15 @@ export const KbSelect = () => {
     <>
       {kbId && (
         <div className={classes.kbs}>
-          <label>Knowlegbase:</label>
-          <CSelect
-            value={kbId}
-            items={kbs.map(({ id, title }) => ({ value: id, text: title }))}
-            onChange={handleKbChange}
-          />
+          <FormControl>
+            <CSelect
+              id="kbSelect"
+              label="Knowlegbase:"
+              value={kbId}
+              items={kbs.map(({ id, title }) => ({ value: id, text: title }))}
+              onChange={handleKbChange}
+            />
+          </FormControl>
         </div>
       )}
     </>
