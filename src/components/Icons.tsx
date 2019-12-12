@@ -11,19 +11,19 @@ import { memoize } from "lodash";
 import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import ThumbDownIcon from "@material-ui/icons/ThumbDown";
 
-const allIcons: { [id: string]: () => JSX.Element } = {
+const allIcons: { [id: string]: (props: any) => JSX.Element } = {
   starPrimary: () => <StarIcon color="primary" />,
   starAction: () => <StarIcon color="action" />,
   dotPrimary: () => <DotIcon color="primary" />,
   dotSecondary: () => <DotIcon color="secondary" />,
-  send: () => <SendIcon />,
-  inbox: () => <InboxIcon />,
-  edit: () => <EditIcon />,
-  delete: () => <DeleteForeverIcon />,
-  view: () => <ViewIcon />,
-  add: () => <AddIcon />,
-  thumbUp: () => <ThumbUpIcon />,
-  thumbDown: () => <ThumbDownIcon />,
+  send: SendIcon,
+  inbox: InboxIcon,
+  edit: EditIcon,
+  delete: DeleteForeverIcon,
+  view: ViewIcon,
+  add: AddIcon,
+  thumbUp: ThumbUpIcon,
+  thumbDown: ThumbDownIcon,
 };
 
 export type CIconName =
@@ -40,7 +40,12 @@ export type CIconName =
   | "thumbUp"
   | "thumbDown";
 
-const getIcon = memoize((name: string): JSX.Element => allIcons[name]());
+const getIcon = memoize(
+  (name: string): JSX.Element => {
+    const Icon = allIcons[name];
+    return <Icon />;
+  },
+);
 
 export const CIcon = ({ name }: { name: CIconName }): JSX.Element => {
   return getIcon(name);

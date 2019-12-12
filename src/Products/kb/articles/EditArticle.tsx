@@ -25,6 +25,7 @@ import {
   makeCategoryTree,
   findRootCategory,
 } from "./Domain/CategoryDomain";
+import { StatusSelect } from "./StatusSelect";
 
 interface CategoryPath {
   id: string;
@@ -234,21 +235,9 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
                 />
               </FormControl>
               <FormControl>
-                <CSelect
-                  id="editArticle-status"
-                  label="Status"
+                <StatusSelect
                   value={values.status}
                   onChange={status => setFieldValue("status", status)}
-                  items={[
-                    {
-                      value: 1,
-                      text: "Published",
-                    },
-                    {
-                      value: 0,
-                      text: "Draft",
-                    },
-                  ]}
                 />
               </FormControl>
               <FormControl>

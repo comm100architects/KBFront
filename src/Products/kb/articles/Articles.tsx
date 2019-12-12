@@ -15,7 +15,6 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import Divider from "@material-ui/core/Divider";
-import { CSelect } from "../../../components/Select";
 import { CTable } from "../../../components/Table";
 import { emptyTableSource } from "../../../components/Table/CTableSource";
 import { Article, ArticleStatus } from "./Entity/Article";
@@ -35,6 +34,7 @@ import { useHistory } from "react-router";
 import * as Query from "query-string";
 import { ITableSource } from "../../../components/Table/CTableSource";
 import FormControl from "@material-ui/core/FormControl";
+import { StatusSelect } from "./StatusSelect";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -181,38 +181,6 @@ const ArticlesTable = ({
         }),
       ]}
     />
-  );
-};
-
-const StatusSelect = ({
-  value,
-  onChange,
-}: {
-  value?: ArticleStatus;
-  onChange: (status: ArticleStatus) => void;
-}) => {
-  return (
-    <CSelect
-      id="article-status"
-      label="Status"
-      value={value}
-      onChange={onChange}
-      items={[
-        {
-          text: "All Status",
-        },
-        {
-          value: ArticleStatus.published,
-          text: "Published",
-          icon: "dotPrimary",
-        },
-        {
-          value: ArticleStatus.draft,
-          text: "Draft",
-          icon: "dotSecondary",
-        },
-      ]}
-    ></CSelect>
   );
 };
 
