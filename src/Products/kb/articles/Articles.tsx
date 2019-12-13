@@ -157,29 +157,33 @@ const ArticlesTable = ({
           content: (row: Article) =>
             moment(row.modifiedTime as Date).format("lll"),
         },
+        {
+          id: "actions",
+          header: "Actions",
+          sortable: false,
+          content: (row: Article) => {
+            return (
+              <>
+                <CIconButton
+                  title="Edit"
+                  icon="edit"
+                  to={toPath("edit", withQueryParam("id", row.id))}
+                />
+                <CIconButton title="View" icon="view" to={row.url} external />
+                <CIconButton
+                  title="Delete"
+                  icon="delete"
+                  onClick={() => {
+                    onDelete && onDelete!(row.id);
+                  }}
+                />
+              </>
+            );
+          },
+        },
       ]}
       defaultSort={{ key: "title", asc: true }}
       dataSource={source}
-      actions={[
-        (row: Article) => ({
-          title: "Edit",
-          to: toPath("edit", withQueryParam("id", row.id)),
-          icon: "edit",
-        }),
-        (row: Article) => ({
-          title: "View",
-          to: row.url,
-          icon: "view",
-          external: true,
-        }),
-        (row: Article) => ({
-          icon: "delete",
-          title: "Delete",
-          onClick() {
-            onDelete && onDelete!(row.id);
-          },
-        }),
-      ]}
     />
   );
 };

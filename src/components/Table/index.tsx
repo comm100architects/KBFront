@@ -1,5 +1,5 @@
 import * as React from "react";
-import { CIconButton, CIconButtonProps } from "../Buttons";
+import { CIconButtonProps } from "../Buttons";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -15,7 +15,6 @@ import { CElementProps } from "../base";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    actions: { whiteSpace: "nowrap" },
     iconCell: {
       width: 25,
     },
@@ -45,7 +44,6 @@ export type CTableAction<T> = (row: T) => CIconButtonProps;
 
 export interface CTableProps<T> extends CElementProps {
   columns: CTableColumn<T>[];
-  actions?: CTableAction<T>[];
   dataSource: ITableSource<T>;
   pagination?: boolean;
   defaultSort?: Sort<T>;
@@ -110,9 +108,6 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                     )}
                   </TableCell>
                 ))}
-                <TableCell key="actions" align="center" size="small">
-                  Actions
-                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -126,18 +121,6 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                         </TableCell>
                       );
                     })}
-                    {props.actions && (
-                      <TableCell
-                        key="actions"
-                        align="center"
-                        size="small"
-                        className={classes.actions}
-                      >
-                        {props.actions?.map(action => (
-                          <CIconButton {...action(row)}></CIconButton>
-                        ))}
-                      </TableCell>
-                    )}
                   </TableRow>
                 );
               })}
