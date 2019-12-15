@@ -15,6 +15,12 @@ import { CSelect, CSelectProps } from "./Select";
 import { fetchJson } from "../framework/network";
 import { withLazyProps } from "../framework/hoc";
 
+export const RepositoryMapContext = React.createContext(
+  {} as { [name: string]: IRepository<Entity> },
+);
+
+export type RepositoryMap = { [name: string]: IRepository<Entity> };
+
 export type Entity = { id: string; [key: string]: any };
 
 export interface EntityInfo {
@@ -22,8 +28,6 @@ export interface EntityInfo {
   source: string | Entity | Entity[];
   repository?: IRepository<Entity>;
 }
-
-export type EntityInfoMap = { [name: string]: EntityInfo };
 
 export interface RawControl {
   control: "form" | "input" | "radioGroup" | "checkbox" | "select";
@@ -66,16 +70,14 @@ export interface RawPage {
   ui: RawControl;
 }
 
-const makeForm = (
-  entities: EntityInfoMap,
-  { dataSource, children }: RawForm,
-): React.ComponentType => {
-  const repo = entities[dataSource].repository!;
+const makeForm = ({ dataSource, children }: RawForm): React.ComponentType => {
   return () => {
+    const repositories = React.useContext(RepositoryMapContext);
+    const repo = repositories[dataSource];
     const fields = children.map(child => ({
       title: child.title,
       required: child.required,
-      as: makeFormControl(entities, child),
+      as: makeFormControl(repositories, child),
       name: child.name,
     }));
     const handleSave = async (values: Entity) => {
@@ -104,12 +106,12 @@ const makeInput = ({
 };
 
 const makeRadioGroup = (
-  entities: EntityInfoMap,
+  repositories: RepositoryMap,
   { title, dataSource }: RawRadioGroup,
 ): React.ComponentType<CRadioGroupProps> =>
   withLazyProps(
     CRadioGroup,
-    entities[dataSource].repository!.getList().then(options => ({
+    repositories[dataSource].getList().then(options => ({
       options: options.map(({ id, label }) => ({
         value: id,
         text: label,
@@ -119,12 +121,12 @@ const makeRadioGroup = (
   );
 
 const makeSelect = (
-  entities: EntityInfoMap,
+  repositories: RepositoryMap,
   { title, dataSource }: RawSelect,
 ): React.ComponentType<CSelectProps> =>
   withLazyProps(
     CSelect,
-    entities[dataSource].repository!.getList().then(options => ({
+    repositories[dataSource].getList().then(options => ({
       options: options.map(({ id, label, icon }) => ({
         value: id,
         text: label,
@@ -144,28 +146,28 @@ const makeCheckbox = ({
 };
 
 const makeFormControl = (
-  entities: EntityInfoMap,
+  repositories: RepositoryMap,
   ctrl: RawControl,
 ): React.ComponentType<any> => {
   switch (ctrl.control) {
     case "input":
       return makeInput(ctrl as RawInput);
     case "radioGroup":
-      return makeRadioGroup(entities, ctrl as RawRadioGroup);
+      return makeRadioGroup(repositories, ctrl as RawRadioGroup);
     case "checkbox":
       return makeCheckbox(ctrl as RawCheckbox);
     case "select":
-      return makeSelect(entities, ctrl as RawSelect);
+      return makeSelect(repositories, ctrl as RawSelect);
     default:
       return () => <></>;
   }
 };
 
-const createEntityRepository = (entities: EntityInfo[]): EntityInfoMap => {
+const toRepositoryMap = (entities: EntityInfo[]): RepositoryMap => {
   const list = entities.map(info => {
     if (typeof info.source === "string") {
       return {
-        ...info,
+        name: info.name,
         repository: new RESTfulRepository(
           info.source,
           info.name,
@@ -174,47 +176,51 @@ const createEntityRepository = (entities: EntityInfo[]): EntityInfoMap => {
     }
     if (_.isArray(info.source)) {
       return {
-        ...info,
+        name: info.name,
         repository: new ReadonlyLocalRepository(
           info.source as Entity[],
         ) as IRepository<Entity>,
       };
     }
     return {
-      ...info,
+      name: info.name,
       repository: new ReadonlyLocalRepository([
         info.source as Entity,
       ]) as IRepository<Entity>,
     };
   });
 
-  return list.reduce((res: EntityInfoMap, info: EntityInfo) => {
-    res[info.name] = info;
+  return list.reduce((res, { name, repository }) => {
+    res[name] = repository;
     return res;
-  }, {});
+  }, {} as RepositoryMap);
 };
 
 const PageComponent = ({
-  entities,
+  repositories,
   ctrl,
   title,
 }: {
-  entities: EntityInfoMap;
+  repositories: RepositoryMap;
   ctrl: RawControl;
   title: string;
 }) => {
   let component: React.ComponentType = () => <></>;
   if (ctrl.control === "form") {
-    component = makeForm(entities, ctrl as RawForm);
+    component = makeForm(ctrl as RawForm);
   }
-  return <CPage title={title}>{React.createElement(component)}</CPage>;
+  return (
+    <RepositoryMapContext.Provider value={repositories}>
+      <CPage title={title}>{React.createElement(component)}</CPage>
+    </RepositoryMapContext.Provider>
+  );
 };
 
 export const makePageComponent = (configUrl: string): React.ComponentType =>
   withLazyProps(
     PageComponent,
     fetchJson(configUrl, "GET").then(({ entities, ui, title }) => ({
-      entities: createEntityRepository(entities),
+      repositories: toRepositoryMap(entities),
       ctrl: ui,
       title,
     })),

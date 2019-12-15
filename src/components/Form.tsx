@@ -97,7 +97,7 @@ export function CForm<Values>(props: CFormProps<Values>) {
               id={props.id}
               variant="contained"
               color="default"
-              disabled={!dirty}
+              disabled={!dirty || isSubmitting}
             >
               Discard
             </Button>

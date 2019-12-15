@@ -28,6 +28,15 @@ const words = n => () =>
     .map(() => chance.word())
     .join(" ");
 
+const repeat = (n, fn) =>
+  range(n)
+    .map(fn)
+    .join("");
+
+const articleContent = () =>
+  `<h1>${words(3)()}</h1>` +
+  repeat(3, () => `<h3>${chance.sentence()}</h3><p>${chance.paragraph()}</p>`);
+
 const generate = sc => {
   if (Array.isArray(sc)) {
     const [count, subsc] = sc;
@@ -103,7 +112,7 @@ const data = range(10)
             kbId: () => kb.id,
             categoryId: referenceCategoryId,
             title: chance.sentence,
-            content: chance.paragraph,
+            content: articleContent,
             url: chance.url,
             helpful: int(20, 50),
             notHelpful: int(20, 50),
