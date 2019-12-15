@@ -1,4 +1,5 @@
 {
+  "title": "Setting",
   "entities": [
     {
       "name": "knowledgeBases",
@@ -21,7 +22,6 @@
   ],
   "ui": {
     "control": "form",
-    "title": "Settings",
     "dataSource": "knowledgeBases",
     "children": [
       {

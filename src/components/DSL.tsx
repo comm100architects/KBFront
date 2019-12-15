@@ -8,7 +8,7 @@ import {
   RESTfulRepository,
 } from "../framework/repository";
 import { FieldInputProps } from "formik";
-import Page from "./Page";
+import CPage from "./Page";
 import { CRadioGroup, CRadioGroupProps } from "./RadioGroup";
 import { CCheckbox } from "./Checkbox";
 import { CSelect, CSelectProps } from "./Select";
@@ -56,19 +56,19 @@ export interface RawFormControl extends RawControl {
 }
 
 export interface RawForm extends RawControl {
-  title: string;
   children: RawFormControl[];
   dataSource: string;
 }
 
 export interface RawPage {
+  title: string;
   entities: EntityInfo[];
   ui: RawControl;
 }
 
 const makeForm = (
   entities: EntityInfoMap,
-  { dataSource, children, title }: RawForm,
+  { dataSource, children }: RawForm,
 ): React.ComponentType => {
   const repo = entities[dataSource].repository!;
   return () => {
@@ -87,11 +87,11 @@ const makeForm = (
       repo.get().then(setValues);
     }, []);
     return (
-      <Page title={title}>
+      <>
         {values && (
           <CForm initialValues={values!} fields={fields} onSave={handleSave} />
         )}
-      </Page>
+      </>
     );
   };
 };
@@ -161,16 +161,6 @@ const makeFormControl = (
   }
 };
 
-const makeComponent = (
-  entities: EntityInfoMap,
-  ctrl: RawControl,
-): React.ComponentType => {
-  if (ctrl.control === "form") {
-    return makeForm(entities, ctrl as RawForm);
-  }
-  return () => <></>;
-};
-
 const createEntityRepository = (entities: EntityInfo[]): EntityInfoMap => {
   const list = entities.map(info => {
     if (typeof info.source === "string") {
@@ -204,19 +194,28 @@ const createEntityRepository = (entities: EntityInfo[]): EntityInfoMap => {
   }, {});
 };
 
-const RootComponent = ({
+const PageComponent = ({
   entities,
-  ui,
+  ctrl,
+  title,
 }: {
   entities: EntityInfoMap;
-  ui: RawControl;
-}) => React.createElement(makeComponent(entities, ui));
+  ctrl: RawControl;
+  title: string;
+}) => {
+  let component: React.ComponentType = () => <></>;
+  if (ctrl.control === "form") {
+    component = makeForm(entities, ctrl as RawForm);
+  }
+  return <CPage title={title}>{React.createElement(component)}</CPage>;
+};
 
 export const makePageComponent = (configUrl: string): React.ComponentType =>
   withLazyProps(
-    RootComponent,
-    fetchJson(configUrl, "GET").then(({ entities, ui }) => ({
+    PageComponent,
+    fetchJson(configUrl, "GET").then(({ entities, ui, title }) => ({
       entities: createEntityRepository(entities),
-      ui,
+      ctrl: ui,
+      title,
     })),
   ) as React.ComponentType;

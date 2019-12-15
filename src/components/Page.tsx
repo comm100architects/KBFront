@@ -18,12 +18,12 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-interface PageProps extends React.Props<{}> {
+interface CPageProps extends React.Props<{}> {
   title: string;
   documentTitle?: string;
 }
 
-export default (props: PageProps): JSX.Element => {
+export default (props: CPageProps): JSX.Element => {
   const classes = useStyles({});
   const { currentApp } = React.useContext(GlobalContext);
   React.useEffect(() => {
