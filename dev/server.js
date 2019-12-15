@@ -20,9 +20,9 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (req.url.indexOf("/dev/entity.json") !== -1) {
+  if (/^\/dev\/[^.]+\.json$/.test(req.url)) {
     res.setHeader("content-type", "application/json");
-    writeFile("dev/entity.json", res);
+    writeFile(`./${req.url}`, res);
     return;
   }
 

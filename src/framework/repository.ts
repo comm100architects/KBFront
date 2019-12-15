@@ -1,9 +1,10 @@
 import { fetchJson } from "./network";
+import * as _ from "lodash";
 
 export interface IRepository<Entity> {
   add(obj: Entity): Promise<Entity>;
   update(id: string, obj: Entity): Promise<Entity>;
-  get(id: string): Promise<Entity>;
+  get(id?: string): Promise<Entity>;
   delete(id: string): Promise<void>;
   getList(params?: QueryItem[]): Promise<Entity[]>;
   execute(action: string, objectId: string, payload: any): Promise<any>;
@@ -14,10 +15,58 @@ export interface QueryItem {
   value: string;
 }
 
+export class ReadonlyLocalRepository<
+  Entity extends { id: string; [key: string]: any }
+> implements IRepository<Entity> {
+  private entities: Entity[];
+  constructor(entities: Entity[]) {
+    this.entities = entities;
+  }
+
+  add(): Promise<Entity> {
+    return Promise.reject("readonly");
+  }
+  update(): Promise<Entity> {
+    return Promise.reject("readonly");
+  }
+
+  delete(): Promise<void> {
+    return Promise.reject("readonly");
+  }
+
+  execute(): Promise<any> {
+    return Promise.reject("readonly");
+  }
+
+  get(id?: string): Promise<Entity> {
+    if (id) {
+      const res = this.entities.find(entity => entity.id === id);
+      if (res) {
+        return Promise.resolve(res!);
+      }
+      return Promise.reject();
+    } else {
+      return Promise.resolve(this.entities[0]);
+    }
+  }
+
+  getList(params?: QueryItem[]): Promise<Entity[]> {
+    if (!params) {
+      return Promise.resolve(this.entities);
+    }
+
+    return Promise.resolve(
+      this.entities.filter(entity =>
+        params.some(({ key, value }) => entity[key] == value),
+      ),
+    );
+  }
+}
+
 export class RESTfulRepository<Entity> implements IRepository<Entity> {
   endPoint: string;
-  constructor(host: string, entityName: string) {
-    this.endPoint = `//${host}/${entityName}`;
+  constructor(url: string, entityName: string) {
+    this.endPoint = `${url}/${entityName}`;
   }
 
   add(obj: Entity): Promise<Entity> {
@@ -26,8 +75,16 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
   update(id: string, obj: Entity): Promise<Entity> {
     return fetchJson(`${this.endPoint}/${id}`, "PUT", obj);
   }
-  get(id: string): Promise<Entity> {
-    return fetchJson(`${this.endPoint}/${id}`, "GET");
+  async get(id?: string): Promise<Entity> {
+    if (id) {
+      return await fetchJson(`${this.endPoint}/${id}`, "GET");
+    } else {
+      const result = await fetchJson(this.endPoint, "GET");
+      if (_.isArray(result)) {
+        return result[0];
+      }
+      return result;
+    }
   }
   delete(id: string): Promise<void> {
     return fetchJson(`${this.endPoint}/${id}`, "DELETE");

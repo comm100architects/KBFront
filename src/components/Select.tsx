@@ -16,8 +16,8 @@ export interface CSelectOption extends CElementProps {
 export interface CSelectProps
   extends CElementProps,
     Partial<FieldInputProps<string | number | undefined>> {
-  items: CSelectOption[];
-  label?: string;
+  options: CSelectOption[];
+  title?: string;
 }
 
 const useStyle = makeStyles((theme: Theme) =>
@@ -40,7 +40,11 @@ export const CSelect = (props: CSelectProps) => {
   const labelId = props.id ? `${props.id}-label` : undefined;
   return (
     <>
-      {props.label && <InputLabel id={labelId}>{props.label}</InputLabel>}
+      {props.title && (
+        <InputLabel htmlFor={props.id} id={labelId}>
+          {props.title}
+        </InputLabel>
+      )}
       <Select
         id={props.id}
         labelId={labelId}
@@ -50,7 +54,7 @@ export const CSelect = (props: CSelectProps) => {
         onBlur={props.onBlur}
         className={classes.root}
       >
-        {props.items.map(({ id, value, text, icon }) => {
+        {props.options.map(({ id, value, text, icon }) => {
           return (
             <MenuItem id={id} key={value} value={value}>
               <span className={classes.icon}>

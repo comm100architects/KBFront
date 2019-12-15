@@ -7,16 +7,12 @@ import { CElementProps } from "./base";
 interface CInputProps extends FieldInputProps<string>, CElementProps {
   label?: string;
   type: string;
-  startAdornment: React.ReactNode;
-  endAdornment: React.ReactNode;
 }
 
 export const CInput = (props: CInputProps) => {
   return (
     <>
-      {props.label && (
-        <InputLabel id={`${props.id}-label`}>{props.label}</InputLabel>
-      )}
+      {props.label && <InputLabel htmlFor={props.id}>{props.label}</InputLabel>}
       <Input {...props} />
     </>
   );

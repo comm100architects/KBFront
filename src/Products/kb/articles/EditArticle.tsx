@@ -1,15 +1,12 @@
 import * as React from "react";
 import * as _ from "lodash";
 import Page from "../../../components/Page";
-import { CButton, CIconButton } from "../../../components/Buttons";
+import { CButton } from "../../../components/Buttons";
 import { Article } from "./Entity/Article";
-import { Formik, Field, Form, FormikHelpers } from "formik";
+import { ErrorMessage, Formik, Field, Form, FormikHelpers } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import HtmlEditor from "../../../components/HtmlEditor";
-import ChipInput from "material-ui-chip-input";
-import Chip from "@material-ui/core/Chip";
-import InputAdornment from "@material-ui/core/InputAdornment";
 import { useHistory, useLocation } from "react-router";
 import { CSelect, CSelectOption } from "../../../components/Select";
 import { CInput } from "../../../components/Input";
@@ -26,6 +23,8 @@ import {
   findRootCategory,
 } from "./Domain/CategoryDomain";
 import { StatusSelect } from "./StatusSelect";
+import { withProps } from "../../../framework/hoc";
+import FormHelperText from "@material-ui/core/FormHelperText";
 
 interface CategoryPath {
   id: string;
@@ -124,6 +123,9 @@ export const EditArticle = (): JSX.Element => {
   return <></>;
 };
 
+const inputText = withProps(CInput, { type: "text" });
+const inputUrl = withProps(CInput, { type: "url" });
+
 export function ArticleComponent(props: EditArticleProps): JSX.Element {
   const classes = useStyles();
   const { categoryDomain } = React.useContext(DomainContext)!;
@@ -168,55 +170,37 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
         initialValues={props.article}
         validate={handleValidation}
         onSubmit={handleSubmit}
-        render={({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          errors,
-        }) => (
+      >
+        {({ submitForm, isSubmitting, errors }) => (
           <Form className={classes.form}>
             <FormControl required error={!!errors.title}>
               <Field
                 id="articleTitle"
-                as={CInput}
+                as={inputText}
                 name="title"
-                type="text"
-                label={errors.title || "Title"}
+                label="Title"
                 autoFocus
               />
+              <ErrorMessage component={FormHelperText} name="title" />
             </FormControl>
             <FormControl required error={!!errors.url}>
-              <Field
-                id="articleUrl"
-                name="url"
-                type="url"
-                label={errors.url || "URL"}
-                as={CInput}
-              />
+              <Field id="articleUrl" as={inputUrl} name="url" label="URL" />
+              <ErrorMessage component={FormHelperText} name="url" />
             </FormControl>
             <FormControl>
               <Field as={HtmlEditor} name="content" />
             </FormControl>
             <FormControl required>
               <Field
+                id="articleCategory"
                 as={CSelect}
-                id="editArticle-category"
-                label="Category"
                 name="categoryId"
-                items={categories}
+                options={categories}
+                title="Category"
               />
             </FormControl>
             <FormControl required>
               <Field as={StatusSelect} name="status" />
-            </FormControl>
-            <FormControl>
-              <ChipInput
-                label="Tags"
-                defaultValue={values.tags}
-                newChipKeyCodes={[32]}
-                onChange={chips => setFieldValue("tags", chips)}
-              />
             </FormControl>
             <div>
               <CButton
@@ -229,7 +213,7 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
             </div>
           </Form>
         )}
-      />
+      </Formik>
     </Page>
   );
 }

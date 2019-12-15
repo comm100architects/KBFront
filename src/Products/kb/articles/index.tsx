@@ -7,7 +7,7 @@ import { KbSelect } from "./KbSelect";
 import { DomainContext, createDomains } from "./context";
 
 const ArticlePage = ({ children }: { children: JSX.Element }) => {
-  const [domains] = React.useState(() => createDomains());
+  const [domains] = React.useState(createDomains);
   return (
     <div style={{ position: "relative" }}>
       <KbSelect />

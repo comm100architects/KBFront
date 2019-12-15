@@ -25,7 +25,7 @@ export const KbSelect = () => {
   const kbId = Query.parse(location.search).kbId as string;
 
   const [kbRepo] = React.useState(
-    () => new RESTfulRepository<Kb>("localhost:3000", "kb"),
+    () => new RESTfulRepository<Kb>("//localhost:3000", "knowledgeBases"),
   );
 
   const [kbs, setKbs] = React.useState([] as Kb[]);
@@ -50,9 +50,9 @@ export const KbSelect = () => {
           <FormControl>
             <CSelect
               id="kbSelect"
-              label="Knowlegbase:"
+              title="Knowlegbase:"
               value={kbId}
-              items={kbs.map(({ id, title }) => ({ value: id, text: title }))}
+              options={kbs.map(({ id, name }) => ({ value: id, text: name }))}
               onChange={handleKbChange}
             />
           </FormControl>

@@ -1,0 +1,81 @@
+{
+  "name": "editArticle",
+  "menu": "articles",
+  "path": "articles/edit?id=$query.id&kbId=$query.kbId",
+  "host": "localhost:3000",
+  "entities": [
+    {
+      "name": "article",
+      "type": "object",
+      "source": "articles/$query.id"
+    },
+    {
+      "name": "categories",
+      "type": "array",
+      "source": "categories?kbId=$query.kbId"
+    },
+    {
+      "name": "articleStatus",
+      "type": "array",
+      "source": [
+        { "id": 0, "title": "Draft" },
+        { "id": 1, "title": "Published" }
+      ]
+    }
+  ],
+  "ui": {
+    "control": "vbox",
+    "children": [
+      {
+        "control": "title",
+        "label": "Edit Article"
+      },
+      {
+        "control": "form",
+        "target": "$article",
+        "children": [
+          {
+            "control": "text",
+            "label": "Title",
+            "value": "$article.title",
+            "validators": [
+              { "control": "required", "errorMessage": "Title is required." }
+            ]
+          },
+          {
+            "control": "select",
+            "value": "$article.status",
+            "label": "Status",
+            "dataSource": "$articleStatus",
+            "option": {
+              "title": "$.title",
+              "value": "$.id"
+            }
+          },
+          {
+            "name": "categoryId",
+            "control": "select",
+            "value": "$article.categoryId",
+            "label": "Category",
+            "dataSource": "$categories",
+            "option": {
+              "title": "$.title",
+              "value": "$.id"
+            }
+          },
+          {
+            "control": "hbox",
+            "children": [
+              { "control": "submit", "label": "Save", "goto": "articles" },
+              {
+                "control": "button",
+                "label": "Cancel",
+                "goto": "articles"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

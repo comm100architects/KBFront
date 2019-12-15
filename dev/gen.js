@@ -62,11 +62,19 @@ const genTree = (parentIdName, sc, childrenCount, parent, depth) => {
 };
 
 const data = range(10)
-  .map(() => generate({ id: chance.guid, title: words(3) }))
+  .map(() =>
+    generate({
+      id: chance.guid,
+      name: words(3),
+      allowFeedback: chance.bool,
+      visibility: () => (chance.bool() ? "private" : "public"),
+      status: () => (chance.bool() ? "close" : "open"),
+    }),
+  )
   .reduce(
     (result, kb) => {
       const [categoryId, referenceCategoryId] = guidPool();
-      result.kb.push(kb);
+      result.knowledgeBases.push(kb);
       result.categories = result.categories.concat(
         genTree(
           "parentCategoryId",
@@ -108,7 +116,7 @@ const data = range(10)
       );
       return result;
     },
-    { kb: [], categories: [], articles: [] },
+    { knowledgeBases: [], categories: [], articles: [] },
   );
 
 console.log(JSON.stringify(data, null, 2));

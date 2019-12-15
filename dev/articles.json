@@ -1,0 +1,169 @@
+{
+  "menu": "articles",
+  "host": "localhost:3000",
+  "entities": [
+    {
+      "name": "articles",
+      "type": "array",
+      "source": "articles?{...$query}"
+    },
+    {
+      "name": "categories",
+      "type": "array",
+      "source": "categories?kbId=$query.kbId"
+    },
+    {
+      "name": "tags",
+      "type": "array",
+      "source": "tags"
+    },
+    {
+      "name": "articleStatus",
+      "type": "array",
+      "source": [
+        { "id": 0, "title": "Draft", "icon": "draftArticleIcon" },
+        { "id": 1, "title": "Published", "icon": "publishedArticleIcon" }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "deleteArticle",
+      "confirm": "Are you sure you want to delete the article?",
+      "method": "delete",
+      "url": "$.id"
+    }
+  ],
+  "ui": {
+    "control": "vbox",
+    "children": [
+      {
+        "control": "title",
+        "label": "Articles"
+      },
+      {
+        "control": "hbox",
+        "children": [
+          {
+            "control": "tree",
+            "label": "Category",
+            "value": "$query.categoryId",
+            "dataSource": "$categories",
+            "option": {
+              "label": "$.title",
+              "value": "$.id",
+              "parentValue": "$.parentCategoryId"
+            }
+          },
+          {
+            "control": "vbox",
+            "children": [
+              {
+                "control": "hbox",
+                "children": [
+                  {
+                    "control": "button",
+                    "content": "New Article",
+                    "goto": "newArticle"
+                  },
+                  { "control": "hbox" },
+                  {
+                    "control": "select",
+                    "label": "Tags",
+                    "value": "$query.tag",
+                    "dataSource": "$tags",
+                    "option": {
+                      "label": "$.title",
+                      "value": "$.id"
+                    }
+                  },
+                  {
+                    "control": "select",
+                    "label": "Status",
+                    "value": "$query.status",
+                    "dataSource": "$articleStatus",
+                    "option": {
+                      "title": "$.title",
+                      "id": "$.id",
+                      "icon": "$.icon"
+                    }
+                  },
+                  {
+                    "control": "searchBox",
+                    "label": "Keyword",
+                    "value": "$query.keyword"
+                  }
+                ]
+              },
+              {
+                "control": "table",
+                "defaultSort": { "column": 0, "asc": true },
+                "items": "$articles",
+                "columns": [
+                  {
+                    "header": "Title",
+                    "content": {
+                      "control": "link",
+                      "value": "$.title",
+                      "goto": "edit?id=$.id"
+                    }
+                  },
+                  {
+                    "header": "Category",
+                    "content": "$categories[$.categoryId].title"
+                  },
+                  {
+                    "header": "Tags",
+                    "content": "$tags[...$.tags].label"
+                  },
+                  {
+                    "header": { "control": "icon", "name": "thumbUp" },
+                    "content": "$.helpful"
+                  },
+                  {
+                    "header": { "control": "icon", "name": "thumbDown" },
+                    "content": "$.notHelpful"
+                  },
+                  {
+                    "header": "Modified Time",
+                    "content": {
+                      "control": "datetime",
+                      "value": "$.modifiedTime"
+                    }
+                  },
+                  {
+                    "header": "Actions",
+                    "sortable": false,
+                    "content": {
+                      "control": "hbox",
+                      "children": [
+                        {
+                          "control": "button",
+                          "label": "Edit Article",
+                          "icon": "edit",
+                          "goto": "edit?id=$.id"
+                        },
+                        {
+                          "control": "button",
+                          "label": "Preview Article",
+                          "icon": "view",
+                          "goto": "$.url"
+                        },
+                        {
+                          "control": "button",
+                          "label": "Delete Article",
+                          "icon": "delete",
+                          "action": "deleteArticle"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
