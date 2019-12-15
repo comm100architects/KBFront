@@ -6,11 +6,12 @@ import GlobalContext from "../GlobalContext";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    main: {
+    root: {
       padding: theme.spacing(2),
     },
-    content: {
+    main: {
       padding: theme.spacing(3),
+      position: "relative",
     },
     title: {
       marginBottom: theme.spacing(2),
@@ -29,15 +30,15 @@ export default (props: CPageProps): JSX.Element => {
   React.useEffect(() => {
     document.title =
       props.documentTitle ?? `${currentApp.label} » ${props.title}`;
-  });
+  }, [currentApp.label, props.title, props.documentTitle]);
   return (
-    <main className={classes.main}>
-      <Paper className={classes.content}>
+    <div className={classes.root}>
+      <Paper component="main" className={classes.main}>
         <Typography variant="h4" noWrap className={classes.title}>
           {props.title}
         </Typography>
         {props.children}
       </Paper>
-    </main>
+    </div>
   );
 };
