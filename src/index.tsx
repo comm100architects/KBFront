@@ -11,7 +11,7 @@ import {
 import Drawer from "@material-ui/core/drawer";
 import AppHeader from "./AppHeader";
 import AppMenu from "./AppMenu";
-import { rawApps, isMenuExist, RawApp } from "./Pages";
+import { rawProducts, isMenuExist, RawProduct } from "./Pages";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import PageRouter from "./PageRouter";
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     appMenu: {
       flexShrink: 0,
-      width: 200,
+      width: 240,
     },
     content: {
       flexGrow: 1,
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Root({ app, currentPage }: { app: RawApp; currentPage: string }) {
+function Root({ app, currentPage }: { app: RawProduct; currentPage: string }) {
   const classes = useStyles({});
   return (
     <GlobalContext.Provider value={{ currentApp: app }}>
@@ -78,7 +78,7 @@ ReactDOM.render(
         <Route exact path="/:currentApp">
           {({ match }: RouteChildrenProps<AppParam>) => {
             const currentApp = match?.params.currentApp;
-            const app = rawApps.find(app => app.name === currentApp);
+            const app = rawProducts.find(app => app.name === currentApp);
             if (app) {
               return <Redirect to={`/${app!.name}/${app!.defaultPage}`} />;
             }
@@ -94,7 +94,7 @@ ReactDOM.render(
         <Route path="/:currentApp/:currentPage">
           {({ match }: RouteChildrenProps<AppParam>) => {
             const { currentApp, currentPage } = match!.params;
-            const app = rawApps.find(app => app.name === currentApp);
+            const app = rawProducts.find(app => app.name === currentApp);
             if (isMenuExist(currentPage, app?.menu ?? [])) {
               return <Root app={app!} currentPage={currentPage} />;
             }

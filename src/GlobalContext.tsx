@@ -1,12 +1,12 @@
 import * as React from "react";
-import { RawApp } from "./Pages";
+import { RawProduct } from "./Pages";
 
 export interface RawGlobalContext {
-  readonly currentApp: RawApp;
+  readonly currentApp: RawProduct;
 }
 
 const emptyGlobalContext: RawGlobalContext = {
-  currentApp: { name: "", label: "", defaultPage: "", menu: [] }
+  currentApp: { name: "", label: "", defaultPage: "", menu: [] },
 };
 
 export default React.createContext(emptyGlobalContext);

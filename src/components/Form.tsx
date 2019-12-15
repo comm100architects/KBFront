@@ -90,7 +90,7 @@ export function CForm<Values>(props: CFormProps<Values>) {
               color="primary"
               disabled={!dirty || isSubmitting}
             >
-              Save
+              Save Changes
             </Button>
             <Button
               type="reset"

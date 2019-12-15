@@ -1,5 +1,4 @@
-import SendIcon from "@material-ui/icons/Send";
-import { SvgIconProps } from "@material-ui/core/SvgIcon";
+import { CIconName } from "./components/Icons";
 
 // TODO: generate this file from source code files
 // such as, go through tsx files in src/LiveChat/ folder and generate pages
@@ -7,18 +6,18 @@ import { SvgIconProps } from "@material-ui/core/SvgIcon";
 export interface RawMenuItem {
   name: string; // for url
   label: string; //
-  icon: React.SFC<SvgIconProps>;
+  icon?: CIconName;
 }
 
 export interface RawSubMenu {
   label: string;
-  icon: React.SFC<SvgIconProps>;
+  icon: CIconName;
   items: Array<RawMenuItem>;
 }
 
 export type RawMenu = Array<RawMenuItem | RawSubMenu>;
 
-export interface RawApp {
+export interface RawProduct {
   name: string;
   label: string;
   defaultPage: string;
@@ -46,58 +45,74 @@ export function getMenuLabel(menuName: string, menu: RawMenu): string | null {
 }
 
 const livechatAppMenu: Array<RawMenuItem | RawSubMenu> = [
-  { name: "dashboard", label: "Dashboard", icon: SendIcon },
-  { name: "install", label: "Install", icon: SendIcon },
+  { name: "dashboard", label: "Dashboard", icon: "dashboard" },
+  { name: "agentConsole", label: "Get Online & Chat", icon: "chat" },
+  { name: "install", label: "Install", icon: "code" },
   {
     label: "Campaign",
-    icon: SendIcon,
+    icon: "create",
     items: [
-      { name: "chatbutton", label: "Chat Button", icon: SendIcon },
-      { name: "chatwindow", label: "Chat Window", icon: SendIcon }
-    ]
+      { name: "chatbutton", label: "Chat Button" },
+      { name: "chatwindow", label: "Chat Window" },
+    ],
   },
   {
     label: "Settings",
-    icon: SendIcon,
+    icon: "settings",
     items: [
-      { name: "cannedMessages", label: "Canned Messages", icon: SendIcon },
-      { name: "department", label: "Department", icon: SendIcon }
-    ]
-  }
+      { name: "cannedMessages", label: "Canned Messages" },
+      { name: "department", label: "Department" },
+    ],
+  },
+  {
+    name: "history",
+    label: "History",
+    icon: "history",
+  },
+  {
+    name: "reports",
+    label: "Reports",
+    icon: "assessment",
+  },
+  {
+    name: "maxon",
+    label: "MaximumOn",
+    icon: "groupWork",
+  },
 ];
 
 const kbAppMenu: Array<RawMenuItem | RawSubMenu> = [
-  { name: "articles", label: "Articles", icon: SendIcon },
-  { name: "images", label: "Images", icon: SendIcon },
-  { name: "design", label: "Design", icon: SendIcon },
-  { name: "settings", label: "Settings", icon: SendIcon },
-  { name: "advanced", label: "Advanced", icon: SendIcon }
+  { name: "articles", label: "Articles", icon: "description" },
+  { name: "images", label: "Images", icon: "image" },
+  { name: "design", label: "Design", icon: "viewQuilt" },
+  { name: "settings", label: "Settings", icon: "settings" },
+  { name: "advanced", label: "Advanced", icon: "widgets" },
 ];
 
 const botAppMenu: Array<RawMenuItem | RawSubMenu> = [
-  { name: "dashboard", label: "Dashboard", icon: SendIcon }
+  { name: "dashboard", label: "Dashboard", icon: "dashboard" },
 ];
 
 const ticketAppMenu: Array<RawMenuItem | RawSubMenu> = [
-  { name: "dashboard", label: "Dashboard", icon: SendIcon }
+  { name: "dashboard", label: "Dashboard", icon: "dashboard" },
 ];
 
 const accountAppMenu: Array<RawMenuItem | RawSubMenu> = [
-  { name: "dashboard", label: "Dashboard", icon: SendIcon }
+  { name: "dashboard", label: "Dashboard", icon: "dashboard" },
 ];
 
-export const rawApps: Array<RawApp> = [
+export const rawProducts: Array<RawProduct> = [
   {
     name: "livechat",
     label: "Live Chat",
     menu: livechatAppMenu,
-    defaultPage: "dashboard"
+    defaultPage: "dashboard",
   },
   {
     name: "ticket",
     label: "Ticket",
     menu: ticketAppMenu,
-    defaultPage: "dashboard"
+    defaultPage: "dashboard",
   },
   { name: "bot", label: "Bot", menu: botAppMenu, defaultPage: "dashboard" },
   { name: "kb", label: "KB", menu: kbAppMenu, defaultPage: "articles" },
@@ -105,6 +120,6 @@ export const rawApps: Array<RawApp> = [
     name: "account",
     label: "Account",
     menu: accountAppMenu,
-    defaultPage: "dashboard"
-  }
+    defaultPage: "dashboard",
+  },
 ];

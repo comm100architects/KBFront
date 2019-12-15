@@ -5,15 +5,15 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Collapse from "@material-ui/core/Collapse";
-import InboxIcon from "@material-ui/icons/MoveToInbox";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { RawApp, RawMenuItem, RawSubMenu } from "./Pages";
+import { RawProduct, RawMenuItem, RawSubMenu } from "./Pages";
 import { ListItemLink } from "./Components/ListItemLink";
+import { CIcon } from "./components/Icons";
 
 const useStyles = makeStyles(theme => ({
   root: {
-    width: 200,
+    width: 240,
     flexShrink: 0,
     backgroundColor: theme.palette.background.paper,
   },
@@ -29,7 +29,7 @@ const renderMenuItem = (item: RawMenuItem): JSX.Element => (
         selected={selected === item.name}
         to={`/${appName}/${item.name}/`}
         primary={item.label}
-        icon={<item.icon />}
+        icon={item.icon && <CIcon name={item.icon!} />}
       ></ListItemLink>
     )}
   </SelectedMenuItem.Consumer>
@@ -51,9 +51,7 @@ const SubMenuComponent = ({
   return (
     <>
       <ListItem button onClick={handleClick}>
-        <ListItemIcon>
-          <InboxIcon />
-        </ListItemIcon>
+        <ListItemIcon>{menu.icon && <CIcon name={menu.icon} />}</ListItemIcon>
         <ListItemText primary={menu.label} />
         {isOpen ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
@@ -71,7 +69,7 @@ const SelectedMenuItem = React.createContext({
   selected: "",
 });
 
-function AppMenuComponent(props: { app: RawApp; selected: string }) {
+function AppMenuComponent(props: { app: RawProduct; selected: string }) {
   const classes = useStyles({});
   const { app, selected } = props;
 

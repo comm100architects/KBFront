@@ -4,7 +4,6 @@ import { CategoryDomain } from "./Domain/CategoryDomain";
 import { RESTfulRepository } from "../../../framework/repository";
 import { Article } from "./Entity/Article";
 import { Category } from "./Entity/Category";
-import { Entity } from "./Entity/Spec";
 
 export interface Domains {
   articleDomain: ArticleDomain;
@@ -27,7 +26,7 @@ const newCategoryDomain = () => {
 };
 
 export const createDomains = () => ({
-  entitiesDomain: new RESTfulRepository<Entity[]>("", "entities"),
+  entitiesDomain: new RESTfulRepository<any>("", "entities"),
   articleDomain: newArticleDomain(),
   categoryDomain: newCategoryDomain(),
 });

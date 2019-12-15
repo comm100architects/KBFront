@@ -10,6 +10,19 @@ import AddIcon from "@material-ui/icons/Add";
 import { memoize } from "lodash";
 import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import ThumbDownIcon from "@material-ui/icons/ThumbDown";
+import DescriptionIcon from "@material-ui/icons/Description";
+import ImageIcon from "@material-ui/icons/Image";
+import ViewQuiltIcon from "@material-ui/icons/ViewQuilt";
+import SettingsIcon from "@material-ui/icons/Settings";
+import WidgetsIcon from "@material-ui/icons/Widgets";
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import WebAssetIcon from "@material-ui/icons/WebAsset";
+import ChatIcon from "@material-ui/icons/Chat";
+import AssessmentIcon from "@material-ui/icons/Assessment";
+import HistoryIcon from "@material-ui/icons/History";
+import GroupWorkIcon from "@material-ui/icons/GroupWork";
+import CreateIcon from "@material-ui/icons/Create";
+import CodeIcon from "@material-ui/icons/Code";
 
 const allIcons: { [id: string]: (props: any) => JSX.Element } = {
   starPrimary: () => <StarIcon color="primary" />,
@@ -24,6 +37,19 @@ const allIcons: { [id: string]: (props: any) => JSX.Element } = {
   add: AddIcon,
   thumbUp: ThumbUpIcon,
   thumbDown: ThumbDownIcon,
+  description: DescriptionIcon,
+  image: ImageIcon,
+  viewQuilt: ViewQuiltIcon,
+  settings: SettingsIcon,
+  widgets: WidgetsIcon,
+  dashboard: DashboardIcon,
+  webAsset: WebAssetIcon,
+  chat: ChatIcon,
+  assessment: AssessmentIcon,
+  history: HistoryIcon,
+  groupWork: GroupWorkIcon,
+  create: CreateIcon,
+  code: CodeIcon,
 };
 
 export type CIconName =
@@ -38,7 +64,20 @@ export type CIconName =
   | "view"
   | "add"
   | "thumbUp"
-  | "thumbDown";
+  | "thumbDown"
+  | "description"
+  | "image"
+  | "viewQuilt"
+  | "settings"
+  | "widgets"
+  | "dashboard"
+  | "webAsset"
+  | "chat"
+  | "assessment"
+  | "history"
+  | "groupWork"
+  | "create"
+  | "code";
 
 const getIcon = memoize(
   (name: string): JSX.Element => {

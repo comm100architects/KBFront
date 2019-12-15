@@ -6,7 +6,7 @@ import { ListItemLink } from "./Components/ListItemLink";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/toolbar";
 import Typography from "@material-ui/core/Typography";
-import { rawApps, RawApp } from "./Pages";
+import { rawProducts, RawProduct } from "./Pages";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const AppName = (
   currentApp: string,
-  app: RawApp,
+  app: RawProduct,
   className: string,
 ): JSX.Element => (
   <ListItemLink
@@ -57,7 +57,7 @@ export default ({ currentApp }: { currentApp: string }): JSX.Element => {
         </div>
         <Typography component="div" noWrap>
           <List component="nav" className={classes.horizontalList}>
-            {rawApps.map(app => AppName(currentApp, app, classes.link))}
+            {rawProducts.map(app => AppName(currentApp, app, classes.link))}
           </List>
         </Typography>
       </Toolbar>
