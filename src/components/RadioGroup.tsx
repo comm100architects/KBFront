@@ -8,7 +8,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 
 export interface CRadioOption extends CElementProps {
   value: string | number;
-  text: string;
+  label: string;
 }
 
 export interface CRadioGroupProps
@@ -29,12 +29,12 @@ export const CRadioGroup = (props: CRadioGroupProps) => {
         value={props.value}
         name={props.name}
       >
-        {props.options.map(({ text, value }) => (
+        {props.options.map(({ label, value }) => (
           <FormControlLabel
             key={value}
             value={value}
             control={<Radio color="primary" />}
-            label={text}
+            label={label}
           />
         ))}
       </RadioGroup>

@@ -1,25 +1,23 @@
 {
-  "menu": "articles",
-  "host": "localhost:3000",
   "entities": [
     {
+      "name": "knowledgeBases",
+      "source": "//localhost:3000/knowledgeBases"
+    },
+    {
       "name": "articles",
-      "type": "array",
-      "source": "articles?{...$query}"
+      "source": "//localhost:3000/articles?_embed=tags&_embed=category"
     },
     {
       "name": "categories",
-      "type": "array",
-      "source": "categories?kbId=$query.kbId"
+      "source": "//localhost:3000/categories"
     },
     {
       "name": "tags",
-      "type": "array",
-      "source": "tags"
+      "source": "//localhost:3000/tags"
     },
     {
       "name": "articleStatus",
-      "type": "array",
       "source": [
         { "id": 0, "title": "Draft", "icon": "draftArticleIcon" },
         { "id": 1, "title": "Published", "icon": "publishedArticleIcon" }
@@ -31,15 +29,29 @@
       "name": "deleteArticle",
       "confirm": "Are you sure you want to delete the article?",
       "method": "delete",
-      "url": "$.id"
+      "url": "id"
     }
   ],
   "ui": {
     "control": "vbox",
     "children": [
       {
-        "control": "title",
-        "label": "Articles"
+        "control": "hbox",
+        "children": [
+          {
+            "control": "title",
+            "label": "Articles"
+          },
+          {
+            "control": "select",
+            "label": "Knowlegebases",
+            "data": {
+              "entity": "knowledgeBases",
+              "label": "name",
+              "value": "id"
+            }
+          }
+        ]
       },
       {
         "control": "hbox",
@@ -47,12 +59,12 @@
           {
             "control": "tree",
             "label": "Category",
-            "value": "$query.categoryId",
-            "dataSource": "$categories",
-            "option": {
-              "label": "$.title",
-              "value": "$.id",
-              "parentValue": "$.parentCategoryId"
+            "value": "query.categoryId",
+            "data": {
+              "entity": "categories",
+              "label": "title",
+              "value": "id",
+              "parentValue": "parentCategoryId"
             }
           },
           {
@@ -70,65 +82,63 @@
                   {
                     "control": "select",
                     "label": "Tags",
-                    "value": "$query.tag",
-                    "dataSource": "$tags",
-                    "option": {
-                      "label": "$.title",
-                      "value": "$.id"
+                    "value": "query.tag",
+                    "data": {
+                      "entity": "tags",
+                      "label": "title",
+                      "value": "id"
                     }
                   },
                   {
                     "control": "select",
                     "label": "Status",
-                    "value": "$query.status",
-                    "dataSource": "$articleStatus",
-                    "option": {
-                      "title": "$.title",
-                      "id": "$.id",
-                      "icon": "$.icon"
+                    "value": "query.status",
+                    "data": {
+                      "entity": "articleStatus",
+                      "title": "title",
+                      "id": "id",
+                      "icon": "icon"
                     }
                   },
                   {
                     "control": "searchBox",
                     "label": "Keyword",
-                    "value": "$query.keyword"
+                    "value": "query.keyword"
                   }
                 ]
               },
               {
                 "control": "table",
-                "defaultSort": { "column": 0, "asc": true },
-                "items": "$articles",
+                "data": {
+                  "entity": "articles",
+                  "sort": { "column": 0, "asc": true }
+                },
                 "columns": [
                   {
                     "header": "Title",
-                    "content": {
-                      "control": "link",
-                      "value": "$.title",
-                      "goto": "edit?id=$.id"
-                    }
+                    "content": "title"
                   },
                   {
                     "header": "Category",
-                    "content": "$categories[$.categoryId].title"
+                    "content": "category.title"
                   },
                   {
                     "header": "Tags",
-                    "content": "$tags[...$.tags].label"
+                    "content": "tags"
                   },
                   {
                     "header": { "control": "icon", "name": "thumbUp" },
-                    "content": "$.helpful"
+                    "content": "helpful"
                   },
                   {
                     "header": { "control": "icon", "name": "thumbDown" },
-                    "content": "$.notHelpful"
+                    "content": "notHelpful"
                   },
                   {
                     "header": "Modified Time",
                     "content": {
                       "control": "datetime",
-                      "value": "$.modifiedTime"
+                      "value": "modifiedTime"
                     }
                   },
                   {
@@ -138,22 +148,20 @@
                       "control": "hbox",
                       "children": [
                         {
-                          "control": "button",
+                          "control": "editButton",
                           "label": "Edit Article",
-                          "icon": "edit",
-                          "goto": "edit?id=$.id"
+                          "icon": "edit"
                         },
                         {
-                          "control": "button",
+                          "control": "previewButton",
                           "label": "Preview Article",
                           "icon": "view",
-                          "goto": "$.url"
+                          "goto": "url"
                         },
                         {
-                          "control": "button",
+                          "control": "deleteButton",
                           "label": "Delete Article",
-                          "icon": "delete",
-                          "action": "deleteArticle"
+                          "icon": "delete"
                         }
                       ]
                     }

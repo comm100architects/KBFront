@@ -21,32 +21,51 @@
     }
   ],
   "ui": {
-    "control": "form",
-    "dataSource": "knowledgeBases",
+    "control": "div",
     "children": [
       {
-        "name": "name",
-        "control": "input",
-        "title": "Name",
-        "required": true
+        "control": "select",
+        "title": "Knowledge Bases",
+        "bind": "query.id",
+        "data": {
+          "entity": "knowledgeBases",
+          "label": "name",
+          "value": "id"
+        }
       },
       {
-        "name": "visibility",
-        "title": "Visibility",
-        "control": "radioGroup",
-        "dataSource": "kbVisibility"
-      },
-      {
-        "name": "allowFeedback",
-        "title": "Feedback",
-        "label": "Allow visitors to rate Helpful or Not Helpful on articles",
-        "control": "checkbox"
-      },
-      {
-        "name": "status",
-        "title": "Status",
-        "control": "radioGroup",
-        "dataSource": "kbStatus"
+        "control": "form",
+        "data": { "entity": "knowledgeBases", "id": "query.id" },
+        "children": [
+          {
+            "name": "name",
+            "control": "input",
+            "title": "Name",
+            "required": true
+          },
+          {
+            "name": "visibility",
+            "title": "Visibility",
+            "control": "radioGroup",
+            "data": {
+              "entity": "kbVisibility",
+              "value": "id",
+              "label": "label"
+            }
+          },
+          {
+            "name": "allowFeedback",
+            "title": "Feedback",
+            "label": "Allow visitors to rate Helpful or Not Helpful on articles",
+            "control": "checkbox"
+          },
+          {
+            "name": "status",
+            "title": "Status",
+            "control": "radioGroup",
+            "data": { "entity": "kbStatus", "value": "id", "label": "label" }
+          }
+        ]
       }
     ]
   }

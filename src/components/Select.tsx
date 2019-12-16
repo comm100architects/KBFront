@@ -9,7 +9,7 @@ import { FieldInputProps } from "formik";
 
 export interface CSelectOption extends CElementProps {
   value?: string | number;
-  text: string;
+  label: string;
   icon?: CIconName;
 }
 
@@ -48,19 +48,19 @@ export const CSelect = (props: CSelectProps) => {
       <Select
         id={props.id}
         labelId={labelId}
-        value={props.value}
+        value={props.value || props.options[0]?.value}
         name={props.name}
         onChange={props.onChange}
         onBlur={props.onBlur}
         className={classes.root}
       >
-        {props.options.map(({ id, value, text, icon }) => {
+        {props.options.map(({ id, value, label, icon }) => {
           return (
             <MenuItem id={id} key={value} value={value}>
               <span className={classes.icon}>
                 {icon && <CIcon name={icon} />}
               </span>
-              {text}
+              {label}
             </MenuItem>
           );
         })}

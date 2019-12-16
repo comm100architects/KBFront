@@ -10,16 +10,16 @@ export const StatusSelect = (props: Partial<CSelectProps>) => {
       title="Status"
       options={[
         {
-          text: "All Status",
+          label: "All Status",
         },
         {
           value: ArticleStatus.published,
-          text: "Published",
+          label: "Published",
           icon: "dotPrimary",
         },
         {
           value: ArticleStatus.draft,
-          text: "Draft",
+          label: "Draft",
           icon: "dotSecondary",
         },
       ]}

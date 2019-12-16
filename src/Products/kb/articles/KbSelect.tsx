@@ -52,7 +52,7 @@ export const KbSelect = () => {
               id="kbSelect"
               title="Knowlegbase:"
               value={kbId}
-              options={kbs.map(({ id, name }) => ({ value: id, text: name }))}
+              options={kbs.map(({ id, name }) => ({ value: id, label: name }))}
               onChange={handleKbChange}
             />
           </FormControl>

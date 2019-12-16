@@ -139,7 +139,7 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
       setCategories(
         buildCategoryPath(tree).map(({ id, path }) => ({
           value: id,
-          text: path,
+          label: path,
         })),
       );
     });
