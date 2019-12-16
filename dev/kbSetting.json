@@ -26,7 +26,7 @@
       {
         "control": "select",
         "title": "Knowledge Bases",
-        "bind": "query.id",
+        "bind": "query.kbId",
         "data": {
           "entity": "knowledgeBases",
           "label": "name",
@@ -35,7 +35,7 @@
       },
       {
         "control": "form",
-        "data": { "entity": "knowledgeBases", "id": "query.id" },
+        "data": { "entity": "knowledgeBases", "id": "query.kbId" },
         "children": [
           {
             "name": "name",

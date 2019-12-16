@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as _ from "lodash";
+import _ from "lodash";
 import { CForm } from "./Form";
 import { CInput } from "./Input";
 import {
@@ -14,15 +14,39 @@ import { CCheckbox } from "./Checkbox";
 import { CSelect, CSelectProps } from "./Select";
 import { fetchJson } from "../framework/network";
 import { withProps } from "../framework/hoc";
-import { useLocation, useHistory } from "react-router";
+import { useHistory } from "react-router";
+import { History } from "History";
 import * as Query from "query-string";
 import { CIconName } from "./Icons";
 import { goToSearch } from "../framework/locationHelper";
 import LoadError from "../components/LoadError";
+import { changeHandler } from "../framework/utils";
+import setIn from "lodash/fp/set";
 
-export const RepositoryMapContext = React.createContext(
-  {} as { [name: string]: IRepository<Entity> },
+const GlobalContext = React.createContext(
+  {} as { [key: string]: IGlobalVariable },
 );
+
+const parseVariable = (variable: string) => {
+  const i = variable.indexOf(".");
+  if (i > 0) {
+    return {
+      name: variable.substring(0, i),
+      path: variable.substring(i + 1),
+    };
+  }
+  throw new Error(`parseVariable error: ${variable}`);
+};
+
+const useGlobal = (variable: string) => {
+  const { name, path } = parseVariable(variable);
+  const res = React.useContext(GlobalContext)[name];
+  if (!res)
+    throw new Error(
+      `No global variable: ${name}. Only "query" and "state" are supported right now.`,
+    );
+  return [res.getValue(path), (val: any) => res.setValue(path, val)];
+};
 
 export type RepositoryMap = { [name: string]: IRepository<Entity> };
 
@@ -87,15 +111,17 @@ export interface RawPage {
   ui: RawControl;
 }
 
-const parseVariable = (variable: string) => {
-  const i = variable.indexOf(".");
-  if (i > 0) {
-    return {
-      entity: variable.substring(0, i),
-      path: variable.substring(i + 1),
-    };
+const getFormInitialValues = async (
+  repo: IRepository<Entity>,
+  variable: string,
+): Promise<Entity> => {
+  const { name, path } = parseVariable(variable);
+  if (name === "query") {
+    const query = Query.parse(window.location.search);
+    const kbId = _.get(query, path) as string;
+    return await repo.get(kbId);
   }
-  return { path: variable };
+  return await repo.get();
 };
 
 const makeForm = async (
@@ -103,6 +129,7 @@ const makeForm = async (
   { data, children }: RawForm,
 ): Promise<React.ComponentType> => {
   const repo = repositories[data.entity];
+  const initialValues = await getFormInitialValues(repo, data.id);
   const fields = await Promise.all(
     children.map(async child => ({
       title: child.title,
@@ -111,29 +138,20 @@ const makeForm = async (
       name: child.name,
     })),
   );
-  const query = Query.parse(window.location.search);
-  const kbId = _.get(query, parseVariable(data.id).path) as string;
-  const initialValues = await repo.get(kbId);
+
   return () => {
     const handleSave = async (values: Entity) => {
       setValues(await repo.update(values.id, values));
       return;
     };
-    const location = useLocation();
 
     const [values, setValues] = React.useState(initialValues);
 
-    React.useEffect(() => {
-      repo.get(getId(data.id)).then(setValues);
-    }, [location.search]);
+    const [kbId] = useGlobal(data.id);
 
-    const getId = (variable: string): string => {
-      const { entity, path } = parseVariable(variable);
-      if (entity === "query") {
-        return _.get(Query.parse(location.search), path)! as string;
-      }
-      return path;
-    };
+    React.useEffect(() => {
+      repo.get(kbId).then(setValues);
+    }, [kbId]);
 
     return (
       <>
@@ -206,25 +224,11 @@ const withBindValue = (
   { bind }: RawFieldInputControl,
   component: React.ComponentType<FieldInputProps<any>>,
 ): React.ComponentType => {
-  const { entity, path } = parseVariable(bind);
   return () => {
-    const history = useHistory();
-    let initialValue: any;
-    let handleChange: React.ChangeEventHandler<{ value: any }> = (
-      _: React.ChangeEvent<{ value: any }>,
-    ) => {};
-    if (entity === "query") {
-      initialValue = _.get(Query.parse(history.location.search), path);
-      handleChange = (event: React.ChangeEvent<{ value: any }>) => {
-        goToSearch(history, search => {
-          const query = Query.parse(search);
-          return Query.stringify(_.set(query, path, event.target.value));
-        });
-      };
-    }
+    const [value, setValue] = useGlobal(bind);
     return React.createElement(component, {
-      value: initialValue,
-      onChange: handleChange,
+      value,
+      onChange: changeHandler(setValue),
       name: "",
       onBlur: () => {},
     });
@@ -324,6 +328,53 @@ const makeComponent = (
   }
 };
 
+interface IGlobalVariable {
+  getValue(path: string): any;
+  setValue(path: string, val: any): void;
+}
+
+class GlobalQueryString implements IGlobalVariable {
+  private history: History;
+  private query: Query.ParsedQuery;
+
+  constructor(history: History) {
+    this.history = history;
+    this.query = Query.parse(history.location.search);
+  }
+
+  getValue(path: string) {
+    return _.get(this.query, path);
+  }
+
+  setValue(path: string, val: any): void {
+    const newQuery = setIn(path, val, this.query);
+    console.log("setValue", path, val, this.query, newQuery);
+    if (_.isEqual(this.query, newQuery)) {
+      return;
+    } else {
+      this.query = newQuery;
+      goToSearch(this.history, () => Query.stringify(this.query));
+    }
+  }
+}
+
+class GlobalState implements IGlobalVariable {
+  private state: any;
+  private setState: (s: any) => void;
+  constructor(state: any, setState: (s: any) => void) {
+    this.state = state;
+    this.setState = setState;
+  }
+
+  getValue(path: string) {
+    return _.get(this.state, path);
+  }
+  setValue(path: string, val: any): void {
+    this.state = setIn(path, val, this.state);
+    this.setState(this.state);
+  }
+}
+
 const makePageComponentHelper = async (
   configUrl: string,
   injecter: (ui: RawControl) => RawControl,
@@ -335,13 +386,21 @@ const makePageComponentHelper = async (
   const { entities, ui, title } = await fetchJson(configUrl, "GET");
   const repositories = toRepositoryMap(entities);
   const Body = await makeComponent(repositories, injecter(ui));
-  return () => (
-    <RepositoryMapContext.Provider value={repositories}>
-      <CPage title={title}>
-        <Body />
-      </CPage>
-    </RepositoryMapContext.Provider>
-  );
+  return () => {
+    const history = useHistory();
+    const [state, setState] = React.useState();
+    const globalVariables = {
+      query: new GlobalQueryString(history),
+      state: new GlobalState(state, setState),
+    };
+    return (
+      <GlobalContext.Provider value={globalVariables}>
+        <CPage title={title}>
+          <Body />
+        </CPage>
+      </GlobalContext.Provider>
+    );
+  };
 };
 
 export const makePageComponent = async (
