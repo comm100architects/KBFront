@@ -33,12 +33,17 @@ export interface EntityInfo {
   source: string | Entity | Entity[];
 }
 
+export type CustomComponent = (
+  repositories: RepositoryMap,
+) => Promise<React.ComponentType>;
+
 export interface RawControl {
   control: "div" | "form" | "input" | "radioGroup" | "checkbox" | "select";
 }
 
 export interface RawDiv extends RawControl {
-  children: RawControl | RawControl[];
+  // allow inject custom component
+  children: (RawControl | CustomComponent) | (RawControl | CustomComponent)[];
 }
 
 export interface RawFieldInputControl extends RawControl {
@@ -186,8 +191,16 @@ const makeCheckbox = async ({
   };
 };
 
-const isFieldInputControl = (control: string) =>
-  ["input", "select", "radioGroup", "checkbox"].indexOf(control) !== -1;
+const isFieldInputControl = (ctrl: RawControl | CustomComponent) => {
+  if ((ctrl as RawControl).control) {
+    return (
+      ["input", "select", "radioGroup", "checkbox"].indexOf(
+        (ctrl as RawControl).control,
+      ) !== -1
+    );
+  }
+  return false;
+};
 
 const withBindValue = (
   { bind }: RawFieldInputControl,
@@ -205,10 +218,6 @@ const withBindValue = (
       handleChange = (event: React.ChangeEvent<{ value: any }>) => {
         goToSearch(history, search => {
           const query = Query.parse(search);
-          console.log(search);
-          console.log(query);
-          console.log(path);
-          console.log(event.target.value);
           return Query.stringify(_.set(query, path, event.target.value));
         });
       };
@@ -226,20 +235,20 @@ const makeDiv = async (
   { children }: RawDiv,
 ): Promise<React.ComponentType> => {
   const list = _.isArray(children)
-    ? (children as RawControl[])
-    : [children as RawControl];
+    ? (children as (RawControl | CustomComponent)[])
+    : [children as RawControl | CustomComponent];
 
-  const wrapControl = async (rawControl: RawControl) => {
-    let component = await makeComponent(repositories, rawControl);
-    if (isFieldInputControl(rawControl.control)) {
+  const makeChild = async (child: RawControl | CustomComponent) => {
+    let component = await makeComponent(repositories, child);
+    if (isFieldInputControl(child)) {
       component = withBindValue(
-        rawControl as RawFieldInputControl,
+        child as RawFieldInputControl,
         component as React.ComponentType<FieldInputProps<any>>,
       );
     }
     return component;
   };
-  const childrenComponents = await Promise.all(list.map(wrapControl));
+  const childrenComponents = await Promise.all(list.map(makeChild));
   return () => <div>{childrenComponents.map(React.createElement)}</div>;
 };
 
@@ -289,9 +298,15 @@ const toRepositoryMap = (entities: EntityInfo[]): RepositoryMap => {
 
 const makeComponent = (
   repositories: RepositoryMap,
-  ctrl: RawControl,
+  ctrl: RawControl | CustomComponent,
 ): Promise<React.ComponentType<any>> => {
-  switch (ctrl.control) {
+  if (typeof ctrl === "function") {
+    return (ctrl as CustomComponent)(repositories);
+  }
+
+  const control = (ctrl as RawControl).control;
+
+  switch (control) {
     case "div":
       return makeDiv(repositories, ctrl as RawDiv);
     case "form":
@@ -305,12 +320,13 @@ const makeComponent = (
     case "select":
       return makeSelect(repositories, ctrl as RawSelect);
     default:
-      throw new Error(`Unsupport control: ${ctrl.control}`);
+      throw new Error(`Unsupport control: ${control}`);
   }
 };
 
 const makePageComponentHelper = async (
   configUrl: string,
+  injecter: (ui: RawControl) => RawControl,
 ): Promise<React.ComponentType> => {
   //  1. get config file
   //  2. create react component according to the config file
@@ -318,7 +334,7 @@ const makePageComponentHelper = async (
   //  3. return the component, the caller decide when to render the component
   const { entities, ui, title } = await fetchJson(configUrl, "GET");
   const repositories = toRepositoryMap(entities);
-  const Body = await makeComponent(repositories, ui);
+  const Body = await makeComponent(repositories, injecter(ui));
   return () => (
     <RepositoryMapContext.Provider value={repositories}>
       <CPage title={title}>
@@ -330,14 +346,15 @@ const makePageComponentHelper = async (
 
 export const makePageComponent = async (
   configUrl: string,
+  injecter: (ui: RawControl) => RawControl = a => a,
 ): Promise<React.ComponentType> => {
   try {
-    return await makePageComponentHelper(configUrl);
+    return await makePageComponentHelper(configUrl, injecter);
   } catch (error) {
     // initialize error, show error message and reload button
     return () => {
       const handleReload = async () => {
-        const component = await makePageComponentHelper(configUrl);
+        const component = await makePageComponentHelper(configUrl, injecter);
         setEle(React.createElement(component));
       };
 
