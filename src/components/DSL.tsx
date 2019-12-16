@@ -13,11 +13,12 @@ import { CRadioGroup, CRadioGroupProps } from "./RadioGroup";
 import { CCheckbox } from "./Checkbox";
 import { CSelect, CSelectProps } from "./Select";
 import { fetchJson } from "../framework/network";
-import { withLazyProps } from "../framework/hoc";
+import { withProps } from "../framework/hoc";
 import { useLocation, useHistory } from "react-router";
 import * as Query from "query-string";
 import { CIconName } from "./Icons";
 import { goToSearch } from "../framework/locationHelper";
+import LoadError from "../components/LoadError";
 
 export const RepositoryMapContext = React.createContext(
   {} as { [name: string]: IRepository<Entity> },
@@ -92,23 +93,30 @@ const parseVariable = (variable: string) => {
   return { path: variable };
 };
 
-const makeForm = ({ data, children }: RawForm): React.ComponentType => {
-  return () => {
-    const repositories = React.useContext(RepositoryMapContext);
-    const repo = repositories[data.entity];
-    const fields = children.map(child => ({
+const makeForm = async (
+  repositories: RepositoryMap,
+  { data, children }: RawForm,
+): Promise<React.ComponentType> => {
+  const repo = repositories[data.entity];
+  const fields = await Promise.all(
+    children.map(async child => ({
       title: child.title,
       required: child.required,
-      as: makeFormControl(repositories, child),
+      as: await makeFormControl(repositories, child),
       name: child.name,
-    }));
+    })),
+  );
+  const query = Query.parse(window.location.search);
+  const kbId = _.get(query, parseVariable(data.id).path) as string;
+  const initialValues = await repo.get(kbId);
+  return () => {
     const handleSave = async (values: Entity) => {
       setValues(await repo.update(values.id, values));
       return;
     };
     const location = useLocation();
 
-    const [values, setValues] = React.useState(undefined as Entity | undefined);
+    const [values, setValues] = React.useState(initialValues);
 
     React.useEffect(() => {
       repo.get(getId(data.id)).then(setValues);
@@ -132,48 +140,47 @@ const makeForm = ({ data, children }: RawForm): React.ComponentType => {
   };
 };
 
-const makeInput = ({
+const makeInput = async ({
   title,
   type,
-}: RawInput): React.ComponentType<FieldInputProps<any>> => {
+}: RawInput): Promise<React.ComponentType<FieldInputProps<any>>> => {
   return props => <CInput {...props} label={title} type={type} />;
 };
 
-const makeRadioGroup = (
+const makeRadioGroup = async (
   repositories: RepositoryMap,
   { title, data }: RawRadioGroup,
-): React.ComponentType<CRadioGroupProps> =>
-  withLazyProps(
-    CRadioGroup,
-    repositories[data.entity].getList().then(options => ({
-      options: options.map(option => ({
-        value: option[data.value],
-        label: option[data.label],
-      })),
-      title,
+): Promise<React.ComponentType<CRadioGroupProps>> => {
+  const props = await repositories[data.entity].getList().then(options => ({
+    options: options.map(option => ({
+      value: option[data.value],
+      label: option[data.label],
     })),
-  );
+    title,
+  }));
 
-const makeSelect = (
+  return withProps(CRadioGroup, props);
+};
+
+const makeSelect = async (
   repositories: RepositoryMap,
   { title, data }: RawSelect,
-): React.ComponentType<CSelectProps> =>
-  withLazyProps(
-    CSelect,
-    repositories[data.entity].getList().then(options => ({
-      options: options.map(option => ({
-        value: option[data.value],
-        label: option[data.label],
-        icon: option[data.icon],
-      })),
-      title,
+): Promise<React.ComponentType<CSelectProps>> => {
+  const props = await repositories[data.entity].getList().then(options => ({
+    options: options.map(option => ({
+      value: option[data.value],
+      label: option[data.label],
+      icon: option[data.icon],
     })),
-  );
+    title,
+  }));
+  return withProps(CSelect, props);
+};
 
-const makeCheckbox = ({
+const makeCheckbox = async ({
   label,
   title,
-}: RawCheckbox): React.ComponentType<FieldInputProps<any>> => {
+}: RawCheckbox): Promise<React.ComponentType<FieldInputProps<any>>> => {
   return props => {
     return <CCheckbox {...props} title={title} label={label} />;
   };
@@ -189,7 +196,6 @@ const withBindValue = (
   const { entity, path } = parseVariable(bind);
   return () => {
     const history = useHistory();
-    console.log(history.location.search);
     let initialValue: any;
     let handleChange: React.ChangeEventHandler<{ value: any }> = (
       _: React.ChangeEvent<{ value: any }>,
@@ -215,16 +221,16 @@ const withBindValue = (
     });
   };
 };
-const makeDiv = (
+const makeDiv = async (
   repositories: RepositoryMap,
   { children }: RawDiv,
-): React.ComponentType => {
+): Promise<React.ComponentType> => {
   const list = _.isArray(children)
     ? (children as RawControl[])
     : [children as RawControl];
 
-  const wrapControl = (rawControl: RawControl) => {
-    let component = makeComponent(repositories, rawControl);
+  const wrapControl = async (rawControl: RawControl) => {
+    let component = await makeComponent(repositories, rawControl);
     if (isFieldInputControl(rawControl.control)) {
       component = withBindValue(
         rawControl as RawFieldInputControl,
@@ -233,15 +239,14 @@ const makeDiv = (
     }
     return component;
   };
-  return () => (
-    <div>{list.map(child => React.createElement(wrapControl(child)))}</div>
-  );
+  const childrenComponents = await Promise.all(list.map(wrapControl));
+  return () => <div>{childrenComponents.map(React.createElement)}</div>;
 };
 
 const makeFormControl = (
   repositories: RepositoryMap,
   ctrl: RawControl,
-): React.ComponentType<any> => {
+): Promise<React.ComponentType<any>> => {
   if (ctrl.control === "form") {
     throw new Error("Nested form not allowed");
   }
@@ -285,12 +290,12 @@ const toRepositoryMap = (entities: EntityInfo[]): RepositoryMap => {
 const makeComponent = (
   repositories: RepositoryMap,
   ctrl: RawControl,
-): React.ComponentType<any> => {
+): Promise<React.ComponentType<any>> => {
   switch (ctrl.control) {
     case "div":
       return makeDiv(repositories, ctrl as RawDiv);
     case "form":
-      return makeForm(ctrl as RawForm);
+      return makeForm(repositories, ctrl as RawForm);
     case "input":
       return makeInput(ctrl as RawInput);
     case "radioGroup":
@@ -300,32 +305,47 @@ const makeComponent = (
     case "select":
       return makeSelect(repositories, ctrl as RawSelect);
     default:
-      return () => <></>;
+      throw new Error(`Unsupport control: ${ctrl.control}`);
   }
 };
 
-const PageComponent = ({
-  repositories,
-  ctrl,
-  title,
-}: {
-  repositories: RepositoryMap;
-  ctrl: RawControl;
-  title: string;
-}) => (
-  <RepositoryMapContext.Provider value={repositories}>
-    <CPage title={title}>
-      {React.createElement(makeComponent(repositories, ctrl))}
-    </CPage>
-  </RepositoryMapContext.Provider>
-);
+const makePageComponentHelper = async (
+  configUrl: string,
+): Promise<React.ComponentType> => {
+  //  1. get config file
+  //  2. create react component according to the config file
+  //    - Get initial values from remote server in this step
+  //  3. return the component, the caller decide when to render the component
+  const { entities, ui, title } = await fetchJson(configUrl, "GET");
+  const repositories = toRepositoryMap(entities);
+  const Body = await makeComponent(repositories, ui);
+  return () => (
+    <RepositoryMapContext.Provider value={repositories}>
+      <CPage title={title}>
+        <Body />
+      </CPage>
+    </RepositoryMapContext.Provider>
+  );
+};
 
-export const makePageComponent = (configUrl: string): React.ComponentType =>
-  withLazyProps(
-    PageComponent,
-    fetchJson(configUrl, "GET").then(({ entities, ui, title }) => ({
-      repositories: toRepositoryMap(entities),
-      ctrl: ui,
-      title,
-    })),
-  ) as React.ComponentType;
+export const makePageComponent = async (
+  configUrl: string,
+): Promise<React.ComponentType> => {
+  try {
+    return await makePageComponentHelper(configUrl);
+  } catch (error) {
+    // initialize error, show error message and reload button
+    return () => {
+      const handleReload = async () => {
+        const component = await makePageComponentHelper(configUrl);
+        setEle(React.createElement(component));
+      };
+
+      const [ele, setEle] = React.useState(() => (
+        <LoadError error={error} onReload={handleReload} />
+      ));
+
+      return ele;
+    };
+  }
+};

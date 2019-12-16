@@ -3,11 +3,11 @@ import { Suspense } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Spin from "./components/Spin";
 import LoadError from "./components/LoadError";
-
 interface AppParam {
   currentApp: string;
   currentPage: string;
 }
+import { isPromise } from "./framework/utils";
 
 const useStyles = makeStyles((_: Theme) =>
   createStyles({
@@ -47,7 +47,12 @@ export default class LazyPage extends React.Component<
       import(
         /* webpackChunkName: "page" */
         `./Products/${currentApp}/${currentPage}/index.tsx`
-      ),
+      ).then(pack => {
+        if (isPromise(pack.default)) {
+          return pack.default.then((next: any) => ({ default: next }));
+        }
+        return pack;
+      }),
     );
   }
 
