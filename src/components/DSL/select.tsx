@@ -4,7 +4,7 @@ import { withProps } from "../../framework/hoc";
 
 export const makeSelect = async (
   repositories: RepositoryMap,
-  { title, data }: RawSelect,
+  { title, data, className }: RawSelect,
 ): Promise<React.ComponentType<CSelectProps>> => {
   const props = await repositories[data.entity].getList().then(options => ({
     options: options.map(option => ({
@@ -13,6 +13,7 @@ export const makeSelect = async (
       icon: option[data.icon],
     })),
     title,
+    className,
   }));
   return withProps(CSelect, props);
 };

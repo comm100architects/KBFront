@@ -8,15 +8,25 @@
     {
       "name": "kbVisibility",
       "source": [
-        { "id": "public", "label": "Public: Visible to agents and visitors" },
-        { "id": "private", "label": "Private: Only visible to agents" }
+        {
+          "value": "public",
+          "label": "Public: Visible to agents and visitors"
+        },
+        { "value": "private", "label": "Private: Only visible to agents" }
       ]
     },
     {
       "name": "kbStatus",
       "source": [
-        { "id": "open", "label": "Open" },
-        { "id": "close", "label": "Close" }
+        { "value": "open", "label": "Open" },
+        { "value": "close", "label": "Close" }
+      ]
+    },
+    {
+      "name": "homePageType",
+      "source": [
+        { "label": "Display the root category", "value": "rootCategory" },
+        { "label": "Display a custom page", "value": "customPage" }
       ]
     }
   ],
@@ -25,6 +35,7 @@
     "children": [
       {
         "control": "select",
+        "className": "kbSelect",
         "title": "Knowledge Bases",
         "bind": "query.kbId",
         "data": {
@@ -44,12 +55,23 @@
             "required": true
           },
           {
+            "name": "homePageType",
+            "control": "radioGroup",
+            "title": "Home",
+            "required": false,
+            "data": {
+              "entity": "homePageType",
+              "value": "value",
+              "label": "label"
+            }
+          },
+          {
             "name": "visibility",
             "title": "Visibility",
             "control": "radioGroup",
             "data": {
               "entity": "kbVisibility",
-              "value": "id",
+              "value": "value",
               "label": "label"
             }
           },
@@ -63,7 +85,7 @@
             "name": "status",
             "title": "Status",
             "control": "radioGroup",
-            "data": { "entity": "kbStatus", "value": "id", "label": "label" }
+            "data": { "entity": "kbStatus", "value": "value", "label": "label" }
           }
         ]
       }

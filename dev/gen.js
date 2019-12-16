@@ -70,6 +70,17 @@ const genTree = (parentIdName, sc, childrenCount, parent, depth) => {
   return [parent, ...children];
 };
 
+const [customPageId, referenceCustomPageId] = guidPool();
+const customPages = generate([
+  5,
+  {
+    id: customPageId,
+    title: chance.sentence,
+    modified: chance.date,
+    status: articleStatus,
+  },
+]);
+
 const data = range(10)
   .map(() =>
     generate({
@@ -78,6 +89,8 @@ const data = range(10)
       allowFeedback: chance.bool,
       visibility: () => (chance.bool() ? "private" : "public"),
       status: () => (chance.bool() ? "close" : "open"),
+      homePageType: () => (chance.bool() ? "rootCategory" : "customPage"),
+      homeCustomPageId: referenceCustomPageId,
     }),
   )
   .reduce(
@@ -125,7 +138,7 @@ const data = range(10)
       );
       return result;
     },
-    { knowledgeBases: [], categories: [], articles: [] },
+    { knowledgeBases: [], categories: [], articles: [], customPages },
   );
 
 console.log(JSON.stringify(data, null, 2));

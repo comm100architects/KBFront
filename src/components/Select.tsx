@@ -39,7 +39,7 @@ export const CSelect = (props: CSelectProps) => {
   const classes = useStyle();
   const labelId = props.id ? `${props.id}-label` : undefined;
   return (
-    <>
+    <div className={props.className}>
       {props.title && (
         <InputLabel htmlFor={props.id} id={labelId}>
           {props.title}
@@ -65,6 +65,6 @@ export const CSelect = (props: CSelectProps) => {
           );
         })}
       </Select>
-    </>
+    </div>
   );
 };

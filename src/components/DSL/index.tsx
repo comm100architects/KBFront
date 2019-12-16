@@ -141,3 +141,22 @@ export const makePageComponent = async (
     };
   }
 };
+
+export const findForm = (root: RawControl): RawForm | null => {
+  if (root.control === "form") return root as RawForm;
+  else if (root.control === "div") {
+    const children = (root as RawDiv).children;
+    if (_.isArray(children)) {
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        if ((child as RawControl).control) {
+          const res = findForm(child as RawControl);
+          if (res) {
+            return res;
+          }
+        }
+      }
+    }
+  }
+  return null;
+};

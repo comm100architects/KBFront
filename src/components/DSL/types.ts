@@ -1,5 +1,6 @@
 import { CFormField } from "../Form";
 import { IRepository } from "../../framework/repository";
+import { CIconName } from "../Icons";
 
 export type RepositoryMap = { [name: string]: IRepository<Entity> };
 
@@ -20,6 +21,7 @@ export type CustomFormFieldComponent = (
 
 export interface RawControl {
   control: "div" | "form" | "input" | "radioGroup" | "checkbox" | "select";
+  className?: string;
 }
 
 export interface RawDiv extends RawControl {
