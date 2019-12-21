@@ -1,4 +1,4 @@
-import { RepositoryMap, RawRadioGroup } from "./types";
+import { RepositoryMap, RawRadioGroup, UIRowRadioGroup } from "./types";
 import { CRadioGroupProps, CRadioGroup } from "../RadioGroup";
 import { withProps } from "../../framework/hoc";
 export const makeRadioGroup = async (
@@ -14,4 +14,18 @@ export const makeRadioGroup = async (
   }));
 
   return withProps(CRadioGroup, props);
+};
+
+export const makeRadioGroup2 = async (
+  repositories: RepositoryMap,
+  { field, optionsEntity, optionsLabelField }: UIRowRadioGroup,
+): Promise<React.ComponentType<CRadioGroupProps>> => {
+  const options = await repositories[optionsEntity].getList();
+  return withProps(CRadioGroup, {
+    options: options.map(option => ({
+      value: option.id,
+      label: option[optionsLabelField || "label"],
+    })),
+    title: field.title,
+  });
 };

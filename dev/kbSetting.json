@@ -2,93 +2,140 @@
   "title": "Setting",
   "entities": [
     {
-      "name": "knowledgeBases",
-      "source": "//localhost:3000"
-    },
-    {
-      "name": "kbVisibility",
-      "source": [
+      "name": "KnowledgeBase",
+      "type": "object",
+      "data": "//localhost:3000/knowledgeBases",
+      "fields": [
+        { "name": "id", "type": { "name": "guid" } },
         {
-          "value": "public",
-          "label": "Public: Visible to agents and visitors"
+          "name": "name",
+          "type": { "name": "string", "minLength": 0, "maxLength": 64 },
+          "isRequired": true,
+          "title": "Name"
         },
-        { "value": "private", "label": "Private: Only visible to agents" }
+        {
+          "name": "homePageType",
+          "type": { "name": "reference", "entityName": "KbHomePageType" },
+          "isRequired": true,
+          "title": "Home"
+        },
+        {
+          "name": "homeCustomPageId",
+          "type": {
+            "name": "reference",
+            "entityName": "KbCustomPage",
+            "labelFieldName": "title"
+          },
+          "isRequired": true,
+          "title": ""
+        },
+        {
+          "name": "visibility",
+          "type": { "name": "reference", "entityName": "KbVisibility" },
+          "isRequired": true,
+          "title": "Visibility"
+        },
+        {
+          "name": "allowFeedback",
+          "type": { "name": "bool" },
+          "isRequired": true,
+          "title": "Feedback"
+        },
+        {
+          "name": "status",
+          "type": { "name": "reference", "entityName": "KbStatus" },
+          "isRequired": true,
+          "title": "Status"
+        }
       ]
     },
     {
-      "name": "kbStatus",
-      "source": [
-        { "value": "open", "label": "Open" },
-        { "value": "close", "label": "Close" }
+      "name": "KbHomePageType",
+      "type": "enum",
+      "data": [
+        { "key": 0, "label": "Display the root category" },
+        { "key": 1, "label": "Display a custom page" }
       ]
     },
     {
-      "name": "homePageType",
-      "source": [
-        { "label": "Display the root category", "value": "rootCategory" },
-        { "label": "Display a custom page", "value": "customPage" }
+      "name": "KbVisibility",
+      "type": "enum",
+      "data": [
+        { "key": 0, "label": "Display the root category" },
+        { "key": 1, "label": "Display a custom page" }
+      ]
+    },
+    {
+      "name": "KbStatus",
+      "type": "enum",
+      "data": [
+        { "key": 0, "label": "Close" },
+        { "key": 1, "label": "Open" }
+      ]
+    },
+    {
+      "name": "KbCustomPage",
+      "type": "object",
+      "data": "//localhost:3000/customPages",
+      "fields": [
+        {
+          "name": "id",
+          "type": { "name": "guid" },
+          "isRequired": true
+        },
+        {
+          "name": "title",
+          "type": { "name": "string", "minLength": 0, "maxLength": 1024 },
+          "isRequired": true
+        }
       ]
     }
   ],
-  "ui": {
-    "control": "div",
-    "children": [
-      {
-        "control": "select",
-        "className": "kbSelect",
-        "title": "Knowledge Bases",
-        "bind": "query.kbId",
-        "data": {
-          "entity": "knowledgeBases",
-          "label": "name",
-          "value": "id"
+  "entity": "KnowledgeBase",
+  "groups": [
+    {
+      "indent": 0,
+      "conditionsToHide": [],
+      "rows": [
+        {
+          "fieldName": "name",
+          "componentType": "input"
+        },
+        {
+          "fieldName": "homePageType",
+          "componentType": "radioGroup"
         }
-      },
-      {
-        "control": "form",
-        "data": { "entity": "knowledgeBases", "id": "query.kbId" },
-        "children": [
-          {
-            "name": "name",
-            "control": "input",
-            "title": "Name",
-            "required": true
-          },
-          {
-            "name": "homePageType",
-            "control": "radioGroup",
-            "title": "Home",
-            "required": false,
-            "data": {
-              "entity": "homePageType",
-              "value": "value",
-              "label": "label"
-            }
-          },
-          {
-            "name": "visibility",
-            "title": "Visibility",
-            "control": "radioGroup",
-            "data": {
-              "entity": "kbVisibility",
-              "value": "value",
-              "label": "label"
-            }
-          },
-          {
-            "name": "allowFeedback",
-            "title": "Feedback",
-            "label": "Allow visitors to rate Helpful or Not Helpful on articles",
-            "control": "checkbox"
-          },
-          {
-            "name": "status",
-            "title": "Status",
-            "control": "radioGroup",
-            "data": { "entity": "kbStatus", "value": "value", "label": "label" }
-          }
-        ]
-      }
-    ]
-  }
+      ]
+    },
+    {
+      "indent": 1,
+      "conditionsToHide": ["homePageType==0"],
+      "rows": [
+        {
+          "fieldName": "homeCustomPageId",
+          "componentType": "radioGroup",
+          "nullOptionLabel": "--Choose a Custom Page--"
+        }
+      ]
+    },
+    {
+      "indent": 0,
+      "conditionsToHide": [],
+      "rows": [
+        {
+          "fieldName": "visibility",
+          "componentType": "radioGroup"
+        },
+        {
+          "fieldName": "feedback",
+          "componentType": "checkbox",
+          "label": "Allow visitors to rate Helpful or Not Helpful on articles"
+        },
+        {
+          "fieldName": "status",
+          "componentType": "radioGroup"
+        }
+      ]
+    }
+  ]
 }

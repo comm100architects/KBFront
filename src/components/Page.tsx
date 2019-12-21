@@ -34,7 +34,12 @@ export default (props: CPageProps): JSX.Element => {
   return (
     <div className={classes.root}>
       <Paper component="main" className={classes.main}>
-        <Typography variant="h4" noWrap className={classes.title}>
+        <Typography
+          data-test-id="page-title"
+          variant="h4"
+          noWrap
+          className={classes.title}
+        >
           {props.title}
         </Typography>
         {props.children}

@@ -23,14 +23,14 @@ const isFieldInputControl = (ctrl: RawControl | CustomComponent) => {
 };
 
 const withBindValue = (
-  { bind }: RawFieldInputControl,
+  { value }: RawFieldInputControl,
   component: React.ComponentType<FieldInputProps<any>>,
 ): React.ComponentType => {
   return () => {
-    const [value, setValue] = useGlobal(bind);
+    const [val, setVal] = useGlobal(value);
     return React.createElement(component, {
-      value,
-      onChange: changeHandler(setValue),
+      value: val,
+      onChange: changeHandler(setVal),
       name: "",
       onBlur: () => {},
     });

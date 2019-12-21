@@ -1,10 +1,10 @@
-import * as React from "react";
+import React from "react";
 import Page from "../../../components/Page";
 import { CIconButton, CButton } from "../../../components/Buttons";
 import { CIcon } from "../../../components/Icons";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import MenuItem from "@material-ui/core/MenuItem";
-import * as moment from "moment";
+import moment from "moment";
 import SearchBox from "../../../components/SearchBox";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";

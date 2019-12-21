@@ -1,13 +1,17 @@
 import { fetchJson } from "./network";
-import * as _ from "lodash";
+import _ from "lodash";
 
 export interface IRepository<Entity> {
   add(obj: Entity): Promise<Entity>;
-  update(id: string, obj: Entity): Promise<Entity>;
-  get(id?: string): Promise<Entity>;
-  delete(id: string): Promise<void>;
+  update(id: string | number, obj: Entity): Promise<Entity>;
+  get(id?: string | number): Promise<Entity>;
+  delete(id: string | number): Promise<void>;
   getList(params?: QueryItem[]): Promise<Entity[]>;
-  execute(action: string, objectId: string, payload: any): Promise<any>;
+  execute(
+    action: string,
+    objectId: string | number,
+    payload: any,
+  ): Promise<any>;
 }
 
 export interface QueryItem {
@@ -16,7 +20,7 @@ export interface QueryItem {
 }
 
 export class ReadonlyLocalRepository<
-  Entity extends { id: string; [key: string]: any }
+  Entity extends { id: string | number; [key: string]: any }
 > implements IRepository<Entity> {
   private entities: Entity[];
   constructor(entities: Entity[]) {
@@ -65,8 +69,12 @@ export class ReadonlyLocalRepository<
 
 export class RESTfulRepository<Entity> implements IRepository<Entity> {
   endPoint: string;
-  constructor(url: string, entityName: string) {
-    this.endPoint = `${url}/${entityName}`;
+  constructor(url: string, entityName?: string) {
+    if (entityName == null) {
+      this.endPoint = url;
+    } else {
+      this.endPoint = `${url}/${entityName}`;
+    }
   }
 
   add(obj: Entity): Promise<Entity> {

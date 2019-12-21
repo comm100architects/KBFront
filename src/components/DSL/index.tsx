@@ -9,8 +9,13 @@ import CPage from "../Page";
 import { fetchJson } from "../../framework/network";
 import { useHistory } from "react-router";
 import LoadError from "../../components/LoadError";
-import { GlobalContext, GlobalQueryString, GlobalState } from "./context";
-import { makeInput, RawInput } from "./input";
+import {
+  GlobalContext,
+  GlobalQueryString,
+  GlobalState,
+  useGlobal,
+} from "./context";
+import { makeInput, RawInput, makeInput2 } from "./input";
 import {
   RepositoryMap,
   RawRadioGroup,
@@ -23,12 +28,15 @@ import {
   RawPage,
   Entity,
   RawForm,
+  UIRowRadioGroup,
+  normalizeRawUIPage,
+  RawUIPage,
 } from "./types";
 import { makeForm } from "./form";
 import { makeDiv } from "./div";
-import { makeRadioGroup } from "./radioGroup";
-import { makeSelect } from "./select";
-import { makeCheckbox } from "./checkbox";
+import { makeRadioGroup, makeRadioGroup2 } from "./radioGroup";
+import { makeSelect, makeSelect2 } from "./select";
+import { makeCheckbox, makeCheckbox2 } from "./checkbox";
 
 const toRepositoryMap = (entities: EntityInfo[]): RepositoryMap => {
   const list = entities.map(info => {
@@ -159,4 +167,163 @@ export const findForm = (root: RawControl): RawForm | null => {
     }
   }
   return null;
+};
+
+// NEW VERSION
+//
+//
+//
+//
+
+import { UIPage, UIGroup, UIRow, UIRowSelect, UIRowCheckbox } from "./types";
+import { Formik, Form, FormikHelpers, Field } from "formik";
+import Button from "@material-ui/core/Button";
+export const makeUIRowComponent = async (
+  repositories: RepositoryMap,
+  row: UIRow,
+): Promise<React.ComponentType<any>> => {
+  switch (row.componentType) {
+    case "select":
+      return makeSelect2(repositories, row as UIRowSelect);
+    case "checkbox":
+      return makeCheckbox2(row as UIRowCheckbox);
+    case "radioGroup":
+      return makeRadioGroup2(repositories, row as UIRowRadioGroup);
+    case "input":
+      return makeInput2(row);
+    default:
+      throw new Error(`Unsupport componentType: ${row.componentType}`);
+  }
+};
+export const makeUIRowFormCtrol = async (
+  repositories: RepositoryMap,
+  row: UIRow,
+  i: number,
+  j: number,
+): Promise<React.ComponentType<any>> => {
+  const component = await makeUIRowComponent(repositories, row);
+  return () => (
+    <Field
+      data-test-id={`form-field-${i}-${j}`}
+      title={row.field.title}
+      as={component}
+    ></Field>
+  );
+};
+export const makeUIGroupComponent = async (
+  repositories: RepositoryMap,
+  group: UIGroup,
+  i: number,
+) => {
+  const rowComponents = await Promise.all(
+    group.rows.map((row: UIRow, j: number) =>
+      makeUIRowFormCtrol(repositories, row, i, j),
+    ),
+  );
+  return () => (
+    <div>
+      (group.title && <h6 data-test-id="group-title">{group.title}</h6>)
+      {...rowComponents.map(React.createElement)}
+    </div>
+  );
+};
+
+export const makeFormComponent = async ({
+  repositories,
+  groups,
+  entity,
+  fields,
+}: UIPage) => {
+  const groupComponents = groups.map((group: UIGroup, i: number) =>
+    makeUIGroupComponent(repositories, group, i),
+  );
+
+  const repo = repositories[entity];
+
+  return () => {
+    const handleSubmit = async (
+      values: Entity,
+      { setSubmitting }: FormikHelpers<Entity>,
+    ) => {
+      setValues(await repo.update(values.id, values));
+      setSubmitting(false);
+    };
+
+    const handleValidation = (values: Entity) => {
+      const errors: { [key: string]: string } = {};
+      for (let i = 0; i < fields.length; i++) {
+        const field = fields[i];
+        if (field.isRequired && !values[field.name]) {
+          errors[field.name] = `${field.title} is required`;
+        }
+      }
+      return errors;
+    };
+
+    const [values, setValues] = React.useState(null as Entity | null);
+    const [entityId] = useGlobal("query.id");
+    React.useEffect(() => {
+      repo.get(entityId).then(setValues);
+    }, []);
+
+    return (
+      values && (
+        <Formik
+          initialValues={values!}
+          validate={handleValidation}
+          onSubmit={handleSubmit}
+          enableReinitialize={true}
+          data-test-id={`form-${entity}`}
+        >
+          {({ isSubmitting, dirty }) => (
+            <Form>
+              {...groupComponents.map(React.createElement)}
+              <div>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={!dirty || isSubmitting}
+                >
+                  Save Changes
+                </Button>
+                <Button
+                  type="reset"
+                  variant="contained"
+                  color="default"
+                  disabled={!dirty || isSubmitting}
+                >
+                  Discard
+                </Button>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      )
+    );
+  };
+};
+
+export const makePageComponent2 = async (
+  configUrl: string,
+): Promise<React.ComponentType<any>> => {
+  const page = normalizeRawUIPage(
+    (await fetchJson(configUrl, "GET")) as RawUIPage,
+  );
+  const Body = await makeFormComponent(page);
+  return () => {
+    const history = useHistory();
+    const [state, setState] = React.useState();
+    const globalVariables = {
+      query: new GlobalQueryString(history),
+      state: new GlobalState(state, setState),
+    };
+    return (
+      <GlobalContext.Provider value={globalVariables}>
+        <CPage title={page.title}>
+          <Body />
+        </CPage>
+      </GlobalContext.Provider>
+    );
+  };
 };

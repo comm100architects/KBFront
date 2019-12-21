@@ -12,7 +12,11 @@ interface CInputProps extends FieldInputProps<string>, CElementProps {
 export const CInput = (props: CInputProps) => {
   return (
     <>
-      {props.label && <InputLabel htmlFor={props.id}>{props.label}</InputLabel>}
+      {props.label && (
+        <InputLabel data-test-id="input-label" htmlFor={props.id}>
+          {props.label}
+        </InputLabel>
+      )}
       <Input {...props} />
     </>
   );

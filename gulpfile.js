@@ -21,5 +21,5 @@ function exec(cmd) {
 gulp.task("default", function() {
   exec("node dev/server.js");
   exec("npm run mock");
-  exec("npm run js");
+  exec("npm run js:watch");
 });

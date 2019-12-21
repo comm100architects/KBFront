@@ -8,7 +8,7 @@
     "jsx": "react",
     "removeComments": false,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "strict": true
   }
 }
