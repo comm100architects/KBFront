@@ -95,7 +95,6 @@
   "groups": [
     {
       "indent": 0,
-      "conditionsToHide": [],
       "rows": [
         {
           "fieldName": "name",
@@ -109,7 +108,7 @@
     },
     {
       "indent": 1,
-      "conditionsToHide": ["homePageType==rootCategory"],
+      "conditionToHide": "this.homePageType==='rootCategory'",
       "rows": [
         {
           "fieldName": "homeCustomPageId",

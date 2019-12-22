@@ -2,9 +2,8 @@ import React from "react";
 import moxios from "moxios";
 import { normalizeRawUIPage, RawUIPage } from "../DSL/types";
 import { makePageComponent2 } from "../DSL";
-import { shallow, mount, render } from "enzyme";
+import { mount, render } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
-import { Formik } from "formik";
 
 const rawUIPage: RawUIPage = {
   title: "hello",
@@ -119,7 +118,7 @@ const rawUIPage: RawUIPage = {
     },
     {
       indent: 1,
-      conditionsToHide: ["homePageType==rootCategory"],
+      conditionToHide: 'this.homePageType=="rootCategory"',
       rows: [
         {
           fieldName: "homeCustomPageId",
@@ -231,7 +230,7 @@ describe("convert RawUIPage to UIPage", () => {
       },
       {
         indent: 1,
-        conditionsToHide: ["homePageType==rootCategory"],
+        conditionToHide: 'this.homePageType=="rootCategory"',
         rows: [
           {
             field: {
@@ -418,9 +417,9 @@ describe("render UIPage", () => {
         },
       ],
     });
-    const wrapper = render(page);
+    const wrapper = mount(page);
     expect(
-      wrapper.find('[data-test-id="form-radio-group-item-0"]'),
-    ).toBeTruthy();
+      wrapper.find('[data-test-id="form-radio-group-item-0"]').length,
+    ).toEqual(1);
   });
 });

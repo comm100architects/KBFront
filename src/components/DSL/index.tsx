@@ -178,6 +178,7 @@ export const findForm = (root: RawControl): RawForm | null => {
 import { UIPage, UIGroup, UIRow, UIRowSelect, UIRowCheckbox } from "./types";
 import { Formik, Form, FormikHelpers, Field } from "formik";
 import Button from "@material-ui/core/Button";
+import FormControl from "@material-ui/core/FormControl";
 export const makeUIRowComponent = async (
   repositories: RepositoryMap,
   row: UIRow,
@@ -202,13 +203,20 @@ export const makeUIRowFormCtrol = async (
   j: number,
 ): Promise<React.ComponentType<any>> => {
   const component = await makeUIRowComponent(repositories, row);
-  return () => (
-    <Field
-      data-test-id={`form-field-${i}-${j}`}
-      title={row.field.title}
-      name={row.field.name}
-      as={component}
-    ></Field>
+  return ({ errors }) => (
+    <FormControl
+      key={j}
+      required={row.field.isRequired}
+      error={!!errors[row.field.name]}
+      style={{ display: "block" }}
+    >
+      <Field
+        data-test-id={`form-field-${i}-${j}`}
+        title={row.field.title}
+        name={row.field.name}
+        as={component}
+      ></Field>{" "}
+    </FormControl>
   );
 };
 export const makeUIGroupComponent = async (
@@ -221,12 +229,29 @@ export const makeUIGroupComponent = async (
       makeUIRowFormCtrol(repositories, row, i, j),
     ),
   );
-  return () => (
-    <div style={{ paddingLeft: group.indent * 30 }}>
-      {group.title && <h6 data-test-id="group-title">{group.title}</h6>}
-      {...rowComponents.map(React.createElement)}
-    </div>
-  );
+  let hiddenPred = (_: any) => false;
+  if (group.conditionToHide) {
+    const expression = group.conditionToHide;
+    const f = new Function(`return ${expression}`);
+    hiddenPred = (self: any) => f.call(self);
+  }
+  return ({ initialValues, setFieldValue, values, errors }) => {
+    if (hiddenPred(values)) {
+      for (const { field } of group.rows) {
+        if (initialValues[field.name] !== values[field.name]) {
+          setFieldValue(field.name, initialValues[field.name]);
+        }
+      }
+      return <></>;
+    } else {
+      return (
+        <div style={{ paddingLeft: group.indent * 30 }}>
+          {group.title && <h6 data-test-id="group-title">{group.title}</h6>}
+          {...rowComponents.map(Row => <Row errors={errors} />)}
+        </div>
+      );
+    }
+  };
 };
 
 export const makeFormComponent = async ({
@@ -278,15 +303,15 @@ export const makeFormComponent = async ({
           enableReinitialize={true}
           data-test-id={`form-${entity}`}
         >
-          {({ isSubmitting, dirty }) => (
+          {props => (
             <Form>
-              {...groupComponents.map(React.createElement)}
+              {...groupComponents.map(Group => <Group {...props} />)}
               <div>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={!dirty || isSubmitting}
+                  disabled={!props.dirty || props.isSubmitting}
                 >
                   Save Changes
                 </Button>
@@ -294,7 +319,7 @@ export const makeFormComponent = async ({
                   type="reset"
                   variant="contained"
                   color="default"
-                  disabled={!dirty || isSubmitting}
+                  disabled={!props.dirty || props.isSubmitting}
                 >
                   Discard
                 </Button>

@@ -48,7 +48,7 @@ export interface RawUIPage {
 
 export interface RawUIGroup {
   indent: 0 | 1;
-  conditionsToHide?: string[];
+  conditionToHide?: string;
   rows: RawUIRow[];
 }
 
@@ -119,7 +119,7 @@ export const normalizeRawUIGroup = (
 ): UIGroup => {
   return {
     indent: group.indent,
-    conditionsToHide: group.conditionsToHide,
+    conditionToHide: group.conditionToHide,
     rows: group.rows.map((row: RawUIRow) => {
       const field = fields.find(({ name }) => name === row.fieldName)!;
       if (row.componentType === "input") {
@@ -185,7 +185,7 @@ export interface UIPage {
 
 export interface UIGroup {
   indent: number;
-  conditionsToHide?: string[];
+  conditionToHide?: string;
   title?: string;
   rows: UIRow[];
 }
