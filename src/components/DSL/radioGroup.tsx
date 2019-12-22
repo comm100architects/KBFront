@@ -5,15 +5,15 @@ export const makeRadioGroup = async (
   repositories: RepositoryMap,
   { title, data }: RawRadioGroup,
 ): Promise<React.ComponentType<CRadioGroupProps>> => {
-  const props = await repositories[data.entity].getList().then(options => ({
+  const options = await repositories[data.entity].getList();
+
+  return withProps(CRadioGroup, {
     options: options.map(option => ({
       value: option[data.value],
       label: option[data.label],
     })),
     title,
-  }));
-
-  return withProps(CRadioGroup, props);
+  });
 };
 
 export const makeRadioGroup2 = async (

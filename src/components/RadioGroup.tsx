@@ -21,7 +21,11 @@ export interface CRadioGroupProps
 export const CRadioGroup = (props: CRadioGroupProps) => {
   return (
     <div className={props.className}>
-      {props.title && <FormLabel component="div">{props.title}</FormLabel>}
+      {props.title && (
+        <FormLabel data-test-id="form-radio-group" component="div">
+          {props.title}
+        </FormLabel>
+      )}
       <RadioGroup
         id={props.id}
         onChange={props.onChange}
@@ -31,6 +35,7 @@ export const CRadioGroup = (props: CRadioGroupProps) => {
       >
         {props.options.map(({ label, value }) => (
           <FormControlLabel
+            data-test-id={`form-radio-group-item-${value}`}
             key={value}
             value={value}
             control={<Radio color="primary" />}

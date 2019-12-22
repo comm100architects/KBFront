@@ -206,6 +206,7 @@ export const makeUIRowFormCtrol = async (
     <Field
       data-test-id={`form-field-${i}-${j}`}
       title={row.field.title}
+      name={row.field.name}
       as={component}
     ></Field>
   );
@@ -214,15 +215,15 @@ export const makeUIGroupComponent = async (
   repositories: RepositoryMap,
   group: UIGroup,
   i: number,
-) => {
+): Promise<React.ComponentType<any>> => {
   const rowComponents = await Promise.all(
     group.rows.map((row: UIRow, j: number) =>
       makeUIRowFormCtrol(repositories, row, i, j),
     ),
   );
   return () => (
-    <div>
-      (group.title && <h6 data-test-id="group-title">{group.title}</h6>)
+    <div style={{ paddingLeft: group.indent * 30 }}>
+      {group.title && <h6 data-test-id="group-title">{group.title}</h6>}
       {...rowComponents.map(React.createElement)}
     </div>
   );
@@ -234,8 +235,10 @@ export const makeFormComponent = async ({
   entity,
   fields,
 }: UIPage) => {
-  const groupComponents = groups.map((group: UIGroup, i: number) =>
-    makeUIGroupComponent(repositories, group, i),
+  const groupComponents = await Promise.all(
+    groups.map((group: UIGroup, i: number) =>
+      makeUIGroupComponent(repositories, group, i),
+    ),
   );
 
   const repo = repositories[entity];

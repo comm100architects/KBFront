@@ -38,7 +38,7 @@
         {
           "name": "allowFeedback",
           "type": { "name": "bool" },
-          "isRequired": true,
+          "isRequired": false,
           "title": "Feedback"
         },
         {
@@ -53,24 +53,24 @@
       "name": "KbHomePageType",
       "type": "enum",
       "data": [
-        { "key": 0, "label": "Display the root category" },
-        { "key": 1, "label": "Display a custom page" }
+        { "id": "rootCategory", "label": "Display the root category" },
+        { "id": "cutomPage", "label": "Display a custom page" }
       ]
     },
     {
       "name": "KbVisibility",
       "type": "enum",
       "data": [
-        { "key": 0, "label": "Display the root category" },
-        { "key": 1, "label": "Display a custom page" }
+        { "id": "public", "label": "Public" },
+        { "id": "private", "label": "Private" }
       ]
     },
     {
       "name": "KbStatus",
       "type": "enum",
       "data": [
-        { "key": 0, "label": "Close" },
-        { "key": 1, "label": "Open" }
+        { "id": "close", "label": "Close" },
+        { "id": "open", "label": "Open" }
       ]
     },
     {
@@ -109,25 +109,24 @@
     },
     {
       "indent": 1,
-      "conditionsToHide": ["homePageType==0"],
+      "conditionsToHide": ["homePageType==rootCategory"],
       "rows": [
         {
           "fieldName": "homeCustomPageId",
-          "componentType": "radioGroup",
+          "componentType": "select",
           "nullOptionLabel": "--Choose a Custom Page--"
         }
       ]
     },
     {
       "indent": 0,
-      "conditionsToHide": [],
       "rows": [
         {
           "fieldName": "visibility",
           "componentType": "radioGroup"
         },
         {
-          "fieldName": "feedback",
+          "fieldName": "allowFeedback",
           "componentType": "checkbox",
           "label": "Allow visitors to rate Helpful or Not Helpful on articles"
         },

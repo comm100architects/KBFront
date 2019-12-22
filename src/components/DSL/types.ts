@@ -7,13 +7,19 @@ import {
 import { CIconName } from "../Icons";
 import _ from "lodash";
 
+export type UIEntityFieldTypeReference = {
+  name: "reference";
+  entityName: string;
+  labelFieldName?: string;
+};
+
 export type UIEntityFieldType =
   | {
       name: "string";
       minLength?: number;
       maxLength?: number;
     }
-  | { name: "reference"; entityName: string; labelFieldName?: string }
+  | UIEntityFieldTypeReference
   | { name: "bool" }
   | { name: "int"; min: number; max: number }
   | { name: "guid" };
@@ -115,21 +121,33 @@ export const normalizeRawUIGroup = (
     indent: group.indent,
     conditionsToHide: group.conditionsToHide,
     rows: group.rows.map((row: RawUIRow) => {
-      if (row.componentType === "radioGroup" || row.componentType === "input") {
+      const field = fields.find(({ name }) => name === row.fieldName)!;
+      if (row.componentType === "input") {
         return {
           componentType: row.componentType,
-          field: fields.find(({ name }) => name === row.fieldName)!,
+          field,
+        };
+      } else if (row.componentType === "radioGroup") {
+        const referenceType = field.type as UIEntityFieldTypeReference;
+        return {
+          componentType: row.componentType,
+          field,
+          optionsEntity: referenceType.entityName,
+          optionsLabelField: referenceType.labelFieldName,
         };
       } else if (row.componentType === "select") {
+        const referenceType = field.type as UIEntityFieldTypeReference;
         return {
           componentType: row.componentType,
-          field: fields.find(({ name }) => name === row.fieldName)!,
+          field,
           nullOptionLabel: row.nullOptionLabel,
+          optionsEntity: referenceType.entityName,
+          optionsLabelField: referenceType.labelFieldName,
         };
       } else if (row.componentType === "checkbox") {
         return {
           componentType: row.componentType,
-          field: fields.find(({ name }) => name === row.fieldName)!,
+          field,
           label: row.label,
         };
       }

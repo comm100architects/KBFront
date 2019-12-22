@@ -4,6 +4,7 @@ import { normalizeRawUIPage, RawUIPage } from "../DSL/types";
 import { makePageComponent2 } from "../DSL";
 import { shallow, mount, render } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
+import { Formik } from "formik";
 
 const rawUIPage: RawUIPage = {
   title: "hello",
@@ -48,7 +49,7 @@ const rawUIPage: RawUIPage = {
         {
           name: "allowFeedback",
           type: { name: "bool" },
-          isRequired: true,
+          isRequired: false,
           title: "Feedback",
         },
         {
@@ -63,24 +64,24 @@ const rawUIPage: RawUIPage = {
       name: "KbHomePageType",
       type: "enum",
       data: [
-        { id: 0, label: "Display the root category" },
-        { id: 1, label: "Display a custom page" },
+        { id: "rootCategory", label: "Display the root category" },
+        { id: "cutomPage", label: "Display a custom page" },
       ],
     },
     {
       name: "KbVisibility",
       type: "enum",
       data: [
-        { id: 0, label: "Display the root category" },
-        { id: 1, label: "Display a custom page" },
+        { id: "public", label: "Public" },
+        { id: "private", label: "Private" },
       ],
     },
     {
       name: "KbStatus",
       type: "enum",
       data: [
-        { id: 0, label: "Close" },
-        { id: 1, label: "Open" },
+        { id: "close", label: "Close" },
+        { id: "open", label: "Open" },
       ],
     },
     {
@@ -118,7 +119,7 @@ const rawUIPage: RawUIPage = {
     },
     {
       indent: 1,
-      conditionsToHide: ["homePageType==0"],
+      conditionsToHide: ["homePageType==rootCategory"],
       rows: [
         {
           fieldName: "homeCustomPageId",
@@ -224,12 +225,13 @@ describe("convert RawUIPage to UIPage", () => {
               title: "Home",
             },
             componentType: "radioGroup",
+            optionsEntity: "KbHomePageType",
           },
         ],
       },
       {
         indent: 1,
-        conditionsToHide: ["homePageType==0"],
+        conditionsToHide: ["homePageType==rootCategory"],
         rows: [
           {
             field: {
@@ -244,6 +246,8 @@ describe("convert RawUIPage to UIPage", () => {
             },
             componentType: "select",
             nullOptionLabel: "--Choose a Custom Page--",
+            optionsEntity: "KbCustomPage",
+            optionsLabelField: "title",
           },
         ],
       },
@@ -258,12 +262,13 @@ describe("convert RawUIPage to UIPage", () => {
               title: "Visibility",
             },
             componentType: "radioGroup",
+            optionsEntity: "KbVisibility",
           },
           {
             field: {
               name: "allowFeedback",
               type: { name: "bool" },
-              isRequired: true,
+              isRequired: false,
               title: "Feedback",
             },
             componentType: "checkbox",
@@ -277,6 +282,7 @@ describe("convert RawUIPage to UIPage", () => {
               title: "Status",
             },
             componentType: "radioGroup",
+            optionsEntity: "KbStatus",
           },
         ],
       },
@@ -289,6 +295,7 @@ describe("render UIPage", () => {
   beforeEach(() => {
     moxios.install();
     mockRequests();
+    document.body.innerHTML = "";
   });
   afterEach(() => moxios.uninstall());
 
@@ -304,7 +311,7 @@ describe("render UIPage", () => {
             allowFeedback: true,
             visibility: "public",
             status: "close",
-            homePageType: 1,
+            homePageType: "customPage",
             homeCustomPageId: "61e1e91a-7a25-5342-88a0-47fb9735c458",
           },
           {
@@ -313,7 +320,7 @@ describe("render UIPage", () => {
             allowFeedback: true,
             visibility: "private",
             status: "close",
-            homePageType: 0,
+            homePageType: "rootCategory",
           },
         ],
       },
@@ -327,19 +334,19 @@ describe("render UIPage", () => {
             id: "61e1e91a-7a25-5342-88a0-47fb9735c458",
             title: "custom page1",
             modified: "2093-12-27T09:15:04.882Z",
-            status: 1,
+            status: "open",
           },
           {
             id: "7e76e2e8-cd2b-5bdb-8535-cef09ff4717a",
             title: "custom page2",
             modified: "2079-05-02T10:29:13.180Z",
-            status: 1,
+            status: "open",
           },
           {
             id: "e8e2fbbc-1083-59fb-bac1-01d174a7c2d8",
             title: "custom page 3",
             modified: "2054-10-15T08:22:54.280Z",
-            status: 1,
+            status: "open",
           },
         ],
       },
@@ -365,15 +372,13 @@ describe("render UIPage", () => {
       title,
       groups: [],
     });
-    const wrapper = render(page);
-    expect(wrapper.find('[data-test-id="page-title"]').text()).toEqual(title);
+    const wrapper = mount(page);
+    expect(wrapper.find('h4[data-test-id="page-title"]').text()).toEqual(title);
   });
 
   it("should render kb name input in form", async () => {
-    const title = "Test title";
     const page = await renderPageComonent({
       ...rawUIPage,
-      title,
       groups: [
         {
           indent: 0,
@@ -386,8 +391,36 @@ describe("render UIPage", () => {
         },
       ],
     });
+    const wrapper = mount(page);
+    console.log(
+      wrapper
+        .find('[data-test-id="form-KnowledgeBase"]')
+        .debug({ verbose: true }),
+    );
+    expect(wrapper.find('label[data-test-id="input-label"]').text()).toEqual(
+      "Name",
+    );
+    expect(wrapper.find("form").length).toEqual(1);
+    expect(wrapper.find('[data-test-id="form-field-0-0"]').length).toEqual(1);
+  });
+  it("should render kb home radio group", async () => {
+    const page = await renderPageComonent({
+      ...rawUIPage,
+      groups: [
+        {
+          indent: 0,
+          rows: [
+            {
+              fieldName: "homePageType",
+              componentType: "radioGroup",
+            },
+          ],
+        },
+      ],
+    });
     const wrapper = render(page);
-    expect(wrapper.find('[data-test-id="form-KnowledgeBase"]')).toBeTruthy();
-    expect(wrapper.find('[data-test-id="input-label"]').text()).toEqual("Name");
+    expect(
+      wrapper.find('[data-test-id="form-radio-group-item-0"]'),
+    ).toBeTruthy();
   });
 });

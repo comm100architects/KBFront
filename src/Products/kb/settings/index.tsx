@@ -1,5 +1,9 @@
 import React from "react";
-import { makePageComponent, findForm } from "../../../components/DSL";
+import {
+  makePageComponent,
+  findForm,
+  makePageComponent2,
+} from "../../../components/DSL";
 import {
   CustomFormFieldComponent,
   RepositoryMap,
@@ -46,10 +50,12 @@ const HomeCustomPages: CustomFormFieldComponent = async (_: RepositoryMap) => {
   };
 };
 
-export default makePageComponent("/dev/kbSetting.json", (ui: RawControl) => {
-  const form = findForm(ui);
-  if (form) {
-    form.children.splice(2, 0, HomeCustomPages);
-  }
-  return ui;
-});
+// export default makePageComponent("/dev/kbSetting.json", (ui: RawControl) => {
+//   const form = findForm(ui);
+//   if (form) {
+//     form.children.splice(2, 0, HomeCustomPages);
+//   }
+//   return ui;
+// });
+
+export default makePageComponent2("/dev/kbSetting.json");

@@ -15,7 +15,11 @@ export interface CCheckboxProps
 export const CCheckbox = (props: CCheckboxProps) => {
   return (
     <>
-      {props.title && <FormLabel component="div">{props.title}</FormLabel>}
+      {props.title && (
+        <FormLabel data-test-id="form-checkbox-title" component="div">
+          {props.title}
+        </FormLabel>
+      )}
       <FormControlLabel
         id={props.id}
         onChange={props.onChange}
