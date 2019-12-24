@@ -1,0 +1,109 @@
+{
+  "endPointPrefix": "//localhost:3000",
+  "entities": [
+    {
+      "name": "knowledgeBases",
+      "fieldNameForDisplay": "name",
+      "fields": [
+        { "name": "id", "type": "guid" },
+        {
+          "name": "name",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 64,
+          "isRequired": true,
+          "title": "Name"
+        },
+        {
+          "name": "homePageType",
+          "type": "enum",
+          "labelsForValue": [
+            { "key": 0, "label": "Display the root category" },
+            { "key": 1, "label": "Display a custom page" }
+          ],
+          "title": "Home"
+        },
+        {
+          "name": "homeCustomPageId",
+          "type": "reference",
+          "referenceEntityName": "customPages",
+          "referenceEntityFieldNameForLabel": "title",
+          "isRequired": true,
+          "title": ""
+        },
+        {
+          "name": "visibility",
+          "type": "enum",
+          "labelsForValue": [
+            { "key": 0, "label": "Public" },
+            { "key": 1, "label": "Private" }
+          ],
+          "title": "Visibility"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "labelsForValue": [
+            { "key": 0, "label": "Close" },
+            { "key": 1, "label": "Open" }
+          ],
+          "title": "Status"
+        },
+        {
+          "name": "numOfArticles",
+          "type": "int",
+          "title": "Articles"
+        },
+        {
+          "name": "numOfCustomPages",
+          "type": "int",
+          "title": "Custom Pages"
+        },
+        {
+          "name": "numOfImages",
+          "type": "int",
+          "title": "Images"
+        }
+      ]
+    }
+  ],
+  "title": "Multiple Knowledge Bases",
+  "entity": "knowledgeBases",
+  "grid": {
+    "columns": [
+      {
+        "fieldName": "name",
+        "cellComponentType": "link",
+        "linkPath": "../settings?id=$id"
+      },
+      {
+        "fieldName": "numOfArticles",
+        "cellComponentType": "link",
+        "linkPath": "../articles?kbId=$id"
+      },
+      {
+        "fieldName": "numOfCustomPages",
+        "cellComponentType": "link",
+        "linkPath": "../customPages?kbId=$id"
+      },
+      {
+        "fieldName": "numOfImages",
+        "cellComponentType": "link",
+        "linkPath": "../images?kbId=$id"
+      },
+      {
+        "fieldName": "status",
+        "cellComponentType": "text"
+      },
+      {
+        "fieldName": "visibility",
+        "cellComponentType": "text"
+      }
+    ],
+    "filters": [],
+    "isAllowNew": true,
+    "newEntityButtonLabel": "New Knowledge Base",
+    "isAllowEdit": true,
+    "isAllowDelete": true
+  }
+}

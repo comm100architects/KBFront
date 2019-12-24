@@ -87,9 +87,9 @@ const data = range(10)
       id: chance.guid,
       name: words(3),
       allowFeedback: chance.bool,
-      visibility: () => (chance.bool() ? "private" : "public"),
-      status: () => (chance.bool() ? "close" : "open"),
-      homePageType: () => (chance.bool() ? "rootCategory" : "customPage"),
+      visibility: () => (chance.bool() ? 0 : 1),
+      status: () => (chance.bool() ? 0 : 1),
+      homePageType: () => (chance.bool() ? 0 : 1),
       homeCustomPageId: referenceCustomPageId,
     }),
   )

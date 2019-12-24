@@ -1,8 +1,8 @@
 import * as React from "react";
 import { FieldInputProps } from "formik";
 import Input from "@material-ui/core/Input";
-import InputLabel from "@material-ui/core/InputLabel";
 import { CElementProps } from "./base";
+import FormLabel from "@material-ui/core/FormLabel";
 
 interface CInputProps extends FieldInputProps<string>, CElementProps {
   label?: string;
@@ -13,11 +13,16 @@ export const CInput = (props: CInputProps) => {
   return (
     <>
       {props.label && (
-        <InputLabel data-test-id="input-label" htmlFor={props.id}>
+        <FormLabel
+          data-test-id="input-label"
+          htmlFor={props.id}
+          component="div"
+        >
           {props.label}
-        </InputLabel>
+        </FormLabel>
       )}
       <Input {...props} />
     </>
   );
 };
+CInput.displayName = "CInput";

@@ -86,7 +86,14 @@ const kbAppMenu: Array<RawMenuItem | RawSubMenu> = [
   { name: "images", label: "Images", icon: "image" },
   { name: "design", label: "Design", icon: "viewQuilt" },
   { name: "settings", label: "Settings", icon: "settings" },
-  { name: "advanced", label: "Advanced", icon: "widgets" },
+  {
+    label: "Advanced",
+    icon: "widgets",
+    items: [
+      { name: "customPages", label: "Custom Pages" },
+      { name: "knowledgeBases", label: "Multiple Knowledge Bases" },
+    ],
+  },
 ];
 
 const botAppMenu: Array<RawMenuItem | RawSubMenu> = [

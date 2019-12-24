@@ -1,149 +1,131 @@
 import React from "react";
 import moxios from "moxios";
 import { normalizeRawUIPage, RawUIPage } from "../DSL/types";
-import { makePageComponent2 } from "../DSL";
-import { mount, render } from "enzyme";
+import { makePageComponent } from "../DSL";
+import { mount } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
+import { act } from "react-dom/test-utils";
+
+const flushPromises = () => act(() => new Promise(setImmediate));
 
 const rawUIPage: RawUIPage = {
-  title: "hello",
+  endPointPrefix: "//localhost:3000",
+  title: "Settings",
   entities: [
     {
-      name: "KnowledgeBase",
-      type: "object",
-      data: "http://localhost:3000/knowledgeBases",
+      name: "knowledgeBases",
       fields: [
-        { name: "id", type: { name: "guid" } },
+        { name: "id", type: "guid" },
         {
           name: "name",
-          type: { name: "string", minLength: 0, maxLength: 64 },
+          type: "string",
+          minLength: 0,
+          maxLength: 64,
           isRequired: true,
           title: "Name",
         },
         {
           name: "homePageType",
-          type: {
-            name: "reference",
-            entityName: "KbHomePageType",
-          },
+          type: "enum",
+          labelsForValue: [
+            { key: 0, label: "Display the root category" },
+            { key: 1, label: "Display a custom page" },
+          ],
           isRequired: true,
           title: "Home",
         },
         {
           name: "homeCustomPageId",
-          type: {
-            name: "reference",
-            entityName: "KbCustomPage",
-            labelFieldName: "title",
-          },
+          type: "reference",
+          referenceEntityName: "customPages",
+          referenceEntityFieldNameForLabel: "title",
           isRequired: true,
           title: "",
         },
         {
           name: "visibility",
-          type: { name: "reference", entityName: "KbVisibility" },
+          type: "enum",
+          labelsForValue: [
+            { key: 0, label: "Public" },
+            { key: 1, label: "Private" },
+          ],
           isRequired: true,
           title: "Visibility",
         },
         {
           name: "allowFeedback",
-          type: { name: "bool" },
+          type: "bool",
+          labelsForValue: [
+            {
+              key: true,
+              label:
+                "Allow visitors to rate Helpful or Not Helpful on articles",
+            },
+            {
+              key: false,
+              label:
+                "Do not allow visitors to rate Helpful or Not Helpful on articles",
+            },
+          ],
           isRequired: false,
           title: "Feedback",
         },
         {
           name: "status",
-          type: { name: "reference", entityName: "KbStatus" },
+          type: "bool",
+          labelsForValue: [
+            { key: 0, label: "Close" },
+            { key: 1, label: "Open" },
+          ],
           isRequired: true,
           title: "Status",
         },
       ],
     },
     {
-      name: "KbHomePageType",
-      type: "enum",
-      data: [
-        { id: "rootCategory", label: "Display the root category" },
-        { id: "cutomPage", label: "Display a custom page" },
-      ],
-    },
-    {
-      name: "KbVisibility",
-      type: "enum",
-      data: [
-        { id: "public", label: "Public" },
-        { id: "private", label: "Private" },
-      ],
-    },
-    {
-      name: "KbStatus",
-      type: "enum",
-      data: [
-        { id: "close", label: "Close" },
-        { id: "open", label: "Open" },
-      ],
-    },
-    {
-      name: "KbCustomPage",
-      type: "object",
-      data: "http://localhost:3000/customPages",
+      name: "customPages",
       fields: [
         {
           name: "id",
-          type: { name: "guid" },
-          isRequired: true,
+          type: "guid",
         },
         {
           name: "title",
-          type: { name: "string", minLength: 0, maxLength: 1024 },
+          type: "string",
+          minLength: 0,
+          maxLength: 1024,
           isRequired: true,
         },
       ],
     },
   ],
-  entity: "KnowledgeBase",
-  groups: [
+  entity: "knowledgeBases",
+  rows: [
     {
-      indent: 0,
-      rows: [
-        {
-          fieldName: "name",
-          componentType: "input",
-        },
-        {
-          fieldName: "homePageType",
-          componentType: "radioGroup",
-        },
-      ],
+      fieldName: "name",
+      componentType: "input",
     },
     {
+      fieldName: "homePageType",
+      componentType: "radioGroup",
+    },
+    {
+      fieldName: "homeCustomPageId",
+      componentType: "select",
       indent: 1,
-      conditionToHide: 'this.homePageType=="rootCategory"',
-      rows: [
-        {
-          fieldName: "homeCustomPageId",
-          componentType: "select",
-          nullOptionLabel: "--Choose a Custom Page--",
-        },
-      ],
+      conditionsToHide: ["homePageType==0"],
     },
     {
-      indent: 0,
-      rows: [
-        {
-          fieldName: "visibility",
-          componentType: "radioGroup",
-        },
-        {
-          fieldName: "allowFeedback",
-          componentType: "checkbox",
-          label: "Allow visitors to rate Helpful or Not Helpful on articles",
-        },
-        {
-          fieldName: "status",
-          componentType: "radioGroup",
-        },
-      ],
+      fieldName: "visibility",
+      componentType: "radioGroup",
+    },
+    {
+      fieldName: "allowFeedback",
+      componentType: "checkbox",
+    },
+    {
+      fieldName: "status",
+      componentType: "radioGroup",
     },
   ],
 };
@@ -162,32 +144,20 @@ describe("convert RawUIPage to UIPage", () => {
       expect(page.repositories[name]).toBeTruthy(),
     );
   });
-  it("should convert enum entity to local repository", async () => {
-    const page = normalizeRawUIPage(rawUIPage);
-
-    for (const { type, name, data } of rawUIPage.entities) {
-      if (type === "enum") {
-        const list = await page.repositories[name].getList();
-        expect(list).toStrictEqual(data);
-      }
-    }
-  });
 
   it("should convert object entity to remote repository", async () => {
     const page = normalizeRawUIPage(rawUIPage);
 
-    for (const { type, name, data } of rawUIPage.entities) {
-      if (type === "object") {
-        moxios.install();
+    for (const { name } of rawUIPage.entities) {
+      moxios.install();
 
-        const response = [{ id: "abc" }];
-        moxios.stubRequest(data as string, { response });
+      const response = [{ id: "abc" }];
+      moxios.stubRequest(`${page.endPointPrefix}/${name}`, { response });
 
-        const list = await page.repositories[name].getList();
-        expect(list).toStrictEqual(response);
+      const list = await page.repositories[name].getList();
+      expect(list).toStrictEqual(response);
 
-        moxios.uninstall();
-      }
+      moxios.uninstall();
     }
   });
   it("should set fields", () => {
@@ -198,92 +168,97 @@ describe("convert RawUIPage to UIPage", () => {
       }
     }
   });
-  it("should set groups", () => {
+  it("should set rows", () => {
     const page = normalizeRawUIPage(rawUIPage);
-    expect(page.groups).toEqual([
+    expect(page.rows).toEqual([
       {
         indent: 0,
-        rows: [
-          {
-            field: {
-              name: "name",
-              type: { name: "string", minLength: 0, maxLength: 64 },
-              isRequired: true,
-              title: "Name",
-            },
-            componentType: "input",
-          },
-          {
-            field: {
-              name: "homePageType",
-              type: {
-                name: "reference",
-                entityName: "KbHomePageType",
-              },
-              isRequired: true,
-              title: "Home",
-            },
-            componentType: "radioGroup",
-            optionsEntity: "KbHomePageType",
-          },
-        ],
+        field: {
+          name: "name",
+          type: "string",
+          minLength: 0,
+          maxLength: 64,
+          isRequired: true,
+          title: "Name",
+        },
+        componentType: "input",
       },
       {
+        indent: 0,
+        field: {
+          name: "homePageType",
+          type: "enum",
+          labelsForValue: [
+            { key: 0, label: "Display the root category" },
+            { key: 1, label: "Display a custom page" },
+          ],
+          isRequired: true,
+          title: "Home",
+        },
+        componentType: "radioGroup",
+      },
+      {
+        conditionsToHide: ["homePageType==0"],
         indent: 1,
-        conditionToHide: 'this.homePageType=="rootCategory"',
-        rows: [
-          {
-            field: {
-              name: "homeCustomPageId",
-              type: {
-                name: "reference",
-                entityName: "KbCustomPage",
-                labelFieldName: "title",
-              },
-              isRequired: true,
-              title: "",
-            },
-            componentType: "select",
-            nullOptionLabel: "--Choose a Custom Page--",
-            optionsEntity: "KbCustomPage",
-            optionsLabelField: "title",
-          },
-        ],
+        field: {
+          name: "homeCustomPageId",
+          type: "reference",
+          referenceEntityName: "customPages",
+          referenceEntityFieldNameForLabel: "title",
+          isRequired: true,
+          title: "",
+        },
+        componentType: "select",
       },
       {
         indent: 0,
-        rows: [
-          {
-            field: {
-              name: "visibility",
-              type: { name: "reference", entityName: "KbVisibility" },
-              isRequired: true,
-              title: "Visibility",
+        field: {
+          name: "visibility",
+          type: "enum",
+          labelsForValue: [
+            { key: 0, label: "Public" },
+            { key: 1, label: "Private" },
+          ],
+          isRequired: true,
+          title: "Visibility",
+        },
+        componentType: "radioGroup",
+      },
+      {
+        indent: 0,
+        field: {
+          name: "allowFeedback",
+          type: "bool",
+          labelsForValue: [
+            {
+              key: true,
+              label:
+                "Allow visitors to rate Helpful or Not Helpful on articles",
             },
-            componentType: "radioGroup",
-            optionsEntity: "KbVisibility",
-          },
-          {
-            field: {
-              name: "allowFeedback",
-              type: { name: "bool" },
-              isRequired: false,
-              title: "Feedback",
+            {
+              key: false,
+              label:
+                "Do not allow visitors to rate Helpful or Not Helpful on articles",
             },
-            componentType: "checkbox",
-            label: "Allow visitors to rate Helpful or Not Helpful on articles",
-          },
-          {
-            field: {
-              name: "status",
-              type: { name: "reference", entityName: "KbStatus" },
-              isRequired: true,
-              title: "Status",
-            },
-            componentType: "radioGroup",
-            optionsEntity: "KbStatus",
-          },
-        ],
+          ],
+          isRequired: false,
+          title: "Feedback",
+        },
+        componentType: "checkbox",
+      },
+      {
+        indent: 0,
+        field: {
+          name: "status",
+          type: "bool",
+          labelsForValue: [
+            { key: 0, label: "Close" },
+            { key: 1, label: "Open" },
+          ],
+          isRequired: true,
+          title: "Status",
+        },
+        componentType: "radioGroup",
       },
     ]);
   });
@@ -293,133 +268,159 @@ describe("render UIPage", () => {
   const configUrl = "/kbSettings.json";
   beforeEach(() => {
     moxios.install();
-    mockRequests();
+    mockRequests(rawUIPage.endPointPrefix);
     document.body.innerHTML = "";
   });
   afterEach(() => moxios.uninstall());
 
-  const mockRequests = () => {
-    moxios.stubRequest(
-      rawUIPage.entities.find(({ name }) => name === "KnowledgeBase")!
-        .data as string,
-      {
-        response: [
-          {
-            id: "d8b2a806-6b14-59bb-8220-eee3a96ba292",
-            name: "bireniw uzealu eni",
-            allowFeedback: true,
-            visibility: "public",
-            status: "close",
-            homePageType: "customPage",
-            homeCustomPageId: "61e1e91a-7a25-5342-88a0-47fb9735c458",
-          },
-          {
-            id: "d8b2a806-6b14-59bb-8220-eee3a96ba292",
-            name: "bireniw uzealu eni",
-            allowFeedback: true,
-            visibility: "private",
-            status: "close",
-            homePageType: "rootCategory",
-          },
-        ],
-      },
-    );
-    moxios.stubRequest(
-      rawUIPage.entities.find(({ name }) => name === "KbCustomPage")!
-        .data as string,
-      {
-        response: [
-          {
-            id: "61e1e91a-7a25-5342-88a0-47fb9735c458",
-            title: "custom page1",
-            modified: "2093-12-27T09:15:04.882Z",
-            status: "open",
-          },
-          {
-            id: "7e76e2e8-cd2b-5bdb-8535-cef09ff4717a",
-            title: "custom page2",
-            modified: "2079-05-02T10:29:13.180Z",
-            status: "open",
-          },
-          {
-            id: "e8e2fbbc-1083-59fb-bac1-01d174a7c2d8",
-            title: "custom page 3",
-            modified: "2054-10-15T08:22:54.280Z",
-            status: "open",
-          },
-        ],
-      },
-    );
+  const mockRequests = (endPointPrefix: string) => {
+    moxios.stubRequest(endPointPrefix + "/knowledgeBases", {
+      response: [
+        {
+          id: "d8b2a806-6b14-59bb-8220-eee3a96ba292",
+          name: "bireniw uzealu eni",
+          allowFeedback: true,
+          visibility: 1,
+          status: 0,
+          homePageType: 1,
+          homeCustomPageId: "61e1e91a-7a25-5342-88a0-47fb9735c458",
+        },
+        {
+          id: "a8b2a806-6b14-59bb-8220-eee3a96ba292",
+          name: "bireniw uzealu eni",
+          allowFeedback: true,
+          visibility: 0,
+          status: 0,
+          homePageType: 0,
+        },
+      ],
+    });
+    moxios.stubRequest(endPointPrefix + "/customPages", {
+      response: [
+        {
+          id: "61e1e91a-7a25-5342-88a0-47fb9735c458",
+          title: "custom page1",
+          modified: "2093-12-27T09:15:04.882Z",
+          status: 1,
+        },
+        {
+          id: "7e76e2e8-cd2b-5bdb-8535-cef09ff4717a",
+          title: "custom page2",
+          modified: "2079-05-02T10:29:13.180Z",
+          status: 1,
+        },
+        {
+          id: "e8e2fbbc-1083-59fb-bac1-01d174a7c2d8",
+          title: "custom page 3",
+          modified: "2054-10-15T08:22:54.280Z",
+          status: 1,
+        },
+      ],
+    });
   };
 
-  const renderPageComonent = async (
-    page: RawUIPage,
-  ): Promise<React.ReactElement> => {
+  const mountPage = async (page: RawUIPage) => {
     moxios.stubRequest(configUrl, { response: page });
-    const Page = await makePageComponent2(configUrl);
-    return (
+    const Page = await makePageComponent(configUrl);
+    const wrapper = mount(
       <Router>
         <Page />
-      </Router>
+      </Router>,
     );
+    await flushPromises();
+    wrapper.update();
+    return wrapper;
   };
 
   it("should render UIPage.title", async () => {
     const title = "Test title";
-    const page = await renderPageComonent({
+    const wrapper = await mountPage({
       ...rawUIPage,
       title,
-      groups: [],
+      rows: [],
     });
-    const wrapper = mount(page);
     expect(wrapper.find('h4[data-test-id="page-title"]').text()).toEqual(title);
   });
 
   it("should render kb name input in form", async () => {
-    const page = await renderPageComonent({
+    const wrapper = await mountPage({
       ...rawUIPage,
-      groups: [
+      rows: [
         {
           indent: 0,
-          rows: [
-            {
-              fieldName: "name",
-              componentType: "input",
-            },
-          ],
+          fieldName: "name",
+          componentType: "input",
         },
       ],
     });
-    const wrapper = mount(page);
-    console.log(
-      wrapper
-        .find('[data-test-id="form-KnowledgeBase"]')
-        .debug({ verbose: true }),
-    );
+
     expect(wrapper.find('label[data-test-id="input-label"]').text()).toEqual(
-      "Name",
+      "Name *",
     );
     expect(wrapper.find("form").length).toEqual(1);
-    expect(wrapper.find('[data-test-id="form-field-0-0"]').length).toEqual(1);
+    expect(wrapper.find('CInput[data-test-id="form-field-0"]').length).toEqual(
+      1,
+    );
   });
   it("should render kb home radio group", async () => {
-    const page = await renderPageComonent({
+    const wrapper = await mountPage({
       ...rawUIPage,
-      groups: [
+      rows: [
         {
           indent: 0,
-          rows: [
-            {
-              fieldName: "homePageType",
-              componentType: "radioGroup",
-            },
-          ],
+          fieldName: "homePageType",
+          componentType: "radioGroup",
         },
       ],
     });
-    const wrapper = mount(page);
     expect(
-      wrapper.find('[data-test-id="form-radio-group-item-0"]').length,
-    ).toEqual(1);
+      wrapper.find('[data-test-id="form-radio-group-item-1"]').length,
+    ).toBeGreaterThan(0);
+    const radios = wrapper.find('input[type="radio"]');
+    expect(radios.find({ value: 0 }).length).toEqual(1);
+    expect(radios.find({ value: 1 }).length).toEqual(1);
+  });
+  it("should render customPage select", async () => {
+    const wrapper = await mountPage({
+      ...rawUIPage,
+      rows: [
+        {
+          indent: 1,
+          fieldName: "homeCustomPageId",
+          componentType: "select",
+        },
+      ],
+    });
+    const select = wrapper.find("CSelect");
+    expect(select.props().value).toEqual(
+      "61e1e91a-7a25-5342-88a0-47fb9735c458",
+    );
+  });
+  it("should display/hide customPage base on homePageType", async () => {
+    const wrapper = await mountPage({
+      ...rawUIPage,
+      rows: [
+        {
+          fieldName: "homePageType",
+          componentType: "radioGroup",
+        },
+        {
+          fieldName: "homeCustomPageId",
+          componentType: "select",
+          indent: 1 as 0 | 1 | undefined,
+          conditionsToHide: ["homePageType==0"],
+        },
+      ],
+    });
+    expect(wrapper.find("CSelect").length).toEqual(1);
+
+    act(() => {
+      const radio = wrapper.find("input[value=0]");
+      radio.simulate("click");
+    });
+    await flushPromises();
+    // console.log(wrapper.find("Form").debug());
+    wrapper.update();
+    expect(wrapper.find("CSelect").length).toEqual(0);
   });
 });

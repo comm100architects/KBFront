@@ -20,7 +20,7 @@ export interface CRadioGroupProps
 
 export const CRadioGroup = (props: CRadioGroupProps) => {
   return (
-    <div className={props.className}>
+    <div>
       {props.title && (
         <FormLabel data-test-id="form-radio-group" component="div">
           {props.title}
@@ -46,3 +46,4 @@ export const CRadioGroup = (props: CRadioGroupProps) => {
     </div>
   );
 };
+CRadioGroup.displayName = "CRadioGroup";

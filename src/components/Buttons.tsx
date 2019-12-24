@@ -10,6 +10,7 @@ import { CIcon, CIconName } from "./Icons";
 import { CElementProps } from "./Base";
 
 export interface CButtonProps extends CElementProps {
+  type?: "submit" | "reset";
   onClick?: React.MouseEventHandler<{}>;
   disabled?: boolean;
   primary?: boolean;
@@ -24,9 +25,10 @@ export interface CButtonProps extends CElementProps {
 }
 
 export const CButton = (props: CButtonProps) => {
-  if (props.onClick) {
+  if (props.onClick || props.type) {
     return (
       <Button
+        type={props.type}
         id={props.id}
         variant="contained"
         disabled={props.disabled}

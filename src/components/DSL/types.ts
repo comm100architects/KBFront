@@ -1,109 +1,81 @@
 import { CFormField } from "../Form";
-import {
-  IRepository,
-  ReadonlyLocalRepository,
-  RESTfulRepository,
-} from "../../framework/repository";
+import { IRepository, RESTfulRepository } from "../../framework/repository";
 import { CIconName } from "../Icons";
 import _ from "lodash";
 
-export type UIEntityFieldTypeReference = {
-  name: "reference";
-  entityName: string;
-  labelFieldName?: string;
-};
-
-export type UIEntityFieldType =
-  | {
-      name: "string";
-      minLength?: number;
-      maxLength?: number;
-    }
-  | UIEntityFieldTypeReference
-  | { name: "bool" }
-  | { name: "int"; min: number; max: number }
-  | { name: "guid" };
-
+export interface UIEntityFieldLabelForValue {
+  key: number | boolean;
+  label: string;
+}
 export interface UIEntityField {
   name: string;
-  type: UIEntityFieldType;
+  type:
+    | "string"
+    | "int"
+    | "enum"
+    | "reference"
+    | "bool"
+    | "reference"
+    | "guid"
+    | "selfIncrementId";
+  minLength?: number;
+  maxLength?: number;
   isRequired?: boolean;
   title?: string;
+  labelsForValue?: UIEntityFieldLabelForValue[];
+  fields?: UIEntityField[];
+  referenceEntityName?: string;
+  referenceEntityFieldNameForLabel?: string;
 }
 
 export interface RawUIEntity {
   name: string;
-  type: "object" | "enum";
-  fields?: UIEntityField[];
-  data: string | Entity[];
+  fields: UIEntityField[];
 }
 
 // structure: page include groups, each group include rows, each row is a control
 export interface RawUIPage {
+  endPointPrefix: string;
   title: string;
   entities: RawUIEntity[];
   entity: string;
-  groups: RawUIGroup[];
-}
-
-export interface RawUIGroup {
-  indent: 0 | 1;
-  conditionToHide?: string;
   rows: RawUIRow[];
 }
 
 export interface RawUIRow {
   fieldName: string;
   componentType: ComponentType;
-  nullOptionLabel?: string;
-  label?: string;
+  indent?: 0 | 1;
+  conditionsToHide?: string[];
 }
 
-type ComponentType = "input" | "select" | "radioGroup" | "checkbox";
+type ComponentType =
+  | "input"
+  | "select"
+  | "radioGroup"
+  | "checkbox"
+  | "label"
+  | "labelWithToggle";
 
 export interface UIRow {
   field: UIEntityField;
   componentType: ComponentType;
-}
-
-export interface UIRowCheckbox extends UIRow {
-  label: string;
-}
-
-export interface UIRowSelect extends UIRow {
-  nullOptionLabel?: string;
-  optionsEntity: string;
-  optionsLabelField?: string;
-}
-
-export interface UIRowRadioGroup extends UIRow {
-  optionsEntity: string;
-  optionsLabelField?: string;
+  indent: 0 | 1;
+  conditionsToHide?: string[];
 }
 
 export type UIEntityMap = { [name: string]: RawUIEntity };
 
-const toRepositoryMap = (entities: RawUIEntity[]): RepositoryMap => {
-  const list = entities.map(info => {
-    if (typeof info.data === "string") {
-      return {
-        name: info.name,
-        repository: new RESTfulRepository(info.data) as IRepository<Entity>,
-      };
-    }
-    if (_.isArray(info.data)) {
-      return {
-        name: info.name,
-        repository: new ReadonlyLocalRepository(
-          info.data as Entity[],
-        ) as IRepository<Entity>,
-      };
-    }
+const toRepositoryMap = (
+  endPointPrefix: string,
+  entities: RawUIEntity[],
+): RepositoryMap => {
+  const list = entities.map(({ name }) => {
     return {
-      name: info.name,
-      repository: new ReadonlyLocalRepository([
-        info.data as Entity,
-      ]) as IRepository<Entity>,
+      name,
+      repository: new RESTfulRepository(endPointPrefix, name) as IRepository<
+        Entity
+      >,
     };
   });
 
@@ -113,62 +85,30 @@ const toRepositoryMap = (entities: RawUIEntity[]): RepositoryMap => {
   }, {} as RepositoryMap);
 };
 
-export const normalizeRawUIGroup = (
+const normalizeRawUIRow = (
   fields: UIEntityField[],
-  group: RawUIGroup,
-): UIGroup => {
-  return {
-    indent: group.indent,
-    conditionToHide: group.conditionToHide,
-    rows: group.rows.map((row: RawUIRow) => {
-      const field = fields.find(({ name }) => name === row.fieldName)!;
-      if (row.componentType === "input") {
-        return {
-          componentType: row.componentType,
-          field,
-        };
-      } else if (row.componentType === "radioGroup") {
-        const referenceType = field.type as UIEntityFieldTypeReference;
-        return {
-          componentType: row.componentType,
-          field,
-          optionsEntity: referenceType.entityName,
-          optionsLabelField: referenceType.labelFieldName,
-        };
-      } else if (row.componentType === "select") {
-        const referenceType = field.type as UIEntityFieldTypeReference;
-        return {
-          componentType: row.componentType,
-          field,
-          nullOptionLabel: row.nullOptionLabel,
-          optionsEntity: referenceType.entityName,
-          optionsLabelField: referenceType.labelFieldName,
-        };
-      } else if (row.componentType === "checkbox") {
-        return {
-          componentType: row.componentType,
-          field,
-          label: row.label,
-        };
-      }
-
-      throw new Error(`unknown componentType: ${row.componentType}`);
-    }),
-  };
-};
+  { indent, conditionsToHide, componentType, fieldName }: RawUIRow,
+): UIRow => ({
+  componentType,
+  indent: indent || 0,
+  conditionsToHide,
+  field: fields.find(({ name }) => name === fieldName)!,
+});
 
 export const normalizeRawUIPage = ({
   title,
   entity,
   entities,
-  groups,
+  endPointPrefix,
+  rows,
 }: RawUIPage): UIPage => {
   const fields = entities.find(({ name }) => name === entity)?.fields ?? [];
   return {
+    endPointPrefix,
     title,
     entity,
-    groups: groups.map(g => normalizeRawUIGroup(fields, g)),
-    repositories: toRepositoryMap(entities),
+    rows: rows.map(row => normalizeRawUIRow(fields, row)),
+    repositories: toRepositoryMap(endPointPrefix, entities),
     fields,
   };
 };
@@ -176,18 +116,12 @@ export const normalizeRawUIPage = ({
 export type RepositoryMap = { [name: string]: IRepository<Entity> };
 
 export interface UIPage {
+  endPointPrefix: string;
   title: string;
   repositories: RepositoryMap;
   fields: UIEntityField[];
-  groups: UIGroup[];
-  entity: string;
-}
-
-export interface UIGroup {
-  indent: number;
-  conditionToHide?: string;
-  title?: string;
   rows: UIRow[];
+  entity: string;
 }
 
 export type Entity = { id: string | number; [key: string]: any };

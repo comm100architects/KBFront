@@ -69,12 +69,8 @@ export class ReadonlyLocalRepository<
 
 export class RESTfulRepository<Entity> implements IRepository<Entity> {
   endPoint: string;
-  constructor(url: string, entityName?: string) {
-    if (entityName == null) {
-      this.endPoint = url;
-    } else {
-      this.endPoint = `${url}/${entityName}`;
-    }
+  constructor(url: string, entityName: string) {
+    this.endPoint = `${url}/${entityName}`;
   }
 
   add(obj: Entity): Promise<Entity> {

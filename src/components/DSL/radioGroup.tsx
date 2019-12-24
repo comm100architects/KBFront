@@ -1,31 +1,33 @@
-import { RepositoryMap, RawRadioGroup, UIRowRadioGroup } from "./types";
+import { RepositoryMap, UIRow } from "./types";
 import { CRadioGroupProps, CRadioGroup } from "../RadioGroup";
 import { withProps } from "../../framework/hoc";
+
 export const makeRadioGroup = async (
   repositories: RepositoryMap,
-  { title, data }: RawRadioGroup,
+  { field }: UIRow,
 ): Promise<React.ComponentType<CRadioGroupProps>> => {
-  const options = await repositories[data.entity].getList();
+  if (field.type === "reference") {
+    const options = await repositories[field.referenceEntityName!].getList();
+    return withProps(CRadioGroup, {
+      options: options.map(option => ({
+        value: option.id,
+        label: option[field.referenceEntityFieldNameForLabel!],
+      })),
+      title: field.title,
+    });
+  }
 
-  return withProps(CRadioGroup, {
-    options: options.map(option => ({
-      value: option[data.value],
-      label: option[data.label],
-    })),
-    title,
-  });
-};
+  if (field.labelsForValue) {
+    return withProps(CRadioGroup, {
+      options: field.labelsForValue.map(({ key, label }) => ({
+        value: key,
+        label,
+      })),
+      title: field.title,
+    });
+  }
 
-export const makeRadioGroup2 = async (
-  repositories: RepositoryMap,
-  { field, optionsEntity, optionsLabelField }: UIRowRadioGroup,
-): Promise<React.ComponentType<CRadioGroupProps>> => {
-  const options = await repositories[optionsEntity].getList();
-  return withProps(CRadioGroup, {
-    options: options.map(option => ({
-      value: option.id,
-      label: option[optionsLabelField || "label"],
-    })),
-    title: field.title,
-  });
+  throw new Error(
+    `componentType is radioGroup but field.type is ${field.type} and doesn't have labelsForValue`,
+  );
 };

@@ -1,197 +1,37 @@
 import React from "react";
 import _ from "lodash";
-import {
-  IRepository,
-  ReadonlyLocalRepository,
-  RESTfulRepository,
-} from "../../framework/repository";
 import CPage from "../Page";
 import { fetchJson } from "../../framework/network";
 import { useHistory } from "react-router";
-import LoadError from "../../components/LoadError";
 import {
   GlobalContext,
   GlobalQueryString,
   GlobalState,
   useGlobal,
 } from "./context";
-import { makeInput, RawInput, makeInput2 } from "./input";
-import {
-  RepositoryMap,
-  RawRadioGroup,
-  RawSelect,
-  RawCheckbox,
-  RawControl,
-  CustomComponent,
-  RawDiv,
-  EntityInfo,
-  RawPage,
-  Entity,
-  RawForm,
-  UIRowRadioGroup,
-  normalizeRawUIPage,
-  RawUIPage,
-} from "./types";
-import { makeForm } from "./form";
-import { makeDiv } from "./div";
-import { makeRadioGroup, makeRadioGroup2 } from "./radioGroup";
-import { makeSelect, makeSelect2 } from "./select";
-import { makeCheckbox, makeCheckbox2 } from "./checkbox";
+import { makeInput } from "./input";
+import { RepositoryMap, Entity, normalizeRawUIPage, RawUIPage } from "./types";
+import { makeRadioGroup } from "./radioGroup";
+import { makeSelect } from "./select";
+import { makeCheckbox } from "./checkbox";
 
-const toRepositoryMap = (entities: EntityInfo[]): RepositoryMap => {
-  const list = entities.map(info => {
-    if (typeof info.source === "string") {
-      return {
-        name: info.name,
-        repository: new RESTfulRepository(
-          info.source,
-          info.name,
-        ) as IRepository<Entity>,
-      };
-    }
-    if (_.isArray(info.source)) {
-      return {
-        name: info.name,
-        repository: new ReadonlyLocalRepository(
-          info.source as Entity[],
-        ) as IRepository<Entity>,
-      };
-    }
-    return {
-      name: info.name,
-      repository: new ReadonlyLocalRepository([
-        info.source as Entity,
-      ]) as IRepository<Entity>,
-    };
-  });
-
-  return list.reduce((res, { name, repository }) => {
-    res[name] = repository;
-    return res;
-  }, {} as RepositoryMap);
-};
-
-const makeComponent = (
-  repositories: RepositoryMap,
-  ctrl: RawControl | CustomComponent,
-): Promise<React.ComponentType<any>> => {
-  if (typeof ctrl === "function") {
-    return (ctrl as CustomComponent)(repositories);
-  }
-
-  const control = (ctrl as RawControl).control;
-
-  switch (control) {
-    case "div":
-      return makeDiv(repositories, ctrl as RawDiv, makeComponent);
-    case "form":
-      return makeForm(repositories, ctrl as RawForm, makeComponent);
-    case "input":
-      return makeInput(ctrl as RawInput);
-    case "radioGroup":
-      return makeRadioGroup(repositories, ctrl as RawRadioGroup);
-    case "checkbox":
-      return makeCheckbox(ctrl as RawCheckbox);
-    case "select":
-      return makeSelect(repositories, ctrl as RawSelect);
-    default:
-      throw new Error(`Unsupport control: ${control}`);
-  }
-};
-
-const makePageComponentHelper = async (
-  configUrl: string,
-  injecter: (ui: RawControl) => RawControl,
-): Promise<React.ComponentType> => {
-  //  1. get config file
-  //  2. create react component according to the config file
-  //    - Get initial values from remote server in this step
-  //  3. return the component, the caller decide when to render the component
-  const { entities, ui, title }: RawPage = await fetchJson(configUrl, "GET");
-  const repositories = toRepositoryMap(entities);
-  const Body = await makeComponent(repositories, injecter(ui));
-  return () => {
-    const history = useHistory();
-    const [state, setState] = React.useState();
-    const globalVariables = {
-      query: new GlobalQueryString(history),
-      state: new GlobalState(state, setState),
-    };
-    return (
-      <GlobalContext.Provider value={globalVariables}>
-        <CPage title={title}>
-          <Body />
-        </CPage>
-      </GlobalContext.Provider>
-    );
-  };
-};
-
-export const makePageComponent = async (
-  configUrl: string,
-  injecter: (ui: RawControl) => RawControl = a => a,
-): Promise<React.ComponentType> => {
-  try {
-    return await makePageComponentHelper(configUrl, injecter);
-  } catch (error) {
-    // initialize error, show error message and reload button
-    return () => {
-      const handleReload = async () => {
-        const component = await makePageComponentHelper(configUrl, injecter);
-        setEle(React.createElement(component));
-      };
-
-      const [ele, setEle] = React.useState(() => (
-        <LoadError error={error} onReload={handleReload} />
-      ));
-
-      return ele;
-    };
-  }
-};
-
-export const findForm = (root: RawControl): RawForm | null => {
-  if (root.control === "form") return root as RawForm;
-  else if (root.control === "div") {
-    const children = (root as RawDiv).children;
-    if (_.isArray(children)) {
-      for (let i = 0; i < children.length; i++) {
-        const child = children[i];
-        if ((child as RawControl).control) {
-          const res = findForm(child as RawControl);
-          if (res) {
-            return res;
-          }
-        }
-      }
-    }
-  }
-  return null;
-};
-
-// NEW VERSION
-//
-//
-//
-//
-
-import { UIPage, UIGroup, UIRow, UIRowSelect, UIRowCheckbox } from "./types";
+import { UIPage, UIRow } from "./types";
 import { Formik, Form, FormikHelpers, Field } from "formik";
-import Button from "@material-ui/core/Button";
 import FormControl from "@material-ui/core/FormControl";
+import { CButton } from "../Buttons";
 export const makeUIRowComponent = async (
   repositories: RepositoryMap,
   row: UIRow,
 ): Promise<React.ComponentType<any>> => {
   switch (row.componentType) {
     case "select":
-      return makeSelect2(repositories, row as UIRowSelect);
+      return makeSelect(repositories, row);
     case "checkbox":
-      return makeCheckbox2(row as UIRowCheckbox);
+      return makeCheckbox(row);
     case "radioGroup":
-      return makeRadioGroup2(repositories, row as UIRowRadioGroup);
+      return makeRadioGroup(repositories, row);
     case "input":
-      return makeInput2(row);
+      return makeInput(row);
     default:
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
@@ -200,55 +40,48 @@ export const makeUIRowFormCtrol = async (
   repositories: RepositoryMap,
   row: UIRow,
   i: number,
-  j: number,
 ): Promise<React.ComponentType<any>> => {
   const component = await makeUIRowComponent(repositories, row);
-  return ({ errors }) => (
-    <FormControl
-      key={j}
-      required={row.field.isRequired}
-      error={!!errors[row.field.name]}
-      style={{ display: "block" }}
-    >
-      <Field
-        data-test-id={`form-field-${i}-${j}`}
-        title={row.field.title}
-        name={row.field.name}
-        as={component}
-      ></Field>{" "}
-    </FormControl>
-  );
-};
-export const makeUIGroupComponent = async (
-  repositories: RepositoryMap,
-  group: UIGroup,
-  i: number,
-): Promise<React.ComponentType<any>> => {
-  const rowComponents = await Promise.all(
-    group.rows.map((row: UIRow, j: number) =>
-      makeUIRowFormCtrol(repositories, row, i, j),
-    ),
-  );
   let hiddenPred = (_: any) => false;
-  if (group.conditionToHide) {
-    const expression = group.conditionToHide;
-    const f = new Function(`return ${expression}`);
+  if (row.conditionsToHide) {
+    const expression = row.conditionsToHide[0];
+    const f = new Function(`return this.${expression}`);
     hiddenPred = (self: any) => f.call(self);
   }
   return ({ initialValues, setFieldValue, values, errors }) => {
+    const { field } = row;
     if (hiddenPred(values)) {
-      for (const { field } of group.rows) {
-        if (initialValues[field.name] !== values[field.name]) {
-          setFieldValue(field.name, initialValues[field.name]);
-        }
+      if (initialValues[field.name] !== values[field.name]) {
+        setFieldValue(field.name, initialValues[field.name]);
       }
       return <></>;
     } else {
+      const val = values[field.name];
+      if (typeof val === "string") {
+        if (field.type === "int" || field.type === "enum") {
+          setFieldValue(field.name, parseInt(val));
+        } else if (field.type === "bool") {
+          setFieldValue(field.name, val === "true");
+        }
+      }
+
       return (
-        <div style={{ paddingLeft: group.indent * 30 }}>
-          {group.title && <h6 data-test-id="group-title">{group.title}</h6>}
-          {...rowComponents.map(Row => <Row errors={errors} />)}
-        </div>
+        <FormControl
+          required={field.isRequired}
+          error={!!errors[field.name]}
+          style={
+            row.indent
+              ? { display: "block", paddingLeft: `${row.indent * 30}px` }
+              : { display: "block" }
+          }
+        >
+          <Field
+            data-test-id={`form-field-${i}`}
+            title={field.title}
+            name={field.name}
+            as={component}
+          ></Field>
+        </FormControl>
       );
     }
   };
@@ -256,13 +89,13 @@ export const makeUIGroupComponent = async (
 
 export const makeFormComponent = async ({
   repositories,
-  groups,
+  rows,
   entity,
   fields,
-}: UIPage) => {
-  const groupComponents = await Promise.all(
-    groups.map((group: UIGroup, i: number) =>
-      makeUIGroupComponent(repositories, group, i),
+}: UIPage): Promise<React.ComponentType<any>> => {
+  const rowComponents = await Promise.all(
+    rows.map((row: UIRow, i: number) =>
+      makeUIRowFormCtrol(repositories, row, i),
     ),
   );
 
@@ -305,24 +138,22 @@ export const makeFormComponent = async ({
         >
           {props => (
             <Form>
-              {...groupComponents.map(Group => <Group {...props} />)}
+              {rowComponents.map((Row, i) => {
+                Row.displayName = "UIRow";
+                return <Row key={i} {...props} />;
+              })}
               <div>
-                <Button
+                <CButton
                   type="submit"
-                  variant="contained"
-                  color="primary"
+                  primary
                   disabled={!props.dirty || props.isSubmitting}
-                >
-                  Save Changes
-                </Button>
-                <Button
+                  text="Save Changes"
+                />
+                <CButton
                   type="reset"
-                  variant="contained"
-                  color="default"
                   disabled={!props.dirty || props.isSubmitting}
-                >
-                  Discard
-                </Button>
+                  text="Discard"
+                />
               </div>
             </Form>
           )}
@@ -332,13 +163,14 @@ export const makeFormComponent = async ({
   };
 };
 
-export const makePageComponent2 = async (
+export const makePageComponent = async (
   configUrl: string,
 ): Promise<React.ComponentType<any>> => {
   const page = normalizeRawUIPage(
     (await fetchJson(configUrl, "GET")) as RawUIPage,
   );
   const Body = await makeFormComponent(page);
+  Body.displayName = "PageBody";
   return () => {
     const history = useHistory();
     const [state, setState] = React.useState();

@@ -1,38 +1,37 @@
-import { RepositoryMap, RawSelect, UIRowSelect } from "./types";
+import { RepositoryMap, UIRow } from "./types";
 import { CSelectProps, CSelect } from "../Select";
 import { withProps } from "../../framework/hoc";
 
 export const makeSelect = async (
   repositories: RepositoryMap,
-  { title, data, className }: RawSelect,
+  { field }: UIRow,
 ): Promise<React.ComponentType<CSelectProps>> => {
-  const props = await repositories[data.entity].getList().then(options => ({
-    options: options.map(option => ({
-      value: option[data.value],
-      label: option[data.label],
-      icon: option[data.icon],
-    })),
-    title,
-    className,
-  }));
-  return withProps(CSelect, props);
+  if (field.type === "reference") {
+    const nullOption = [{ value: "", label: "\u3000" }];
+    const options = await repositories[field.referenceEntityName!].getList();
+    return withProps(CSelect, {
+      options: nullOption.concat(
+        options.map(option => ({
+          value: option.id as string,
+          label: option[field.referenceEntityFieldNameForLabel!],
+        })),
+      ),
+      title: field.title,
+    });
+  }
+
+  if (field.labelsForValue) {
+    return withProps(CSelect, {
+      options: field.labelsForValue.map(({ key, label }) => ({
+        value: key,
+        label,
+      })),
+      title: field.title,
+    });
+  }
+
+  throw new Error(
+    `componentType is radioGroup but field.type is ${field.type} and doesn't have labelsForValue`,
+  );
 };
 
-export const makeSelect2 = async (
-  repositories: RepositoryMap,
-  { field, nullOptionLabel, optionsEntity, optionsLabelField }: UIRowSelect,
-): Promise<React.ComponentType<CSelectProps>> => {
-  const nullOption = nullOptionLabel
-    ? [{ value: "", label: nullOptionLabel }]
-    : [];
-  const options = await repositories[optionsEntity].getList();
-  return withProps(CSelect, {
-    options: nullOption.concat(
-      options.map(option => ({
-        value: option.id as string,
-        label: option[optionsLabelField || "label"],
-      })),
-    ),
-    title: field.title,
-  });
-};

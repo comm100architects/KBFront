@@ -1,11 +1,11 @@
 import * as React from "react";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
-import InputLabel from "@material-ui/core/InputLabel";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CIconName, CIcon } from "./Icons";
 import { CElementProps } from "./base";
 import { FieldInputProps } from "formik";
+import FormLabel from "@material-ui/core/FormLabel";
 
 export interface CSelectOption extends CElementProps {
   value?: string | number;
@@ -39,11 +39,11 @@ export const CSelect = (props: CSelectProps) => {
   const classes = useStyle();
   const labelId = props.id ? `${props.id}-label` : undefined;
   return (
-    <div className={props.className}>
+    <div>
       {props.title && (
-        <InputLabel htmlFor={props.id} id={labelId}>
+        <FormLabel htmlFor={props.id} id={labelId} component="div">
           {props.title}
-        </InputLabel>
+        </FormLabel>
       )}
       <Select
         id={props.id}
@@ -53,10 +53,16 @@ export const CSelect = (props: CSelectProps) => {
         onChange={props.onChange}
         onBlur={props.onBlur}
         className={classes.root}
+        displayEmpty={true}
       >
         {props.options.map(({ id, value, label, icon }) => {
           return (
-            <MenuItem id={id} key={value} value={value}>
+            <MenuItem
+              data-test-id={`select-option-${id}`}
+              id={id}
+              key={value}
+              value={value}
+            >
               <span className={classes.icon}>
                 {icon && <CIcon name={icon} />}
               </span>
@@ -68,3 +74,4 @@ export const CSelect = (props: CSelectProps) => {
     </div>
   );
 };
+CSelect.displayName = "CSelect";
