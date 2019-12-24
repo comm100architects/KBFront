@@ -320,6 +320,8 @@ describe("render UIPage", () => {
   };
 
   const mountPage = async (page: RawUIPage) => {
+    document.body.innerHTML = "";
+
     moxios.stubRequest(configUrl, { response: page });
     const Page = await makePageComponent(configUrl);
     const wrapper = mount(
@@ -354,7 +356,7 @@ describe("render UIPage", () => {
       ],
     });
 
-    expect(wrapper.find('label[data-test-id="input-label"]').text()).toEqual(
+    expect(wrapper.find('div[data-test-id="input-label"]').text()).toEqual(
       "Name *",
     );
     expect(wrapper.find("form").length).toEqual(1);
@@ -396,31 +398,60 @@ describe("render UIPage", () => {
       "61e1e91a-7a25-5342-88a0-47fb9735c458",
     );
   });
-  it("should display/hide customPage base on homePageType", async () => {
+  it("should display control base on conditionsToHide", async () => {
+    moxios.stubRequest("http://1.1.1.1/knowledgeBases", {
+      response: [
+        {
+          id: "d8b2a806-6b14-59bb-8220-eee3a96ba292",
+          name: "bireniw uzealu eni",
+          allowFeedback: true,
+          visibility: 1,
+          status: 0,
+          homePageType: 0,
+          homeCustomPageId: "61e1e91a-7a25-5342-88a0-47fb9735c458",
+        },
+      ],
+    });
     const wrapper = await mountPage({
       ...rawUIPage,
+      endPointPrefix: "http://1.1.1.1",
       rows: [
         {
-          fieldName: "homePageType",
-          componentType: "radioGroup",
-        },
-        {
-          fieldName: "homeCustomPageId",
+          fieldName: "status",
           componentType: "select",
-          indent: 1 as 0 | 1 | undefined,
+          conditionsToHide: ["homePageType==1"],
+        },
+      ],
+    });
+    await flushPromises();
+    expect(wrapper.find("CSelect").length).toEqual(1);
+  });
+
+  it("should hide control base on conditionsToHide", async () => {
+    moxios.stubRequest("http://1.1.1.1/knowledgeBases", {
+      response: [
+        {
+          id: "d8b2a806-6b14-59bb-8220-eee3a96ba292",
+          name: "bireniw uzealu eni",
+          allowFeedback: true,
+          visibility: 1,
+          status: 0,
+          homePageType: 0,
+          homeCustomPageId: "61e1e91a-7a25-5342-88a0-47fb9735c458",
+        },
+      ],
+    });
+    const wrapper = await mountPage({
+      ...rawUIPage,
+      endPointPrefix: "http://1.1.1.1",
+      rows: [
+        {
+          fieldName: "status",
+          componentType: "select",
           conditionsToHide: ["homePageType==0"],
         },
       ],
     });
-    expect(wrapper.find("CSelect").length).toEqual(1);
-
-    act(() => {
-      const radio = wrapper.find("input[value=0]");
-      radio.simulate("click");
-    });
-    await flushPromises();
-    // console.log(wrapper.find("Form").debug());
-    wrapper.update();
     expect(wrapper.find("CSelect").length).toEqual(0);
   });
 });
