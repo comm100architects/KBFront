@@ -87,13 +87,11 @@ ReactDOM.render(
           }}
         </Route>
         <Route path="/:currentApp/:currentPage">
-          {({ match, location }: RouteChildrenProps<AppParam>) => {
+          {({ match, location, history }: RouteChildrenProps<AppParam>) => {
             const { currentApp, currentPage } = match!.params;
             if (match!.isExact && !_.endsWith(location.pathname, "/")) {
-              return (
-                <Redirect
-                  to={`/${currentApp}/${currentPage}/${location.search}`}
-                />
+              history.replace(
+                `/${currentApp}/${currentPage}/${location.search}`,
               );
             }
             const app = rawProducts.find(app => app.name === currentApp);

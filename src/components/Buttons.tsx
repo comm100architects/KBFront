@@ -99,7 +99,7 @@ export interface CLinkProps extends CLinkBaseProps {
 
 export const CLink = (props: CLinkProps) => {
   return (
-    <Link to={props.to!} onClick={props.onClick} replace={true}>
+    <Link to={props.to!} onClick={props.onClick}>
       {props.text}
     </Link>
   );
