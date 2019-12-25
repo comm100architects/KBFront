@@ -33,7 +33,7 @@ const repeat = (n, fn) =>
     .map(fn)
     .join("");
 
-const articleContent = () =>
+const html = () =>
   `<h1>${words(3)()}</h1>` +
   repeat(3, () => `<h3>${chance.sentence()}</h3><p>${chance.paragraph()}</p>`);
 
@@ -70,17 +70,6 @@ const genTree = (parentIdName, sc, childrenCount, parent, depth) => {
   return [parent, ...children];
 };
 
-const [customPageId, referenceCustomPageId] = guidPool();
-const customPages = generate([
-  5,
-  {
-    id: customPageId,
-    title: chance.sentence,
-    modified: chance.date,
-    status: articleStatus,
-  },
-]);
-
 const data = range(10)
   .map(() =>
     generate({
@@ -90,13 +79,14 @@ const data = range(10)
       visibility: () => (chance.bool() ? 0 : 1),
       status: () => (chance.bool() ? 0 : 1),
       homePageType: () => (chance.bool() ? 0 : 1),
-      homeCustomPageId: referenceCustomPageId,
+      numOfArticles: () => 0,
+      numOfImages: int(0, 100),
+      numOfCustomPages: () => 0,
     }),
   )
   .reduce(
     (result, kb) => {
       const [categoryId, referenceCategoryId] = guidPool();
-      result.knowledgeBases.push(kb);
       result.categories = result.categories.concat(
         genTree(
           "parentCategoryId",
@@ -117,28 +107,64 @@ const data = range(10)
           2,
         ),
       );
-      result.articles = result.articles.concat(
-        generate([
-          50,
-          {
-            id: chance.guid,
-            kbId: () => kb.id,
-            categoryId: referenceCategoryId,
-            title: chance.sentence,
-            content: articleContent,
-            url: chance.url,
-            helpful: int(20, 50),
-            notHelpful: int(20, 50),
-            modifiedTime: chance.date,
-            tags: [3, chance.word],
-            featured: chance.bool,
-            status: articleStatus,
-          },
-        ]),
-      );
+      const articles = generate([
+        int(10, 50)(),
+        {
+          id: chance.guid,
+          kbId: () => kb.id,
+          categoryId: referenceCategoryId,
+          title: chance.sentence,
+          content: html,
+          url: chance.url,
+          helpful: int(20, 50),
+          notHelpful: int(20, 50),
+          modifiedTime: chance.date,
+          tags: [3, chance.word],
+          featured: chance.bool,
+          status: articleStatus,
+        },
+      ]);
+
+      const [customPageId, referenceCustomPageId] = guidPool();
+      const customPages = generate([
+        int(1, 10)(),
+        {
+          id: customPageId,
+          title: chance.sentence,
+          modified: chance.date,
+          status: articleStatus,
+          kbId: () => kb.id,
+        },
+      ]);
+
+      const designs = generate([
+        int(1, 10)(),
+        {
+          id: chance.guid,
+          title: words(2),
+          body: html,
+          modifiedTime: chance.date,
+          status: articleStatus,
+          kbId: () => kb.id,
+        },
+      ]);
+
+      result.articles = result.articles.concat(articles);
+      result.customPages = result.customPages.concat(customPages);
+      result.designs = result.designs.concat(designs);
+      kb.numOfArticles = articles.length;
+      kb.numOfCustomPages = customPages.length;
+      kb.homeCustomPageId = referenceCustomPageId();
+      result.knowledgeBases.push(kb);
       return result;
     },
-    { knowledgeBases: [], categories: [], articles: [], customPages },
+    {
+      knowledgeBases: [],
+      categories: [],
+      articles: [],
+      customPages: [],
+      designs: [],
+    },
   );
 
 console.log(JSON.stringify(data, null, 2));

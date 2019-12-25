@@ -9,7 +9,10 @@ import { act } from "react-dom/test-utils";
 const flushPromises = () => act(() => new Promise(setImmediate));
 
 const rawUIPage: RawUIPage = {
-  endPointPrefix: "//localhost:3000",
+  settings: {
+    endPointPrefix: "//localhost:3000",
+    dateTimeFormat: "MM/dd/yyyy HH:mm:ss",
+  },
   title: "Settings",
   entities: [
     {
@@ -152,7 +155,9 @@ describe("convert RawUIPage to UIPage", () => {
       moxios.install();
 
       const response = [{ id: "abc" }];
-      moxios.stubRequest(`${page.endPointPrefix}/${name}`, { response });
+      moxios.stubRequest(`${page.settings.endPointPrefix}/${name}`, {
+        response,
+      });
 
       const list = await page.repositories[name].getList();
       expect(list).toStrictEqual(response);
@@ -268,7 +273,7 @@ describe("render UIPage", () => {
   const configUrl = "/kbSettings.json";
   beforeEach(() => {
     moxios.install();
-    mockRequests(rawUIPage.endPointPrefix);
+    mockRequests(rawUIPage.settings.endPointPrefix);
     document.body.innerHTML = "";
   });
   afterEach(() => moxios.uninstall());
@@ -414,7 +419,7 @@ describe("render UIPage", () => {
     });
     const wrapper = await mountPage({
       ...rawUIPage,
-      endPointPrefix: "http://1.1.1.1",
+      settings: { ...rawUIPage.settings, endPointPrefix: "http://1.1.1.1" },
       rows: [
         {
           fieldName: "status",
@@ -443,7 +448,7 @@ describe("render UIPage", () => {
     });
     const wrapper = await mountPage({
       ...rawUIPage,
-      endPointPrefix: "http://1.1.1.1",
+      settings: { ...rawUIPage.settings, endPointPrefix: "http://1.1.1.1" },
       rows: [
         {
           fieldName: "status",

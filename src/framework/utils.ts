@@ -15,3 +15,23 @@ export const splitFirst = (str: string, sep: string) => {
   }
   return [];
 };
+
+export const undefinedDefault = (val: undefined | any, defaults: any): any =>
+  val === undefined ? defaults : val;
+
+export const replaceVariables = (
+  temp: string,
+  values: { [id: string]: any },
+): string =>
+  temp.replace(
+    // variable name contains \w and not start with number
+    /\$((?!\d)\w+)/g,
+    (name, fieldName) => {
+      const v = values[fieldName];
+      if (v === undefined) {
+        console.warn(`variable ${fieldName} does not exists`);
+        return name;
+      }
+      return v.toString();
+    },
+  );

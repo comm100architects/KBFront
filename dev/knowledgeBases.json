@@ -1,9 +1,11 @@
 {
-  "endPointPrefix": "//localhost:3000",
+  "settings": {
+    "endPointPrefix": "//localhost:3000",
+    "dateTimeFormat": "MM/DD/YYYY HH:mm:ss"
+  },
   "entities": [
     {
       "name": "knowledgeBases",
-      "fieldNameForDisplay": "name",
       "fields": [
         { "name": "id", "type": "guid" },
         {
@@ -74,7 +76,8 @@
       {
         "fieldName": "name",
         "cellComponentType": "link",
-        "linkPath": "../settings?id=$id"
+        "linkPath": "../settings?id=$id",
+        "headerLabel": "Knowledge Base"
       },
       {
         "fieldName": "numOfArticles",
@@ -104,6 +107,7 @@
     "isAllowNew": true,
     "newEntityButtonLabel": "New Knowledge Base",
     "isAllowEdit": true,
-    "isAllowDelete": true
+    "isAllowDelete": true,
+    "confirmDeleteMessage": "Are you sure you want to delete?"
   }
 }

@@ -1,11 +1,11 @@
 import { CFormField } from "../Form";
 import { IRepository, RESTfulRepository } from "../../framework/repository";
-import { CIconName } from "../Icons";
 import _ from "lodash";
 
 export interface UIEntityFieldLabelForValue {
   key: number | boolean;
   label: string;
+  icon?: string;
 }
 export interface UIEntityField {
   name: string;
@@ -17,7 +17,8 @@ export interface UIEntityField {
     | "bool"
     | "reference"
     | "guid"
-    | "selfIncrementId";
+    | "selfIncrementId"
+    | "dateTime";
   minLength?: number;
   maxLength?: number;
   isRequired?: boolean;
@@ -33,13 +34,38 @@ export interface RawUIEntity {
   fields: UIEntityField[];
 }
 
+export interface GlobalSettings {
+  endPointPrefix: string;
+  dateTimeFormat: string;
+}
+
 // structure: page include groups, each group include rows, each row is a control
 export interface RawUIPage {
-  endPointPrefix: string;
+  settings: GlobalSettings;
   title: string;
+  description?: string;
   entities: RawUIEntity[];
   entity: string;
-  rows: RawUIRow[];
+  rows?: RawUIRow[];
+  grid?: UIGrid;
+}
+
+export interface UIGrid {
+  columns: UIGridColumn[];
+  isAllowNew: boolean;
+  newEntityButtonLabel: string;
+  isAllowEdit: boolean;
+  isAllowDelete: boolean;
+  confirmDeleteMessage?: string;
+}
+
+export interface UIGridColumn {
+  headerLabel?: string;
+  isAllowSort?: boolean;
+  fieldName: string;
+  cellComponentType: "link" | "text" | "icon";
+  linkPath?: string;
+  width?: string;
 }
 
 export interface RawUIRow {
@@ -97,31 +123,37 @@ const normalizeRawUIRow = (
 
 export const normalizeRawUIPage = ({
   title,
+  description,
   entity,
   entities,
-  endPointPrefix,
+  settings,
   rows,
+  grid,
 }: RawUIPage): UIPage => {
   const fields = entities.find(({ name }) => name === entity)?.fields ?? [];
   return {
-    endPointPrefix,
+    settings,
     title,
+    description,
     entity,
-    rows: rows.map(row => normalizeRawUIRow(fields, row)),
-    repositories: toRepositoryMap(endPointPrefix, entities),
+    rows: rows?.map(row => normalizeRawUIRow(fields, row)),
+    repositories: toRepositoryMap(settings.endPointPrefix, entities),
     fields,
+    grid,
   };
 };
 
 export type RepositoryMap = { [name: string]: IRepository<Entity> };
 
 export interface UIPage {
-  endPointPrefix: string;
+  settings: GlobalSettings;
   title: string;
+  description?: string;
   repositories: RepositoryMap;
   fields: UIEntityField[];
-  rows: UIRow[];
   entity: string;
+  rows?: UIRow[];
+  grid?: UIGrid;
 }
 
 export type Entity = { id: string | number; [key: string]: any };
@@ -139,49 +171,3 @@ export type CustomFormFieldComponent = (
   repositories: RepositoryMap,
 ) => Promise<CFormField<Entity>>;
 
-// to be deleted
-export interface RawControl {
-  control: "div" | "form" | "input" | "radioGroup" | "checkbox" | "select";
-  className?: string;
-}
-
-export interface RawDiv extends RawControl {
-  // allow inject custom component
-  children: (RawControl | CustomComponent) | (RawControl | CustomComponent)[];
-}
-
-export interface RawFieldInputControl extends RawControl {
-  value: string;
-}
-
-export interface RawSelect extends RawFieldInputControl {
-  title: string;
-  data: { entity: string; label: string; value: string; icon: CIconName };
-}
-
-export interface RawRadioGroup extends RawFieldInputControl {
-  title: string;
-  data: { entity: string; label: string; value: string };
-}
-
-export interface RawCheckbox extends RawFieldInputControl {
-  label: string;
-  title: string;
-}
-
-export interface RawFormControl extends RawControl {
-  name: string;
-  title: string;
-  required?: boolean;
-}
-
-export interface RawForm extends RawControl {
-  children: (RawFormControl | CustomFormFieldComponent)[];
-  data: { entity: string; id: string };
-}
-
-export interface RawPage {
-  title: string;
-  entities: EntityInfo[];
-  ui: RawControl;
-}

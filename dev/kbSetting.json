@@ -1,5 +1,8 @@
 {
-  "endPointPrefix": "//localhost:3000",
+  "settings": {
+    "endPointPrefix": "//localhost:3000",
+    "dateTimeFormat": "MM/DD/YYYY HH:mm:ss"
+  },
   "entities": [
     {
       "name": "knowledgeBases",
@@ -59,8 +62,8 @@
           "name": "status",
           "type": "enum",
           "labelsForValue": [
-            { "key": 0, "label": "Close" },
-            { "key": 1, "label": "Open" }
+            { "key": 0, "label": "Public" },
+            { "key": 1, "label": "Private" }
           ],
           "title": "Status"
         }

@@ -36,8 +36,12 @@ const useStyles = makeStyles((theme: Theme) =>
 export interface CTableColumn<T extends Row> {
   id: string;
   header?: string | JSX.Element;
-  content?(arg: T): null | undefined | string | JSX.Element;
+  content?(
+    arg: T,
+    onDelete?: () => void,
+  ): null | undefined | string | JSX.Element;
   sortable?: boolean;
+  width?: string;
 }
 
 export type CTableAction<T> = (row: T) => CIconButtonProps;
@@ -47,14 +51,16 @@ export interface CTableProps<T> extends CElementProps {
   dataSource: ITableSource<T>;
   pagination?: boolean;
   defaultSort?: Sort<T>;
+  onDelete?(row: T): void;
 }
 
 function renderContent<T extends Row>(
   col: CTableColumn<T>,
   row: T,
+  onDelete?: () => void,
 ): JSX.Element {
   if (col.content) {
-    const s = col.content!(row);
+    const s = col.content(row, onDelete);
     if (typeof s === "string") {
       return <>{s as string}</>;
     }
@@ -91,12 +97,15 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
     <div id={props.id} className={classes.root}>
       <Paper elevation={0} className={classes.paper}>
         <div className={classes.tableWrapper}>
-          <Table size="small">
+          <Table>
             <TableHead>
               <TableRow>
                 {props.columns.map(col => (
-                  <TableCell key={col.id as string}>
-                    {col.sortable && (
+                  <TableCell
+                    key={col.id as string}
+                    style={{ width: col.width || "auto" }}
+                  >
+                    {col.sortable ? (
                       <TableSortLabel
                         active={sort?.key === col.id}
                         direction={sort?.asc ? "asc" : "desc"}
@@ -105,6 +114,8 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                       >
                         {col.header}
                       </TableSortLabel>
+                    ) : (
+                      <>{col.header}</>
                     )}
                   </TableCell>
                 ))}
@@ -117,7 +128,11 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                     {props.columns.map(col => {
                       return (
                         <TableCell key={col.id as string} align="left">
-                          {renderContent(col, row)}
+                          {renderContent(
+                            col,
+                            row,
+                            props.onDelete && (() => props.onDelete!(row)),
+                          )}
                         </TableCell>
                       );
                     })}

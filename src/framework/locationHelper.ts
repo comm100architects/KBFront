@@ -1,7 +1,7 @@
 import * as Query from "query-string";
 import * as H from "history";
 
-export const withQueryParam = (key: string, value?: string) => (
+export const withQueryParam = (key: string, value?: string | number) => (
   search: string,
 ) => {
   const query = Query.parse(search);

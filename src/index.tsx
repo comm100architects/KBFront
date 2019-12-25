@@ -86,9 +86,13 @@ ReactDOM.render(
           }}
         </Route>
         <Route exact strict path="/:currentApp/:currentPage">
-          {({ match }: RouteChildrenProps<AppParam>) => {
+          {({ match, location }: RouteChildrenProps<AppParam>) => {
             const { currentApp, currentPage } = match!.params;
-            return <Redirect to={`/${currentApp}/${currentPage}/`} />;
+            return (
+              <Redirect
+                to={`/${currentApp}/${currentPage}/${location.search}`}
+              />
+            );
           }}
         </Route>
         <Route path="/:currentApp/:currentPage">

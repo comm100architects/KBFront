@@ -9,19 +9,21 @@ import * as H from "history";
 import { CIcon, CIconName } from "./Icons";
 import { CElementProps } from "./Base";
 
-export interface CButtonProps extends CElementProps {
-  type?: "submit" | "reset";
+interface CLinkBaseProps extends CElementProps {
   onClick?: React.MouseEventHandler<{}>;
-  disabled?: boolean;
-  primary?: boolean;
-  text: string;
-  id?: string;
   to?:
     | H.LocationDescriptor<H.LocationState>
     | ((
         location: H.Location<H.LocationState>,
       ) => H.LocationDescriptor<H.LocationState>);
   external?: boolean;
+}
+
+export interface CButtonProps extends CLinkBaseProps {
+  disabled?: boolean;
+  text: string;
+  type?: "submit" | "reset";
+  primary?: boolean;
 }
 
 export const CButton = (props: CButtonProps) => {
@@ -59,16 +61,9 @@ export const CButton = (props: CButtonProps) => {
   return <></>;
 };
 
-export interface CIconButtonProps extends CElementProps {
+export interface CIconButtonProps extends CLinkBaseProps {
   title: string;
   icon: CIconName;
-  onClick?: React.MouseEventHandler<{}>;
-  to?:
-    | H.LocationDescriptor<H.LocationState>
-    | ((
-        location: H.Location<H.LocationState>,
-      ) => H.LocationDescriptor<H.LocationState>);
-  external?: boolean;
 }
 
 const Link = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
@@ -96,4 +91,16 @@ export const CIconButton = (props: CIconButtonProps) => {
     );
   }
   return <></>;
+};
+
+export interface CLinkProps extends CLinkBaseProps {
+  text: string;
+}
+
+export const CLink = (props: CLinkProps) => {
+  return (
+    <Link to={props.to!} onClick={props.onClick} replace={true}>
+      {props.text}
+    </Link>
+  );
 };

@@ -84,7 +84,7 @@ const livechatAppMenu: Array<RawMenuItem | RawSubMenu> = [
 const kbAppMenu: Array<RawMenuItem | RawSubMenu> = [
   { name: "articles", label: "Articles", icon: "description" },
   { name: "images", label: "Images", icon: "image" },
-  { name: "design", label: "Design", icon: "viewQuilt" },
+  { name: "designs", label: "Design", icon: "viewQuilt" },
   { name: "settings", label: "Settings", icon: "settings" },
   {
     label: "Advanced",

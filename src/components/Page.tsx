@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface CPageProps extends React.Props<{}> {
   title: string;
+  description?: string;
   documentTitle?: string;
 }
 
@@ -42,6 +43,9 @@ export default (props: CPageProps): JSX.Element => {
         >
           {props.title}
         </Typography>
+        {props.description && (
+          <div dangerouslySetInnerHTML={{ __html: props.description }}></div>
+        )}
         {props.children}
       </Paper>
     </div>
