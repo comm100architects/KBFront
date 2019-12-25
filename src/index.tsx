@@ -1,4 +1,5 @@
-import * as React from "react";
+import React from "react";
+import _ from "lodash";
 import * as ReactDOM from "react-dom";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import {
@@ -85,19 +86,16 @@ ReactDOM.render(
             return <Page404 />;
           }}
         </Route>
-        <Route exact strict path="/:currentApp/:currentPage">
+        <Route path="/:currentApp/:currentPage">
           {({ match, location }: RouteChildrenProps<AppParam>) => {
             const { currentApp, currentPage } = match!.params;
-            return (
-              <Redirect
-                to={`/${currentApp}/${currentPage}/${location.search}`}
-              />
-            );
-          }}
-        </Route>
-        <Route path="/:currentApp/:currentPage">
-          {({ match }: RouteChildrenProps<AppParam>) => {
-            const { currentApp, currentPage } = match!.params;
+            if (match!.isExact && !_.endsWith(location.pathname, "/")) {
+              return (
+                <Redirect
+                  to={`/${currentApp}/${currentPage}/${location.search}`}
+                />
+              );
+            }
             const app = rawProducts.find(app => app.name === currentApp);
             if (isMenuExist(currentPage, app?.menu ?? [])) {
               return <Root app={app!} currentPage={currentPage} />;
