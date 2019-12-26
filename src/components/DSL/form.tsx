@@ -1,6 +1,6 @@
 import React from "react";
 import { makeInput } from "./input";
-import { RepositoryMap, Entity } from "./types";
+import { Entity } from "./types";
 import { makeRadioGroup } from "./radioGroup";
 import { makeSelect } from "./select";
 import { makeCheckbox } from "./checkbox";
@@ -10,18 +10,19 @@ import { UIPage, UIRow } from "./types";
 import { Formik, Form, FormikHelpers, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { CButton } from "../Buttons";
+import { RESTfulRepository } from "../../framework/repository";
 
 export const makeUIRowComponent = async (
-  repositories: RepositoryMap,
+  endPointPrefix: string,
   row: UIRow,
 ): Promise<React.ComponentType<any>> => {
   switch (row.componentType) {
     case "select":
-      return makeSelect(repositories, row);
+      return makeSelect(endPointPrefix, row);
     case "checkbox":
       return makeCheckbox(row);
     case "radioGroup":
-      return makeRadioGroup(repositories, row);
+      return makeRadioGroup(endPointPrefix, row);
     case "input":
       return makeInput(row);
     default:
@@ -29,11 +30,11 @@ export const makeUIRowComponent = async (
   }
 };
 export const makeUIRowFormCtrol = async (
-  repositories: RepositoryMap,
+  endPointPrefix: string,
   row: UIRow,
   i: number,
 ): Promise<React.ComponentType<any>> => {
-  const component = await makeUIRowComponent(repositories, row);
+  const component = await makeUIRowComponent(endPointPrefix, row);
   let hiddenPred = (_: any) => false;
   if (row.conditionsToHide) {
     const expression = row.conditionsToHide[0];
@@ -80,18 +81,19 @@ export const makeUIRowFormCtrol = async (
 };
 
 export const makeFormComponent = async ({
-  repositories,
+  settings,
   rows,
   entity,
-  fields,
 }: UIPage): Promise<React.ComponentType<any>> => {
+  const { endPointPrefix } = settings;
   const rowComponents = await Promise.all(
     rows!.map((row: UIRow, i: number) =>
-      makeUIRowFormCtrol(repositories, row, i),
+      makeUIRowFormCtrol(endPointPrefix, row, i),
     ),
   );
 
-  const repo = repositories[entity];
+  const repo = new RESTfulRepository<Entity>(endPointPrefix, entity.name);
+  const { fields } = entity;
 
   return () => {
     const handleSubmit = async (
@@ -126,7 +128,7 @@ export const makeFormComponent = async ({
           validate={handleValidation}
           onSubmit={handleSubmit}
           enableReinitialize={true}
-          data-test-id={`form-${entity}`}
+          data-test-id={`form-${entity.name}`}
         >
           {props => (
             <Form>

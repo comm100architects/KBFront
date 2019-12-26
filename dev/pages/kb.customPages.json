@@ -1,0 +1,30 @@
+{
+  "id": "kb.customPages",
+  "title": "Custom Pages",
+  "entity": "customPages",
+  "grid": {
+    "columns": [
+      {
+        "fieldName": "status",
+        "cellComponentType": "icon",
+        "headerLabel": "",
+        "isAllowSort": false
+      },
+      {
+        "fieldName": "title",
+        "cellComponentType": "link",
+        "linkPath": "edit?id=$id"
+      },
+      {
+        "fieldName": "modified",
+        "cellComponentType": "text"
+      }
+    ],
+    "filters": [],
+    "isAllowNew": true,
+    "newEntityButtonLabel": "New Custom Page",
+    "isAllowEdit": true,
+    "isAllowDelete": true,
+    "confirmDeleteMessage": "Are you sure you want to delete the custom page?"
+  }
+}

@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "mock": "json-server --delay 100 --watch --routes dev/routes.json dev/db.json",
-    "gen": "node dev/gen.js > dev/db.json",
+    "mock": "json-server --delay 100 --watch --routes dev/routes.json dist/db.json",
+    "gen": "node dev/gen.js > dist/db.json",
     "js": "webpack",
     "test": "jest",
     "js:watch": "webpack --watch",

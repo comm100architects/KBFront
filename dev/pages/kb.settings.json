@@ -1,0 +1,33 @@
+{
+  "id": "kb.settings",
+  "title": "Settings",
+  "entity": "knowledgeBases",
+  "rows": [
+    {
+      "fieldName": "name",
+      "componentType": "input"
+    },
+    {
+      "fieldName": "homePageType",
+      "componentType": "radioGroup"
+    },
+    {
+      "fieldName": "homeCustomPageId",
+      "componentType": "select",
+      "indent": 1,
+      "conditionsToHide": ["homePageType===0"]
+    },
+    {
+      "fieldName": "visibility",
+      "componentType": "radioGroup"
+    },
+    {
+      "fieldName": "allowFeedback",
+      "componentType": "checkbox"
+    },
+    {
+      "fieldName": "status",
+      "componentType": "radioGroup"
+    }
+  ]
+}

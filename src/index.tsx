@@ -12,7 +12,7 @@ import {
 import Drawer from "@material-ui/core/drawer";
 import AppHeader from "./AppHeader";
 import AppMenu from "./AppMenu";
-import { rawProducts, isMenuExist, RawProduct } from "./Pages";
+import { rawProducts, isMenuExist, RawProduct, getMenuPage } from "./Pages";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import PageRouter from "./PageRouter";
@@ -52,7 +52,15 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Root({ app, currentPage }: { app: RawProduct; currentPage: string }) {
+function Root({
+  app,
+  currentPage,
+  page,
+}: {
+  app: RawProduct;
+  currentPage: string;
+  page?: string;
+}) {
   const classes = useStyles({});
   return (
     <GlobalContext.Provider value={{ currentApp: app }}>
@@ -64,7 +72,11 @@ function Root({ app, currentPage }: { app: RawProduct; currentPage: string }) {
         </Drawer>
         <div className={classes.content}>
           <div className={classes.toolbar}></div>
-          <PageRouter currentApp={app.name} currentPage={currentPage} />
+          <PageRouter
+            currentApp={app.name}
+            currentPage={currentPage}
+            pageId={page}
+          />
         </div>
       </div>
     </GlobalContext.Provider>
@@ -96,7 +108,13 @@ ReactDOM.render(
             }
             const app = rawProducts.find(app => app.name === currentApp);
             if (isMenuExist(currentPage, app?.menu ?? [])) {
-              return <Root app={app!} currentPage={currentPage} />;
+              return (
+                <Root
+                  app={app!}
+                  currentPage={currentPage}
+                  page={getMenuPage(currentPage, app?.menu ?? [])}
+                />
+              );
             }
             return <Page404 />;
           }}

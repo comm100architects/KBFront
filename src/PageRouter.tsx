@@ -3,11 +3,14 @@ import { Suspense } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Spin from "./components/Spin";
 import LoadError from "./components/LoadError";
-interface AppParam {
+interface LazyPageProps {
   currentApp: string;
   currentPage: string;
+  pageId?: string;
 }
 import { isPromise } from "./framework/utils";
+import { fetchJson } from "./framework/network";
+import { makePageComponent } from "./components/DSL";
 
 const useStyles = makeStyles((_: Theme) =>
   createStyles({
@@ -30,19 +33,28 @@ const Loading = (_: {}) => {
 };
 
 export default class LazyPage extends React.Component<
-  AppParam,
+  LazyPageProps,
   {
     page: React.LazyExoticComponent<React.ComponentType<any>>;
     error: Error | null;
   }
 > {
-  constructor(props: AppParam) {
+  constructor(props: LazyPageProps) {
     super(props);
 
     this.state = { page: this.getPage(props), error: null };
   }
 
-  getPage({ currentApp, currentPage }: AppParam) {
+  getPage({ currentApp, currentPage, pageId }: LazyPageProps) {
+    if (pageId) {
+      return React.lazy(async () => {
+        const settings = await fetchJson("/globalSettings", "GET");
+        const configUrl = `${settings.endPointPrefix}/pages/${pageId}`;
+        return {
+          default: await makePageComponent(settings, configUrl),
+        };
+      });
+    }
     return React.lazy(() =>
       import(
         /* webpackChunkName: "page" */
@@ -60,7 +72,7 @@ export default class LazyPage extends React.Component<
     this.setState({ error });
   }
 
-  componentWillReceiveProps(nextProps: AppParam) {
+  componentWillReceiveProps(nextProps: LazyPageProps) {
     if (
       this.props.currentApp === nextProps.currentApp &&
       this.props.currentPage === nextProps.currentPage
@@ -89,7 +101,7 @@ export default class LazyPage extends React.Component<
   }
 }
 
-// export default ({ currentApp, currentPage }: AppParam) => {
+// export default ({ currentApp, currentPage }: LazyPageProps) => {
 //   const lazyComponentsStore = React.useRef(
 //     {} as { [id: string]: React.LazyExoticComponent<React.ComponentType<any>> },
 //   ).current;

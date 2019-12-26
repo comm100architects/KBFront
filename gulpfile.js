@@ -5,21 +5,68 @@ function log(s) {
   console.log(`[${new Date()}]: ${s}`);
 }
 
-function exec(cmd) {
+const execCmd = cmd => {
   log(cmd);
+  const parts = cmd.split(" ");
+  return spawn(parts[0], parts.slice(1), {
+    stdio: "inherit",
+  });
+};
+
+function exec(cmd) {
   return new Promise(function(resolve, reject) {
-    const parts = cmd.split(" ");
-    const child = spawn(parts[0], parts.slice(1), {
-      stdio: "inherit",
-    });
+    const child = execCmd(cmd);
     child.on("close", code => {
       return code === 0 ? resolve() : reject(code);
     });
   });
 }
 
-gulp.task("default", function() {
-  exec("node dev/server.js");
+const watchedProcesses = {};
+setInterval(() => {
+  for (const cmd of Object.keys(watchedProcesses)) {
+    const p = watchedProcesses[cmd];
+    if (p.status === "changed") {
+      p.process = execCmd(cmd);
+      p.process.on("close", code => {
+        if (code === null) {
+          // set to changed when kill by watch
+          p.status = "changed";
+        } else {
+          p.status = "done";
+        }
+      });
+      p.status = "running";
+    }
+  }
+}, 10);
+
+const watch = (globs, cmd) => {
+  watchedProcesses[cmd] = {
+    status: "changed",
+    process: null,
+  };
+
+  gulp.watch(globs, {}, function(done) {
+    log(`${globs} changed`);
+
+    const p = watchedProcesses[cmd];
+    if (p.status === "running") {
+      watchedProcesses[cmd].process.kill();
+    } else if (p.status === "done") {
+      watchedProcesses[cmd].status = "changed";
+    }
+    done();
+  });
+};
+
+gulp.task("default", () => {
   exec("npm run mock");
   exec("npm run js:watch");
+  watch(
+    ["dev/gen.js", "dev/entities/*.json", "dev/pages/*.json"],
+    "npm run gen",
+  );
+  watch(["dev/server.js"], "node dev/server.js");
 });
+

@@ -1,6 +1,6 @@
 import { CFormField } from "../Form";
-import { IRepository, RESTfulRepository } from "../../framework/repository";
 import _ from "lodash";
+import { fetchJson } from "../../framework/network";
 
 export interface UIEntityFieldLabelForValue {
   key: number | boolean;
@@ -29,7 +29,7 @@ export interface UIEntityField {
   referenceEntityFieldNameForLabel?: string;
 }
 
-export interface RawUIEntity {
+export interface UIEntity {
   name: string;
   fields: UIEntityField[];
 }
@@ -41,10 +41,8 @@ export interface GlobalSettings {
 
 // structure: page include groups, each group include rows, each row is a control
 export interface RawUIPage {
-  settings: GlobalSettings;
   title: string;
   description?: string;
-  entities: RawUIEntity[];
   entity: string;
   rows?: RawUIRow[];
   grid?: UIGrid;
@@ -90,27 +88,6 @@ export interface UIRow {
   conditionsToHide?: string[];
 }
 
-export type UIEntityMap = { [name: string]: RawUIEntity };
-
-const toRepositoryMap = (
-  endPointPrefix: string,
-  entities: RawUIEntity[],
-): RepositoryMap => {
-  const list = entities.map(({ name }) => {
-    return {
-      name,
-      repository: new RESTfulRepository(endPointPrefix, name) as IRepository<
-        Entity
-      >,
-    };
-  });
-
-  return list.reduce((res, { name, repository }) => {
-    res[name] = repository;
-    return res;
-  }, {} as RepositoryMap);
-};
-
 const normalizeRawUIRow = (
   fields: UIEntityField[],
   { indent, conditionsToHide, componentType, fieldName }: RawUIRow,
@@ -121,37 +98,27 @@ const normalizeRawUIRow = (
   field: fields.find(({ name }) => name === fieldName)!,
 });
 
-export const normalizeRawUIPage = ({
-  title,
-  description,
-  entity,
-  entities,
-  settings,
-  rows,
-  grid,
-}: RawUIPage): UIPage => {
-  const fields = entities.find(({ name }) => name === entity)?.fields ?? [];
+export const normalizeRawUIPage = async (
+  settings: GlobalSettings,
+  { title, description, entity, rows, grid }: RawUIPage,
+): Promise<UIPage> => {
+  const { endPointPrefix } = settings;
+  const e = await fetchJson(`${endPointPrefix}/entities/${entity}`, "GET");
   return {
     settings,
     title,
     description,
-    entity,
-    rows: rows?.map(row => normalizeRawUIRow(fields, row)),
-    repositories: toRepositoryMap(settings.endPointPrefix, entities),
-    fields,
+    entity: e,
+    rows: rows?.map(row => normalizeRawUIRow(e.fields, row)),
     grid,
   };
 };
-
-export type RepositoryMap = { [name: string]: IRepository<Entity> };
 
 export interface UIPage {
   settings: GlobalSettings;
   title: string;
   description?: string;
-  repositories: RepositoryMap;
-  fields: UIEntityField[];
-  entity: string;
+  entity: UIEntity;
   rows?: UIRow[];
   grid?: UIGrid;
 }
@@ -163,11 +130,6 @@ export interface EntityInfo {
   source: string | Entity | Entity[];
 }
 
-export type CustomComponent = (
-  repositories: RepositoryMap,
-) => Promise<React.ComponentType>;
+export type CustomComponent = () => Promise<React.ComponentType>;
 
-export type CustomFormFieldComponent = (
-  repositories: RepositoryMap,
-) => Promise<CFormField<Entity>>;
-
+export type CustomFormFieldComponent = () => Promise<CFormField<Entity>>;

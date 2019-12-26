@@ -1,0 +1,44 @@
+{
+  "id": "kb.multipleKbs",
+  "title": "Multiple Knowledge Bases",
+  "entity": "knowledgeBases",
+  "grid": {
+    "columns": [
+      {
+        "fieldName": "name",
+        "cellComponentType": "link",
+        "linkPath": "../settings?id=$id",
+        "headerLabel": "Knowledge Base"
+      },
+      {
+        "fieldName": "numOfArticles",
+        "cellComponentType": "link",
+        "linkPath": "../articles?kbId=$id"
+      },
+      {
+        "fieldName": "numOfCustomPages",
+        "cellComponentType": "link",
+        "linkPath": "../customPages?kbId=$id"
+      },
+      {
+        "fieldName": "numOfImages",
+        "cellComponentType": "link",
+        "linkPath": "../images?kbId=$id"
+      },
+      {
+        "fieldName": "status",
+        "cellComponentType": "text"
+      },
+      {
+        "fieldName": "visibility",
+        "cellComponentType": "text"
+      }
+    ],
+    "filters": [],
+    "isAllowNew": true,
+    "newEntityButtonLabel": "New Knowledge Base",
+    "isAllowEdit": true,
+    "isAllowDelete": true,
+    "confirmDeleteMessage": "Are you sure you want to delete the knowledge base?"
+  }
+}

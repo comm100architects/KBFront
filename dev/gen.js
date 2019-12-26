@@ -1,5 +1,5 @@
 const Chance = require("chance");
-
+const fs = require("fs");
 // Instantiate Chance so it can be used
 const chance = new Chance();
 const range = n => [...Array(n).keys()];
@@ -22,7 +22,6 @@ const guidPool = () => {
   ];
 };
 
-const articleStatus = int(0, 1);
 const words = n => () =>
   range(n)
     .map(() => chance.word())
@@ -69,6 +68,23 @@ const genTree = (parentIdName, sc, childrenCount, parent, depth) => {
     .reduce((a, b) => a.concat(b), []);
   return [parent, ...children];
 };
+
+const entities = fs
+  .readdirSync("./dev/entities")
+  .filter(name => /\.json$/.test(name))
+  .map(name =>
+    JSON.parse(
+      fs.readFileSync(`./dev/entities/${name}`, { encoding: "utf-8" }),
+    ),
+  )
+  .map(entity => Object.assign(entity, { id: entity.name }));
+
+const pages = fs
+  .readdirSync("./dev/pages")
+  .filter(name => /\.json$/.test(name))
+  .map(name =>
+    JSON.parse(fs.readFileSync(`./dev/pages/${name}`, { encoding: "utf-8" })),
+  );
 
 const data = range(10)
   .map(() =>
@@ -121,7 +137,7 @@ const data = range(10)
           modifiedTime: chance.date,
           tags: [3, chance.word],
           featured: chance.bool,
-          status: articleStatus,
+          status: int(0, 1),
         },
       ]);
 
@@ -132,7 +148,7 @@ const data = range(10)
           id: customPageId,
           title: chance.sentence,
           modified: chance.date,
-          status: articleStatus,
+          status: int(0, 1),
           kbId: () => kb.id,
         },
       ]);
@@ -144,7 +160,7 @@ const data = range(10)
           title: words(2),
           body: html,
           modifiedTime: chance.date,
-          status: articleStatus,
+          status: int(0, 1),
           kbId: () => kb.id,
         },
       ]);
@@ -164,6 +180,8 @@ const data = range(10)
       articles: [],
       customPages: [],
       designs: [],
+      entities,
+      pages,
     },
   );
 

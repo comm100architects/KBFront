@@ -17,6 +17,7 @@ import { CIcon, CIconName } from "../Icons";
 import moment from "moment";
 import { undefinedDefault, replaceVariables } from "../../framework/utils";
 import { toPath, withQueryParam } from "../../framework/locationHelper";
+import { RESTfulRepository } from "../../framework/repository";
 
 export const makeGridComponent = async (page: UIPage) => {
   const grid = page.grid!;
@@ -88,9 +89,14 @@ const rowContent = (
 export const makeTableComponent = async (page: UIPage) => {
   const grid = page.grid!;
   const { columns, isAllowEdit, isAllowDelete } = grid;
-  const repo = page.repositories[page.entity];
+  const repo = new RESTfulRepository<Entity>(
+    page.settings.endPointPrefix,
+    page.entity.name,
+  );
   const tableColumns: CTableColumn<Entity>[] = columns.map(column => {
-    const field = page.fields.find(({ name }) => column.fieldName === name)!;
+    const field = page.entity.fields.find(
+      ({ name }) => column.fieldName === name,
+    )!;
     return {
       id: field.name,
       header: undefinedDefault(column.headerLabel, field.title),

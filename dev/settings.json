@@ -1,0 +1,4 @@
+{
+  "endPointPrefix": "//localhost:3000",
+  "dateTimeFormat": "MM/DD/YYYY HH:mm:ss"
+}

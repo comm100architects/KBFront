@@ -12,15 +12,22 @@ const server = http.createServer((req, res) => {
     req.url.indexOf("/dist") !== -1 ||
     req.url.indexOf("/node_modules") !== -1
   ) {
-    if (req.url.indexOf("page") !== -1) {
-      setTimeout(() => writeFile(`./${req.url}`, res), 1000);
-    } else {
+    if (req.url.indexOf(".chunk.") === -1) {
       writeFile(`./${req.url}`, res);
+    } else {
+      // simulate network delay
+      setTimeout(() => writeFile(`./${req.url}`, res), 500);
     }
     return;
   }
 
-  if (/^\/dev\/[^.]+\.json$/.test(req.url)) {
+  if (/^\/globalSettings$/i.test(req.url)) {
+    res.setHeader("content-type", "application/json");
+    writeFile("./dev/settings.json", res);
+    return;
+  }
+
+  if (/^\/dev\/[^.]+\.json$/i.test(req.url)) {
     res.setHeader("content-type", "application/json");
     writeFile(`./${req.url}`, res);
     return;

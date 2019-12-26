@@ -1,6 +1,6 @@
 import React from "react";
 import moxios from "moxios";
-import { normalizeRawUIPage, RawUIPage } from "../DSL/types";
+import { normalizeRawUIPage, RawUIPage, GlobalSettings } from "../DSL/types";
 import { makePageComponent } from "../DSL";
 import { mount } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
@@ -8,100 +8,99 @@ import { act } from "react-dom/test-utils";
 
 const flushPromises = () => act(() => new Promise(setImmediate));
 
-const rawUIPage: RawUIPage = {
-  settings: {
-    endPointPrefix: "//localhost:3000",
-    dateTimeFormat: "MM/dd/yyyy HH:mm:ss",
+const globalSettings: GlobalSettings = {
+  endPointPrefix: "//localhost:3000",
+  dateTimeFormat: "MM/dd/yyyy HH:mm:ss",
+};
+const entities = [
+  {
+    name: "knowledgeBases",
+    fields: [
+      { name: "id", type: "guid" },
+      {
+        name: "name",
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        isRequired: true,
+        title: "Name",
+      },
+      {
+        name: "homePageType",
+        type: "enum",
+        labelsForValue: [
+          { key: 0, label: "Display the root category" },
+          { key: 1, label: "Display a custom page" },
+        ],
+        isRequired: true,
+        title: "Home",
+      },
+      {
+        name: "homeCustomPageId",
+        type: "reference",
+        referenceEntityName: "customPages",
+        referenceEntityFieldNameForLabel: "title",
+        isRequired: true,
+        title: "",
+      },
+      {
+        name: "visibility",
+        type: "enum",
+        labelsForValue: [
+          { key: 0, label: "Public" },
+          { key: 1, label: "Private" },
+        ],
+        isRequired: true,
+        title: "Visibility",
+      },
+      {
+        name: "allowFeedback",
+        type: "bool",
+        labelsForValue: [
+          {
+            key: true,
+            label: "Allow visitors to rate Helpful or Not Helpful on articles",
+          },
+          {
+            key: false,
+            label:
+              "Do not allow visitors to rate Helpful or Not Helpful on articles",
+          },
+        ],
+        isRequired: false,
+        title: "Feedback",
+      },
+      {
+        name: "status",
+        type: "bool",
+        labelsForValue: [
+          { key: 0, label: "Close" },
+          { key: 1, label: "Open" },
+        ],
+        isRequired: true,
+        title: "Status",
+      },
+    ],
   },
+  {
+    name: "customPages",
+    fields: [
+      {
+        name: "id",
+        type: "guid",
+      },
+      {
+        name: "title",
+        type: "string",
+        minLength: 0,
+        maxLength: 1024,
+        isRequired: true,
+      },
+    ],
+  },
+];
+const rawUIPage: RawUIPage = {
   title: "Settings",
-  entities: [
-    {
-      name: "knowledgeBases",
-      fields: [
-        { name: "id", type: "guid" },
-        {
-          name: "name",
-          type: "string",
-          minLength: 0,
-          maxLength: 64,
-          isRequired: true,
-          title: "Name",
-        },
-        {
-          name: "homePageType",
-          type: "enum",
-          labelsForValue: [
-            { key: 0, label: "Display the root category" },
-            { key: 1, label: "Display a custom page" },
-          ],
-          isRequired: true,
-          title: "Home",
-        },
-        {
-          name: "homeCustomPageId",
-          type: "reference",
-          referenceEntityName: "customPages",
-          referenceEntityFieldNameForLabel: "title",
-          isRequired: true,
-          title: "",
-        },
-        {
-          name: "visibility",
-          type: "enum",
-          labelsForValue: [
-            { key: 0, label: "Public" },
-            { key: 1, label: "Private" },
-          ],
-          isRequired: true,
-          title: "Visibility",
-        },
-        {
-          name: "allowFeedback",
-          type: "bool",
-          labelsForValue: [
-            {
-              key: true,
-              label:
-                "Allow visitors to rate Helpful or Not Helpful on articles",
-            },
-            {
-              key: false,
-              label:
-                "Do not allow visitors to rate Helpful or Not Helpful on articles",
-            },
-          ],
-          isRequired: false,
-          title: "Feedback",
-        },
-        {
-          name: "status",
-          type: "bool",
-          labelsForValue: [
-            { key: 0, label: "Close" },
-            { key: 1, label: "Open" },
-          ],
-          isRequired: true,
-          title: "Status",
-        },
-      ],
-    },
-    {
-      name: "customPages",
-      fields: [
-        {
-          name: "id",
-          type: "guid",
-        },
-        {
-          name: "title",
-          type: "string",
-          minLength: 0,
-          maxLength: 1024,
-          isRequired: true,
-        },
-      ],
-    },
-  ],
   entity: "knowledgeBases",
   rows: [
     {
@@ -133,48 +132,16 @@ const rawUIPage: RawUIPage = {
   ],
 };
 describe("convert RawUIPage to UIPage", () => {
-  it("should set title", () => {
-    const page = normalizeRawUIPage(rawUIPage);
+  it("should set title", async () => {
+    const page = await normalizeRawUIPage(globalSettings, rawUIPage);
     expect(page.title).toBe(rawUIPage.title);
   });
-  it("should set entity", () => {
-    const page = normalizeRawUIPage(rawUIPage);
+  it("should set entity", async () => {
+    const page = await normalizeRawUIPage(globalSettings, rawUIPage);
     expect(page.entity).toBe(rawUIPage.entity);
   });
-  it("should create repositories", () => {
-    const page = normalizeRawUIPage(rawUIPage);
-    rawUIPage.entities.forEach(({ name }) =>
-      expect(page.repositories[name]).toBeTruthy(),
-    );
-  });
-
-  it("should convert object entity to remote repository", async () => {
-    const page = normalizeRawUIPage(rawUIPage);
-
-    for (const { name } of rawUIPage.entities) {
-      moxios.install();
-
-      const response = [{ id: "abc" }];
-      moxios.stubRequest(`${page.settings.endPointPrefix}/${name}`, {
-        response,
-      });
-
-      const list = await page.repositories[name].getList();
-      expect(list).toStrictEqual(response);
-
-      moxios.uninstall();
-    }
-  });
-  it("should set fields", () => {
-    const page = normalizeRawUIPage(rawUIPage);
-    for (const { name, fields } of rawUIPage.entities) {
-      if (name === page.entity) {
-        expect(fields).toStrictEqual(page.fields);
-      }
-    }
-  });
-  it("should set rows", () => {
-    const page = normalizeRawUIPage(rawUIPage);
+  it("should set rows", async () => {
+    const page = await normalizeRawUIPage(globalSettings, rawUIPage);
     expect(page.rows).toEqual([
       {
         indent: 0,
@@ -273,7 +240,7 @@ describe("render UIPage", () => {
   const configUrl = "/kbSettings.json";
   beforeEach(() => {
     moxios.install();
-    mockRequests(rawUIPage.settings.endPointPrefix);
+    mockRequests(globalSettings.endPointPrefix);
     document.body.innerHTML = "";
   });
   afterEach(() => moxios.uninstall());
@@ -324,11 +291,12 @@ describe("render UIPage", () => {
     });
   };
 
-  const mountPage = async (page: RawUIPage) => {
+  const mountPage = async (settings: GlobalSettings, page: RawUIPage) => {
     document.body.innerHTML = "";
 
     moxios.stubRequest(configUrl, { response: page });
-    const Page = await makePageComponent(configUrl);
+
+    const Page = await makePageComponent(settings, configUrl);
     const wrapper = mount(
       <Router>
         <Page />
@@ -341,7 +309,7 @@ describe("render UIPage", () => {
 
   it("should render UIPage.title", async () => {
     const title = "Test title";
-    const wrapper = await mountPage({
+    const wrapper = await mountPage(globalSettings, {
       ...rawUIPage,
       title,
       rows: [],
@@ -350,7 +318,7 @@ describe("render UIPage", () => {
   });
 
   it("should render kb name input in form", async () => {
-    const wrapper = await mountPage({
+    const wrapper = await mountPage(globalSettings, {
       ...rawUIPage,
       rows: [
         {
@@ -370,7 +338,7 @@ describe("render UIPage", () => {
     );
   });
   it("should render kb home radio group", async () => {
-    const wrapper = await mountPage({
+    const wrapper = await mountPage(globalSettings, {
       ...rawUIPage,
       rows: [
         {
@@ -388,7 +356,7 @@ describe("render UIPage", () => {
     expect(radios.find({ value: 1 }).length).toEqual(1);
   });
   it("should render customPage select", async () => {
-    const wrapper = await mountPage({
+    const wrapper = await mountPage(globalSettings, {
       ...rawUIPage,
       rows: [
         {
@@ -417,17 +385,20 @@ describe("render UIPage", () => {
         },
       ],
     });
-    const wrapper = await mountPage({
-      ...rawUIPage,
-      settings: { ...rawUIPage.settings, endPointPrefix: "http://1.1.1.1" },
-      rows: [
-        {
-          fieldName: "status",
-          componentType: "select",
-          conditionsToHide: ["homePageType==1"],
-        },
-      ],
-    });
+
+    const wrapper = await mountPage(
+      { ...globalSettings, endPointPrefix: "http://1.1.1.1" },
+      {
+        ...rawUIPage,
+        rows: [
+          {
+            fieldName: "status",
+            componentType: "select",
+            conditionsToHide: ["homePageType==1"],
+          },
+        ],
+      },
+    );
     await flushPromises();
     expect(wrapper.find("CSelect").length).toEqual(1);
   });
@@ -446,17 +417,19 @@ describe("render UIPage", () => {
         },
       ],
     });
-    const wrapper = await mountPage({
-      ...rawUIPage,
-      settings: { ...rawUIPage.settings, endPointPrefix: "http://1.1.1.1" },
-      rows: [
-        {
-          fieldName: "status",
-          componentType: "select",
-          conditionsToHide: ["homePageType==0"],
-        },
-      ],
-    });
+    const wrapper = await mountPage(
+      { ...globalSettings, endPointPrefix: "http://1.1.1.1" },
+      {
+        ...rawUIPage,
+        rows: [
+          {
+            fieldName: "status",
+            componentType: "select",
+            conditionsToHide: ["homePageType==0"],
+          },
+        ],
+      },
+    );
     expect(wrapper.find("CSelect").length).toEqual(0);
   });
 });

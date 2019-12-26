@@ -1,14 +1,19 @@
-import { RepositoryMap, UIRow } from "./types";
+import { UIRow, Entity } from "./types";
 import { CSelectProps, CSelect } from "../Select";
 import { withProps } from "../../framework/hoc";
+import { RESTfulRepository } from "../../framework/repository";
 
 export const makeSelect = async (
-  repositories: RepositoryMap,
+  endPointPrefix: string,
   { field }: UIRow,
 ): Promise<React.ComponentType<CSelectProps>> => {
   if (field.type === "reference") {
     const nullOption = [{ value: "", label: "\u3000" }];
-    const options = await repositories[field.referenceEntityName!].getList();
+    const repo = new RESTfulRepository<Entity>(
+      endPointPrefix,
+      field.referenceEntityName!,
+    );
+    const options = await repo.getList();
     return withProps(CSelect, {
       options: nullOption.concat(
         options.map(option => ({
@@ -34,4 +39,3 @@ export const makeSelect = async (
     `componentType is radioGroup but field.type is ${field.type} and doesn't have labelsForValue`,
   );
 };
-

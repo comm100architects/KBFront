@@ -7,12 +7,14 @@ export interface RawMenuItem {
   name: string; // for url
   label: string; //
   icon?: CIconName;
+  page?: string;
 }
 
 export interface RawSubMenu {
   label: string;
   icon: CIconName;
   items: Array<RawMenuItem>;
+  page?: string;
 }
 
 export type RawMenu = Array<RawMenuItem | RawSubMenu>;
@@ -31,6 +33,23 @@ export function isMenuExist(menuName: string, menu: RawMenu): boolean {
       return true;
   }
   return false;
+}
+
+export function getMenuPage(
+  menuName: string,
+  menu: RawMenu,
+): string | undefined {
+  for (var item of menu) {
+    if ((item as RawMenuItem).name === menuName) {
+      return item.page;
+    }
+    const menuItem = (item as RawSubMenu).items?.find(
+      ({ name }) => name === menuName,
+    );
+    if (menuItem !== undefined) {
+      return menuItem.page;
+    }
+  }
 }
 
 export function getMenuLabel(menuName: string, menu: RawMenu): string | null {
@@ -84,14 +103,23 @@ const livechatAppMenu: Array<RawMenuItem | RawSubMenu> = [
 const kbAppMenu: Array<RawMenuItem | RawSubMenu> = [
   { name: "articles", label: "Articles", icon: "description" },
   { name: "images", label: "Images", icon: "image" },
-  { name: "designs", label: "Design", icon: "viewQuilt" },
-  { name: "settings", label: "Settings", icon: "settings" },
+  { name: "designs", label: "Design", icon: "viewQuilt", page: "kb.designs" },
+  {
+    name: "settings",
+    label: "Settings",
+    icon: "settings",
+    page: "kb.settings",
+  },
   {
     label: "Advanced",
     icon: "widgets",
     items: [
-      { name: "customPages", label: "Custom Pages" },
-      { name: "knowledgeBases", label: "Multiple Knowledge Bases" },
+      { name: "customPages", label: "Custom Pages", page: "kb.customPages" },
+      {
+        name: "knowledgeBases",
+        label: "Multiple Knowledge Bases",
+        page: "kb.multipleKbs",
+      },
     ],
   },
 ];

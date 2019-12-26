@@ -1,0 +1,79 @@
+{
+  "name": "knowledgeBases",
+  "fields": [
+    { "name": "id", "type": "guid" },
+    {
+      "name": "name",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 64,
+      "isRequired": true,
+      "title": "Name"
+    },
+    {
+      "name": "homePageType",
+      "type": "enum",
+      "labelsForValue": [
+        { "key": 0, "label": "Display the root category" },
+        { "key": 1, "label": "Display a custom page" }
+      ],
+      "title": "Home"
+    },
+    {
+      "name": "homeCustomPageId",
+      "type": "reference",
+      "referenceEntityName": "customPages",
+      "referenceEntityFieldNameForLabel": "title",
+      "isRequired": true,
+      "title": ""
+    },
+    {
+      "name": "visibility",
+      "type": "enum",
+      "labelsForValue": [
+        { "key": 0, "label": "Public" },
+        { "key": 1, "label": "Private" }
+      ],
+      "title": "Visibility"
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "labelsForValue": [
+        { "key": 0, "label": "Close" },
+        { "key": 1, "label": "Open" }
+      ],
+      "title": "Status"
+    },
+    {
+      "name": "numOfArticles",
+      "type": "int",
+      "title": "Articles"
+    },
+    {
+      "name": "numOfCustomPages",
+      "type": "int",
+      "title": "Custom Pages"
+    },
+    {
+      "name": "numOfImages",
+      "type": "int",
+      "title": "Images"
+    },
+    {
+      "name": "allowFeedback",
+      "type": "bool",
+      "title": "Feedback",
+      "labelsForValue": [
+        {
+          "key": true,
+          "label": "Allow visitors to rate Helpful or Not Helpful on articles"
+        },
+        {
+          "key": false,
+          "label": "Do not allow visitors to rate Helpful or Not Helpful on articles"
+        }
+      ]
+    }
+  ]
+}

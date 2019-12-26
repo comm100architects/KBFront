@@ -76,10 +76,10 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
   add(obj: Entity): Promise<Entity> {
     return fetchJson(this.endPoint, "POST", obj);
   }
-  update(id: string, obj: Entity): Promise<Entity> {
+  update(id: string | number, obj: Entity): Promise<Entity> {
     return fetchJson(`${this.endPoint}/${id}`, "PUT", obj);
   }
-  async get(id?: string): Promise<Entity> {
+  async get(id?: string | number): Promise<Entity> {
     if (id) {
       return await fetchJson(`${this.endPoint}/${id}`, "GET");
     } else {
@@ -90,7 +90,7 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
       return result;
     }
   }
-  delete(id: string): Promise<void> {
+  delete(id: string | number): Promise<void> {
     return fetchJson(`${this.endPoint}/${id}`, "DELETE");
   }
   getList(params?: QueryItem[]): Promise<Entity[]> {
