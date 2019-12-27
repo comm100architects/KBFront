@@ -16,8 +16,7 @@
     },
     {
       "name": "body",
-      "type": "string",
-      "isRequired": true
+      "type": "string"
     },
     {
       "name": "status",

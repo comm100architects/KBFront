@@ -64,7 +64,7 @@ gulp.task("default", () => {
   exec("npm run mock");
   watch(["webpack.config.js"], "npm run js:watch");
   watch(
-    ["dev/gen.js", "dev/entities/*.json", "dev/pages/*.json"],
+    ["dev/gen*.js", "dev/entities/*.json", "dev/pages/*.json"],
     "npm run gen",
     true,
   );

@@ -129,7 +129,11 @@ const kbAppMenu: Array<RawMenuItem | RawSubMenu> = [
       {
         name: "customPages",
         label: "Custom Pages",
-        pages: [{ relatviePath: "", pageId: "kb.customPages" }],
+        pages: [
+          { relatviePath: "", pageId: "kb.customPages" },
+          { relatviePath: "edit", pageId: "kb.customPages.edit" },
+          { relatviePath: "new", pageId: "kb.customPages.new" },
+        ],
       },
       {
         name: "knowledgeBases",

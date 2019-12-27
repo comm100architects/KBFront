@@ -2,18 +2,19 @@ import React from "react";
 import { FieldInputProps } from "formik";
 import { Controlled as CodeMirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
-import "codemirror/theme/material.css";
 import "codemirror/mode/xml/xml";
 import "codemirror/mode/javascript/javascript";
 import "codemirror/mode/css/css";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 
-const useStyles = makeStyles((_: Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     codeMirror: {
       fontFamily: "Consolas, monospace",
       fontSize: 16,
       width: "100%",
+      border: `solid 1px ${theme.palette.divider}`,
+      borderRadius: theme.shape.borderRadius,
     },
   }),
 );
@@ -40,7 +41,6 @@ export const CCodeEdit: React.ComponentType<CCodeEditProps> = (
       onBlur={handleBlur}
       options={{
         lineNumbers: 20,
-        theme: "material",
         lineWrapping: true,
         mode: props.language,
       }}

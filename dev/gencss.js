@@ -1,30 +1,20 @@
-const Chance = require("chance");
-const chance = new Chance();
 const fs = require("fs");
-const { repeat, int, keywords } = require("./genhelper");
+const { chance, repeat, int, keywords } = require("./genhelper");
 
-const parseStringArray = s =>
-  s
+const parseCssModeKeywords = name =>
+  new RegExp(`var ${name}[^=]*?=[^]]*?\\[((.|\n)*?)\\]`, "m")
+    .exec(
+      fs.readFileSync("./node_modules/codemirror/mode/css/css.js", {
+        encoding: "utf-8",
+      }),
+    )[1]
     .split(",")
     .map(s => s.trim())
     .filter(s => !!s)
     .map(s => s.substr(1, s.length - 1));
 
-const cssProperties = parseStringArray(
-  /var propertyKeywords_[^=]*?=[^]]*?\[((.|\n)*?)\]/m.exec(
-    fs.readFileSync("./node_modules/codemirror/mode/css/css.js", {
-      encoding: "utf-8",
-    }),
-  )[1],
-);
-
-const cssValues = parseStringArray(
-  /var valueKeywords_[^=]*?=[^]]*?\[((.|\n)*?)\]/m.exec(
-    fs.readFileSync("./node_modules/codemirror/mode/css/css.js", {
-      encoding: "utf-8",
-    }),
-  )[1],
-);
+const cssProperties = parseCssModeKeywords("propertyKeywords_");
+const cssValues = parseCssModeKeywords("valueKeywords_");
 
 module.exports = () =>
   repeat(
@@ -37,7 +27,7 @@ module.exports = () =>
       );
       const styles = repeat(
         int(1, 5)(),
-        () => `\t${keywords(cssProperties)}: ${keywords(cssValues)}\n`,
+        () => `  ${keywords(cssProperties)}: ${keywords(cssValues)}\n`,
       );
       return `${selector} \{\n${styles}\}`;
     },

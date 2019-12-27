@@ -35,4 +35,4 @@ const keywords = words => {
   return words[int(0, words.length - 1)()];
 };
 
-module.exports = { int, guidPool, words, repeat, keywords };
+module.exports = { int, guidPool, words, repeat, keywords, range, chance };

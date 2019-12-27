@@ -24,6 +24,15 @@
       "title": "Status"
     },
     {
+      "name": "customUrl",
+      "type": "string",
+      "title": "Custom URL"
+    },
+    {
+      "name": "body",
+      "type": "string"
+    },
+    {
       "name": "modified",
       "type": "dateTime",
       "title": "Modified"

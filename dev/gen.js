@@ -1,15 +1,8 @@
-const Chance = require("chance");
 const css = require("./gencss");
-const { int, guidPool, words, repeat } = require("./genhelper");
+const html = require("./genhtml");
+const { int, guidPool, words, range, chance } = require("./genhelper");
 
 const fs = require("fs");
-// Instantiate Chance so it can be used
-const chance = new Chance();
-const range = n => [...Array(n).keys()];
-
-const html = () =>
-  `<h1>${words(3)()}</h1>` +
-  repeat(3, () => `<h3>${chance.sentence()}</h3><p>${chance.paragraph()}</p>`);
 
 const generate = sc => {
   if (Array.isArray(sc)) {
@@ -130,6 +123,7 @@ const data = range(10)
           modified: chance.date,
           status: int(0, 1),
           kbId: () => kb.id,
+          body: html,
         },
       ]);
 

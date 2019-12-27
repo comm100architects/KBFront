@@ -5,7 +5,6 @@ import ClearIcon from "@material-ui/icons/Clear";
 import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
-import { grey } from "@material-ui/core/colors";
 
 interface SearchBoxProps {
   label?: string;

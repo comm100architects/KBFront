@@ -1,0 +1,24 @@
+{
+  "id": "kb.customPages.new",
+  "title": "New Custom Pages",
+  "entity": "customPages",
+  "rows": [
+    {
+      "fieldName": "title",
+      "componentType": "input"
+    },
+    {
+      "fieldName": "customUrl",
+      "componentType": "input"
+    },
+    {
+      "fieldName": "body",
+      "componentType": "codeEditor",
+      "codeLanguage": "text/html"
+    },
+    {
+      "fieldName": "status",
+      "componentType": "select"
+    }
+  ]
+}
