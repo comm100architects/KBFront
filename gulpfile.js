@@ -68,6 +68,6 @@ gulp.task("default", () => {
     "npm run gen",
     true,
   );
-  watch(["dev/server.js"], "node dev/server.js");
+  watch(["dev/server.js"], "npm run server");
 });
 

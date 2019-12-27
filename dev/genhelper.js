@@ -1,10 +1,10 @@
-const Chance = require("chance");
+import Chance from "chance";
 // Instantiate Chance so it can be used
-const chance = new Chance();
-const range = n => [...Array(n).keys()];
+export const chance = new Chance();
+export const range = n => [...Array(n).keys()];
 
-const int = (min, max) => () => chance.integer({ min, max });
-const guidPool = () => {
+export const int = (min, max) => () => chance.integer({ min, max });
+export const guidPool = () => {
   const pool = [];
   return [
     function() {
@@ -21,18 +21,17 @@ const guidPool = () => {
   ];
 };
 
-const words = n => () =>
+export const words = n => () =>
   range(n)
     .map(() => chance.word())
     .join(" ");
 
-const repeat = (n, fn, sep = "") =>
+export const repeat = (n, fn, sep = "") =>
   range(n)
     .map(fn)
     .join(sep);
 
-const keywords = words => {
+export const keywords = words => {
   return words[int(0, words.length - 1)()];
 };
 
-module.exports = { int, guidPool, words, repeat, keywords, range, chance };

@@ -1,6 +1,6 @@
-const { words, repeat, chance } = require("./genhelper");
+import { repeat, words, chance } from "./genhelper";
 
-module.exports = () =>
+export default () =>
   `<!DOCTYPE html>
 <html>
   <head></head>

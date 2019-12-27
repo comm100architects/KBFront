@@ -1,11 +1,11 @@
-const http = require("http");
-const fs = require("fs");
+import { createServer } from "http";
+import { existsSync, readFileSync } from "fs";
 
 const hostname = "127.0.0.1";
 const port = 9000;
 
 //Create HTTP server and listen on port 3000 for requests
-const server = http.createServer((req, res) => {
+const server = createServer((req, res) => {
   //Set the response HTTP header with HTTP status and Content type
   res.statusCode = 200;
   if (
@@ -43,8 +43,8 @@ const server = http.createServer((req, res) => {
 });
 
 function writeFile(filename, res) {
-  if (fs.existsSync(filename)) {
-    res.end(fs.readFileSync(filename));
+  if (existsSync(filename)) {
+    res.end(readFileSync(filename));
     return;
   }
 

@@ -1,6 +1,6 @@
-const css = require("./gencss");
-const html = require("./genhtml");
-const { int, guidPool, words, range, chance } = require("./genhelper");
+import css from "./gencss";
+import html from "./genhtml";
+import { int, guidPool, words, range, chance } from "./genhelper";
 
 const fs = require("fs");
 

@@ -1,5 +1,5 @@
-const fs = require("fs");
-const { chance, repeat, int, keywords } = require("./genhelper");
+import fs from "fs";
+import { chance, repeat, int, keywords } from "./genhelper";
 
 const parseCssModeKeywords = name =>
   new RegExp(`var ${name}[^=]*?=[^]]*?\\[((.|\n)*?)\\]`, "m")
@@ -16,7 +16,7 @@ const parseCssModeKeywords = name =>
 const cssProperties = parseCssModeKeywords("propertyKeywords_");
 const cssValues = parseCssModeKeywords("valueKeywords_");
 
-module.exports = () =>
+export default () =>
   repeat(
     20,
     () => {
