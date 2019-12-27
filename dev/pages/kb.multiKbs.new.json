@@ -1,0 +1,12 @@
+{
+  "id": "kb.multipleKbs.new",
+  "title": "New Knowledge Base",
+  "entity": "knowledgeBases",
+  "rows": [
+    {
+      "fieldName": "name",
+      "componentType": "input"
+    }
+  ]
+}
+

@@ -5,6 +5,7 @@ const {
 } = require("typescript-transformer-jsx-remove-data-test-id");
 
 module.exports = {
+  cache: false,
   mode: "development",
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
@@ -20,7 +21,7 @@ module.exports = {
     rules: [
       {
         test: /\.ts(x?)$/,
-        exclude: /node_modules/,
+        exclude: /node_modules|__test__/,
         use: [
           {
             loader: "ts-loader",
@@ -31,6 +32,10 @@ module.exports = {
             },
           },
         ],
+      },
+      {
+        test: /\.css$/i,
+        use: ["style-loader", "css-loader"],
       },
     ],
   },

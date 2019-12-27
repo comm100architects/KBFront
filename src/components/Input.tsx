@@ -7,6 +7,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 interface CInputProps extends FieldInputProps<string>, CElementProps {
   label?: string;
   type: string;
+  autoFocus?: boolean;
 }
 
 export const CInput = (props: CInputProps) => {

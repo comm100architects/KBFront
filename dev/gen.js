@@ -1,36 +1,11 @@
 const Chance = require("chance");
+const css = require("./gencss");
+const { int, guidPool, words, repeat } = require("./genhelper");
+
 const fs = require("fs");
 // Instantiate Chance so it can be used
 const chance = new Chance();
 const range = n => [...Array(n).keys()];
-
-const int = (min, max) => () => chance.integer({ min, max });
-const guidPool = () => {
-  const pool = [];
-  return [
-    function() {
-      const guid = chance.guid();
-      pool.push(guid);
-      return guid;
-    },
-    function() {
-      return pool[int(0, pool.length - 1)()];
-    },
-    function() {
-      return pool;
-    },
-  ];
-};
-
-const words = n => () =>
-  range(n)
-    .map(() => chance.word())
-    .join(" ");
-
-const repeat = (n, fn) =>
-  range(n)
-    .map(fn)
-    .join("");
 
 const html = () =>
   `<h1>${words(3)()}</h1>` +
@@ -82,9 +57,14 @@ const entities = fs
 const pages = fs
   .readdirSync("./dev/pages")
   .filter(name => /\.json$/.test(name))
-  .map(name =>
-    JSON.parse(fs.readFileSync(`./dev/pages/${name}`, { encoding: "utf-8" })),
-  );
+  .map(name => {
+    const page = JSON.parse(
+      fs.readFileSync(`./dev/pages/${name}`, { encoding: "utf-8" }),
+    );
+    return Object.assign(page, {
+      entity: entities.find(({ name }) => name === page.entity),
+    });
+  });
 
 const data = range(10)
   .map(() =>
@@ -158,7 +138,7 @@ const data = range(10)
         {
           id: chance.guid,
           title: words(2),
-          body: html,
+          body: css,
           modifiedTime: chance.date,
           status: int(0, 1),
           kbId: () => kb.id,

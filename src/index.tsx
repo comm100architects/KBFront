@@ -12,7 +12,7 @@ import {
 import Drawer from "@material-ui/core/drawer";
 import AppHeader from "./AppHeader";
 import AppMenu from "./AppMenu";
-import { rawProducts, isMenuExist, RawProduct, getMenuPage } from "./Pages";
+import { rawProducts, isMenuExist, RawProduct, getMenuPages } from "./Pages";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import PageRouter from "./PageRouter";
@@ -55,11 +55,13 @@ const useStyles = makeStyles((theme: Theme) =>
 function Root({
   app,
   currentPage,
-  page,
+  pageId,
+  relatviePath,
 }: {
   app: RawProduct;
   currentPage: string;
-  page?: string;
+  pageId?: string;
+  relatviePath: string;
 }) {
   const classes = useStyles({});
   return (
@@ -75,7 +77,8 @@ function Root({
           <PageRouter
             currentApp={app.name}
             currentPage={currentPage}
-            pageId={page}
+            pageId={pageId}
+            relatviePath={relatviePath}
           />
         </div>
       </div>
@@ -108,11 +111,19 @@ ReactDOM.render(
             }
             const app = rawProducts.find(app => app.name === currentApp);
             if (isMenuExist(currentPage, app?.menu ?? [])) {
+              const relatviePath = location.pathname.substring(
+                `/${currentApp}/${currentPage}/`.length,
+              );
+              console.log(`relatviePath: ${relatviePath}`);
+              const pageId = getMenuPages(currentPage, app?.menu ?? []).find(
+                pageRef => pageRef.relatviePath === relatviePath,
+              )?.pageId;
               return (
                 <Root
                   app={app!}
                   currentPage={currentPage}
-                  page={getMenuPage(currentPage, app?.menu ?? [])}
+                  pageId={pageId}
+                  relatviePath={relatviePath}
                 />
               );
             }

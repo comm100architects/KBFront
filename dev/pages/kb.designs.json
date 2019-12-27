@@ -8,7 +8,8 @@
       {
         "fieldName": "title",
         "cellComponentType": "link",
-        "headerLabel": "Page"
+        "headerLabel": "Page",
+        "linkPath": "edit?id=$id"
       }
     ],
     "filters": [],

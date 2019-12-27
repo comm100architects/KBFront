@@ -17,7 +17,8 @@
         { "key": 0, "label": "Display the root category" },
         { "key": 1, "label": "Display a custom page" }
       ],
-      "title": "Home"
+      "title": "Home",
+      "default": 0
     },
     {
       "name": "homeCustomPageId",
@@ -34,7 +35,8 @@
         { "key": 0, "label": "Public" },
         { "key": 1, "label": "Private" }
       ],
-      "title": "Visibility"
+      "title": "Visibility",
+      "default": 0
     },
     {
       "name": "status",
@@ -43,22 +45,26 @@
         { "key": 0, "label": "Close" },
         { "key": 1, "label": "Open" }
       ],
-      "title": "Status"
+      "title": "Status",
+      "default": 0
     },
     {
       "name": "numOfArticles",
       "type": "int",
-      "title": "Articles"
+      "title": "Articles",
+      "default": 0
     },
     {
       "name": "numOfCustomPages",
       "type": "int",
-      "title": "Custom Pages"
+      "title": "Custom Pages",
+      "default": 0
     },
     {
       "name": "numOfImages",
       "type": "int",
-      "title": "Images"
+      "title": "Images",
+      "default": 0
     },
     {
       "name": "allowFeedback",
@@ -73,7 +79,8 @@
           "key": false,
           "label": "Do not allow visitors to rate Helpful or Not Helpful on articles"
         }
-      ]
+      ],
+      "default": false
     }
   ]
 }

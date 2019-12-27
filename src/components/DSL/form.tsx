@@ -1,6 +1,6 @@
 import React from "react";
 import { makeInput } from "./input";
-import { Entity } from "./types";
+import { Entity, UIRowCodeEditor } from "./types";
 import { makeRadioGroup } from "./radioGroup";
 import { makeSelect } from "./select";
 import { makeCheckbox } from "./checkbox";
@@ -11,6 +11,9 @@ import { Formik, Form, FormikHelpers, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { CButton } from "../Buttons";
 import { RESTfulRepository } from "../../framework/repository";
+import { goToPath, toPath } from "../../framework/locationHelper";
+import { useHistory } from "react-router";
+import { makeCodeEditor } from "./CodeEditor";
 
 export const makeUIRowComponent = async (
   endPointPrefix: string,
@@ -25,6 +28,8 @@ export const makeUIRowComponent = async (
       return makeRadioGroup(endPointPrefix, row);
     case "input":
       return makeInput(row);
+    case "codeEditor":
+      return makeCodeEditor(row as UIRowCodeEditor);
     default:
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
@@ -84,7 +89,10 @@ export const makeFormComponent = async ({
   settings,
   rows,
   entity,
+  type,
+  defaultValues,
 }: UIPage): Promise<React.ComponentType<any>> => {
+  const isNew = type === "singularNew";
   const { endPointPrefix } = settings;
   const rowComponents = await Promise.all(
     rows!.map((row: UIRow, i: number) =>
@@ -93,21 +101,26 @@ export const makeFormComponent = async ({
   );
 
   const repo = new RESTfulRepository<Entity>(endPointPrefix, entity.name);
-  const { fields } = entity;
 
   return () => {
+    const history = useHistory();
     const handleSubmit = async (
       values: Entity,
       { setSubmitting }: FormikHelpers<Entity>,
     ) => {
-      setValues(await repo.update(values.id, values));
-      setSubmitting(false);
+      if (isNew) {
+        await repo.add(values);
+        goToPath(history, toPath("."));
+      } else {
+        setValues(await repo.update(values.id!, values));
+        setSubmitting(false);
+      }
     };
 
     const handleValidation = (values: Entity) => {
       const errors: { [key: string]: string } = {};
-      for (let i = 0; i < fields.length; i++) {
-        const field = fields[i];
+      for (let i = 0; i < rows!.length; i++) {
+        const { field } = rows![i];
         if (field.isRequired && !values[field.name]) {
           errors[field.name] = `${field.title} is required`;
         }
@@ -115,11 +128,17 @@ export const makeFormComponent = async ({
       return errors;
     };
 
-    const [values, setValues] = React.useState(null as Entity | null);
+    const [values, setValues] = React.useState(
+      isNew ? defaultValues : (null as Entity | null),
+    );
     const [entityId] = useGlobal("query.id");
     React.useEffect(() => {
-      repo.get(entityId).then(setValues);
+      if (!isNew) repo.get(entityId).then(setValues);
     }, []);
+
+    const handleCancel = () => {
+      goToPath(history, toPath("."));
+    };
 
     return (
       values && (
@@ -136,19 +155,31 @@ export const makeFormComponent = async ({
                 Row.displayName = "UIRow";
                 return <Row key={i} {...props} />;
               })}
-              <div>
-                <CButton
-                  type="submit"
-                  primary
-                  disabled={!props.dirty || props.isSubmitting}
-                  text="Save Changes"
-                />
-                <CButton
-                  type="reset"
-                  disabled={!props.dirty || props.isSubmitting}
-                  text="Discard"
-                />
-              </div>
+              {isNew ? (
+                <div>
+                  <CButton
+                    type="submit"
+                    primary
+                    disabled={!props.dirty || props.isSubmitting}
+                    text="Save"
+                  />
+                  <CButton text="Cancel" onClick={handleCancel} />
+                </div>
+              ) : (
+                <div>
+                  <CButton
+                    type="submit"
+                    primary
+                    disabled={!props.dirty || props.isSubmitting}
+                    text="Save Changes"
+                  />
+                  <CButton
+                    type="reset"
+                    disabled={!props.dirty || props.isSubmitting}
+                    text="Discard"
+                  />
+                </div>
+              )}
             </Form>
           )}
         </Formik>

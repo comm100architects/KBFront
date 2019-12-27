@@ -147,7 +147,7 @@ export const makeTableComponent = async (page: UIPage) => {
     }, []);
     const handleDelete = async (row: Entity) => {
       if (window.confirm(grid.confirmDeleteMessage)) {
-        await repo.delete(row.id);
+        await repo.delete(row.id!);
         setSource(new LocalTableSource(repo.getList()));
       }
     };

@@ -1,6 +1,5 @@
 import { CFormField } from "../Form";
 import _ from "lodash";
-import { fetchJson } from "../../framework/network";
 
 export interface UIEntityFieldLabelForValue {
   key: number | boolean;
@@ -27,6 +26,7 @@ export interface UIEntityField {
   fields?: UIEntityField[];
   referenceEntityName?: string;
   referenceEntityFieldNameForLabel?: string;
+  default?: any;
 }
 
 export interface UIEntity {
@@ -43,7 +43,7 @@ export interface GlobalSettings {
 export interface RawUIPage {
   title: string;
   description?: string;
-  entity: string;
+  entity: UIEntity;
   rows?: RawUIRow[];
   grid?: UIGrid;
 }
@@ -71,6 +71,7 @@ export interface RawUIRow {
   componentType: ComponentType;
   indent?: 0 | 1;
   conditionsToHide?: string[];
+  codeLanguage?: string;
 }
 
 type ComponentType =
@@ -78,6 +79,8 @@ type ComponentType =
   | "select"
   | "radioGroup"
   | "checkbox"
+  | "codeEditor"
+  // TODO:
   | "label"
   | "labelWithToggle";
 
@@ -87,43 +90,70 @@ export interface UIRow {
   indent: 0 | 1;
   conditionsToHide?: string[];
 }
+export interface UIRowCodeEditor extends UIRow {
+  codeLanguage: string;
+}
 
 const normalizeRawUIRow = (
   fields: UIEntityField[],
-  { indent, conditionsToHide, componentType, fieldName }: RawUIRow,
-): UIRow => ({
-  componentType,
-  indent: indent || 0,
-  conditionsToHide,
-  field: fields.find(({ name }) => name === fieldName)!,
-});
+  {
+    indent,
+    conditionsToHide,
+    componentType,
+    fieldName,
+    codeLanguage,
+  }: RawUIRow,
+): UIRow => {
+  const row: UIRow = {
+    componentType,
+    indent: indent || 0,
+    conditionsToHide,
+    field: fields.find(({ name }) => name === fieldName)!,
+  };
+  if (componentType === "codeEditor") {
+    return { ...row, codeLanguage } as UIRowCodeEditor;
+  }
+  return row;
+};
 
-export const normalizeRawUIPage = async (
+export const normalizeRawUIPage = (
   settings: GlobalSettings,
   { title, description, entity, rows, grid }: RawUIPage,
-): Promise<UIPage> => {
-  const { endPointPrefix } = settings;
-  const e = await fetchJson(`${endPointPrefix}/entities/${entity}`, "GET");
+  isNew = false,
+): UIPage => {
+  const defaultValues = entity.fields.reduce(
+    (res, field) => {
+      return {
+        ...res,
+        [field.name]: field.default,
+      };
+    },
+    { id: "" },
+  );
   return {
+    type: rows ? (isNew ? "singularNew" : "singular") : "list",
     settings,
     title,
     description,
-    entity: e,
-    rows: rows?.map(row => normalizeRawUIRow(e.fields, row)),
+    entity,
+    rows: rows?.map(row => normalizeRawUIRow(entity.fields, row)),
     grid,
+    defaultValues,
   };
 };
 
 export interface UIPage {
+  type: "singular" | "singularNew" | "list";
   settings: GlobalSettings;
   title: string;
   description?: string;
   entity: UIEntity;
   rows?: UIRow[];
   grid?: UIGrid;
+  defaultValues: Entity;
 }
 
-export type Entity = { id: string | number; [key: string]: any };
+export type Entity = { id: string | number | undefined; [key: string]: any };
 
 export interface EntityInfo {
   name: string;

@@ -27,9 +27,10 @@ export const makeSelect = async (
 
   if (field.labelsForValue) {
     return withProps(CSelect, {
-      options: field.labelsForValue.map(({ key, label }) => ({
+      options: field.labelsForValue.map(({ key, label, icon }) => ({
         value: key,
         label,
+        icon,
       })),
       title: field.title,
     });

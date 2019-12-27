@@ -41,9 +41,9 @@ setInterval(() => {
   }
 }, 10);
 
-const watch = (globs, cmd) => {
+const watch = (globs, cmd, doNotRunAtStart) => {
   watchedProcesses[cmd] = {
-    status: "changed",
+    status: doNotRunAtStart ? "done" : "changed",
     process: null,
   };
 
@@ -62,10 +62,11 @@ const watch = (globs, cmd) => {
 
 gulp.task("default", () => {
   exec("npm run mock");
-  exec("npm run js:watch");
+  watch(["webpack.config.js"], "npm run js:watch");
   watch(
     ["dev/gen.js", "dev/entities/*.json", "dev/pages/*.json"],
     "npm run gen",
+    true,
   );
   watch(["dev/server.js"], "node dev/server.js");
 });

@@ -1,4 +1,5 @@
-import * as React from "react";
+import React from "react";
+import _ from "lodash";
 import { Suspense } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Spin from "./components/Spin";
@@ -7,6 +8,7 @@ interface LazyPageProps {
   currentApp: string;
   currentPage: string;
   pageId?: string;
+  relatviePath: string;
 }
 import { isPromise } from "./framework/utils";
 import { fetchJson } from "./framework/network";
@@ -45,13 +47,14 @@ export default class LazyPage extends React.Component<
     this.state = { page: this.getPage(props), error: null };
   }
 
-  getPage({ currentApp, currentPage, pageId }: LazyPageProps) {
+  getPage({ currentApp, currentPage, relatviePath, pageId }: LazyPageProps) {
     if (pageId) {
       return React.lazy(async () => {
         const settings = await fetchJson("/globalSettings", "GET");
         const configUrl = `${settings.endPointPrefix}/pages/${pageId}`;
+        const isNew = relatviePath.toLowerCase() === "new";
         return {
-          default: await makePageComponent(settings, configUrl),
+          default: await makePageComponent(settings, configUrl, isNew),
         };
       });
     }
@@ -73,11 +76,7 @@ export default class LazyPage extends React.Component<
   }
 
   componentWillReceiveProps(nextProps: LazyPageProps) {
-    if (
-      this.props.currentApp === nextProps.currentApp &&
-      this.props.currentPage === nextProps.currentPage
-    )
-      return;
+    if (_.isEqual(this.props, nextProps)) return;
 
     this.setState({ page: this.getPage(nextProps), error: null });
   }

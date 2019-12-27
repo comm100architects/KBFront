@@ -2,19 +2,25 @@ import { CIconName } from "./components/Icons";
 
 // TODO: generate this file from source code files
 // such as, go through tsx files in src/LiveChat/ folder and generate pages
+//
+
+export interface PageRef {
+  relatviePath: string;
+  pageId: string;
+}
 
 export interface RawMenuItem {
   name: string; // for url
   label: string; //
   icon?: CIconName;
-  page?: string;
+  pages?: PageRef[];
 }
 
 export interface RawSubMenu {
   label: string;
   icon: CIconName;
   items: Array<RawMenuItem>;
-  page?: string;
+  pages?: PageRef[];
 }
 
 export type RawMenu = Array<RawMenuItem | RawSubMenu>;
@@ -35,21 +41,19 @@ export function isMenuExist(menuName: string, menu: RawMenu): boolean {
   return false;
 }
 
-export function getMenuPage(
-  menuName: string,
-  menu: RawMenu,
-): string | undefined {
+export function getMenuPages(menuName: string, menu: RawMenu): PageRef[] {
   for (var item of menu) {
     if ((item as RawMenuItem).name === menuName) {
-      return item.page;
+      return item.pages || [];
     }
     const menuItem = (item as RawSubMenu).items?.find(
       ({ name }) => name === menuName,
     );
     if (menuItem !== undefined) {
-      return menuItem.page;
+      return menuItem.pages || [];
     }
   }
+  return [];
 }
 
 export function getMenuLabel(menuName: string, menu: RawMenu): string | null {
@@ -103,22 +107,38 @@ const livechatAppMenu: Array<RawMenuItem | RawSubMenu> = [
 const kbAppMenu: Array<RawMenuItem | RawSubMenu> = [
   { name: "articles", label: "Articles", icon: "description" },
   { name: "images", label: "Images", icon: "image" },
-  { name: "designs", label: "Design", icon: "viewQuilt", page: "kb.designs" },
+  {
+    name: "designs",
+    label: "Design",
+    icon: "viewQuilt",
+    pages: [
+      { relatviePath: "", pageId: "kb.designs" },
+      { relatviePath: "edit", pageId: "kb.designs.edit" },
+    ],
+  },
   {
     name: "settings",
     label: "Settings",
     icon: "settings",
-    page: "kb.settings",
+    pages: [{ relatviePath: "", pageId: "kb.multipleKbs.edit" }],
   },
   {
     label: "Advanced",
     icon: "widgets",
     items: [
-      { name: "customPages", label: "Custom Pages", page: "kb.customPages" },
+      {
+        name: "customPages",
+        label: "Custom Pages",
+        pages: [{ relatviePath: "", pageId: "kb.customPages" }],
+      },
       {
         name: "knowledgeBases",
         label: "Multiple Knowledge Bases",
-        page: "kb.multipleKbs",
+        pages: [
+          { relatviePath: "", pageId: "kb.multipleKbs" },
+          { relatviePath: "edit", pageId: "kb.multipleKbs.edit" },
+          { relatviePath: "new", pageId: "kb.multipleKbs.new" },
+        ],
       },
     ],
   },

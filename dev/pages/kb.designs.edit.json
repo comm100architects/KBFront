@@ -1,0 +1,12 @@
+{
+  "id": "kb.designs.edit",
+  "title": "Edit CSS File",
+  "entity": "designs",
+  "rows": [
+    {
+      "fieldName": "body",
+      "componentType": "codeEditor",
+      "codeLanguage": "css"
+    }
+  ]
+}

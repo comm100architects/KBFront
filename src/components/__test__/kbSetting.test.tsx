@@ -1,6 +1,11 @@
 import React from "react";
 import moxios from "moxios";
-import { normalizeRawUIPage, RawUIPage, GlobalSettings } from "../DSL/types";
+import {
+  normalizeRawUIPage,
+  RawUIPage,
+  GlobalSettings,
+  UIEntity,
+} from "../DSL/types";
 import { makePageComponent } from "../DSL";
 import { mount } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
@@ -12,7 +17,7 @@ const globalSettings: GlobalSettings = {
   endPointPrefix: "//localhost:3000",
   dateTimeFormat: "MM/dd/yyyy HH:mm:ss",
 };
-const entities = [
+const entities: UIEntity[] = [
   {
     name: "knowledgeBases",
     fields: [
@@ -83,7 +88,6 @@ const entities = [
     ],
   },
   {
-    name: "customPages",
     fields: [
       {
         name: "id",
@@ -97,11 +101,12 @@ const entities = [
         isRequired: true,
       },
     ],
+    name: "customPages",
   },
 ];
 const rawUIPage: RawUIPage = {
   title: "Settings",
-  entity: "knowledgeBases",
+  entity: entities[0],
   rows: [
     {
       fieldName: "name",
@@ -133,15 +138,15 @@ const rawUIPage: RawUIPage = {
 };
 describe("convert RawUIPage to UIPage", () => {
   it("should set title", async () => {
-    const page = await normalizeRawUIPage(globalSettings, rawUIPage);
+    const page = normalizeRawUIPage(globalSettings, rawUIPage);
     expect(page.title).toBe(rawUIPage.title);
   });
   it("should set entity", async () => {
-    const page = await normalizeRawUIPage(globalSettings, rawUIPage);
+    const page = normalizeRawUIPage(globalSettings, rawUIPage);
     expect(page.entity).toBe(rawUIPage.entity);
   });
   it("should set rows", async () => {
-    const page = await normalizeRawUIPage(globalSettings, rawUIPage);
+    const page = normalizeRawUIPage(globalSettings, rawUIPage);
     expect(page.rows).toEqual([
       {
         indent: 0,
