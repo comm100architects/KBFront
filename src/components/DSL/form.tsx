@@ -1,6 +1,6 @@
 import React from "react";
 import { makeInput } from "./input";
-import { Entity, UIRowCodeEditor } from "./types";
+import { Entity } from "./types";
 import { makeRadioGroup } from "./radioGroup";
 import { makeSelect } from "./select";
 import { makeCheckbox } from "./checkbox";
@@ -36,7 +36,7 @@ export const makeUIRowComponent = async (
     case "input":
       return makeInput(row);
     case "codeEditor":
-      return makeCodeEditor(row as UIRowCodeEditor);
+      return makeCodeEditor(row);
     default:
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }

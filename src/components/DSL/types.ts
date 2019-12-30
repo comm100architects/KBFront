@@ -75,7 +75,6 @@ export interface RawUIRow {
   componentType: ComponentType;
   indent?: 0 | 1;
   conditionsToHide?: string[];
-  codeLanguage?: string;
 }
 
 type ComponentType =
@@ -94,19 +93,10 @@ export interface UIRow {
   indent: 0 | 1;
   conditionsToHide?: string[];
 }
-export interface UIRowCodeEditor extends UIRow {
-  codeLanguage: string;
-}
 
 const normalizeRawUIRow = (
   fields: UIEntityField[],
-  {
-    indent,
-    conditionsToHide,
-    componentType,
-    fieldName,
-    codeLanguage,
-  }: RawUIRow,
+  { indent, conditionsToHide, componentType, fieldName }: RawUIRow,
 ): UIRow => {
   const row: UIRow = {
     componentType,
@@ -115,7 +105,7 @@ const normalizeRawUIRow = (
     field: fields.find(({ name }) => name === fieldName)!,
   };
   if (componentType === "codeEditor") {
-    return { ...row, codeLanguage } as UIRowCodeEditor;
+    return { ...row };
   }
   return row;
 };

@@ -2,6 +2,7 @@ import css from "./gencss";
 import html from "./genhtml";
 import { int, guidPool, words, range, chance } from "./genhelper";
 import menu from "./genmenu";
+import _ from "lodash";
 
 const fs = require("fs");
 
@@ -13,6 +14,16 @@ const generate = sc => {
 
   if (typeof sc === "function") {
     return sc.call(chance);
+  }
+
+  if (
+    _.isString(sc) ||
+    _.isNumber(sc) ||
+    _.isBoolean(sc) ||
+    _.isDate(sc) ||
+    _.isNull(sc)
+  ) {
+    return sc;
   }
 
   const obj = {};
@@ -128,17 +139,32 @@ const data = range(10)
         },
       ]);
 
-      const designs = generate([
-        int(1, 10)(),
-        {
+      const designs = [
+        generate({
           id: chance.guid,
-          title: words(2),
+          title: "CSS File",
           body: css,
           modifiedTime: chance.date,
           status: int(0, 1),
           kbId: () => kb.id,
-        },
-      ]);
+        }),
+      ].concat(
+        [
+          "Category Page",
+          "Article Page",
+          "Search Result Page",
+          "404 Page (Page Not Found)",
+        ].map(title =>
+          generate({
+            id: chance.guid,
+            title,
+            body: html,
+            modifiedTime: chance.date,
+            status: int(0, 1),
+            kbId: () => kb.id,
+          }),
+        ),
+      );
 
       result.articles = result.articles.concat(articles);
       result.customPages = result.customPages.concat(customPages);

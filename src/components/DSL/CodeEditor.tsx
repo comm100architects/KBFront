@@ -1,11 +1,11 @@
 import React from "react";
 import { FieldInputProps } from "formik";
-import { UIRowCodeEditor } from "./types";
 import { CCodeEdit } from "../CodeEditor";
 import { FormLabel } from "@material-ui/core";
+import { UIRow } from "./types";
 
 export const makeCodeEditor = async (
-  row: UIRowCodeEditor,
+  row: UIRow,
 ): Promise<React.ComponentType<FieldInputProps<any>>> => {
   const title = row.field.title;
   return props => {
@@ -16,7 +16,7 @@ export const makeCodeEditor = async (
             {title}
           </FormLabel>
         )}
-        <CCodeEdit {...props} language={row.codeLanguage} />
+        <CCodeEdit {...props} />
       </>
     );
   };

@@ -19,9 +19,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export interface CCodeEditProps extends FieldInputProps<string> {
-  language?: string;
-}
+export interface CCodeEditProps extends FieldInputProps<string> {}
 
 export const CCodeEdit: React.ComponentType<CCodeEditProps> = (
   props: CCodeEditProps,
@@ -42,7 +40,7 @@ export const CCodeEdit: React.ComponentType<CCodeEditProps> = (
       options={{
         lineNumbers: 20,
         lineWrapping: true,
-        mode: props.language,
+        mode: "html",
       }}
     />
   );
