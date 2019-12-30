@@ -35,6 +35,7 @@ import * as Query from "query-string";
 import { ITableSource } from "../../../components/Table/CTableSource";
 import FormControl from "@material-ui/core/FormControl";
 import { StatusSelect } from "./StatusSelect";
+import { CDialog } from "../../../components/Dialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -266,6 +267,12 @@ export default (): JSX.Element => {
             onDelete={handleDelete}
           />
         </div>
+        <CDialog title="Dialog Title">
+          Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello
+          Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello
+          Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello
+          Hello Hello Hello Hello Hello Hello Hello
+        </CDialog>
       </div>
     </Page>
   );

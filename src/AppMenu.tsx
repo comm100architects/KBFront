@@ -29,7 +29,7 @@ const renderMenuItem = (item: RawMenuItem): JSX.Element => (
         selected={selected === item.name}
         to={`/${appName}/${item.name}/`}
         primary={item.label}
-        icon={item.icon && <CIcon name={item.icon!} />}
+        icon={<CIcon name={item.icon || "dummy"} />}
       ></ListItemLink>
     )}
   </SelectedMenuItem.Consumer>

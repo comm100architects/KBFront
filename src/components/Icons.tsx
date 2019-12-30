@@ -23,6 +23,7 @@ import HistoryIcon from "@material-ui/icons/History";
 import GroupWorkIcon from "@material-ui/icons/GroupWork";
 import CreateIcon from "@material-ui/icons/Create";
 import CodeIcon from "@material-ui/icons/Code";
+import { withProps } from "../framework/hoc";
 
 const allIcons: { [id: string]: (props: any) => JSX.Element } = {
   starPrimary: () => <StarIcon color="primary" />,
@@ -50,6 +51,7 @@ const allIcons: { [id: string]: (props: any) => JSX.Element } = {
   groupWork: GroupWorkIcon,
   create: CreateIcon,
   code: CodeIcon,
+  dummy: withProps(CodeIcon, { style: { visibility: "hidden" } }),
 };
 
 export type CIconName =
@@ -77,7 +79,8 @@ export type CIconName =
   | "history"
   | "groupWork"
   | "create"
-  | "code";
+  | "code"
+  | "dummy";
 
 const getIcon = memoize(
   (name: string): JSX.Element => {

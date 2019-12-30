@@ -27,11 +27,11 @@ interface CPageProps extends React.Props<{}> {
 
 export default (props: CPageProps): JSX.Element => {
   const classes = useStyles({});
-  const { currentApp } = React.useContext(GlobalContext);
+  const { currentProduct } = React.useContext(GlobalContext);
   React.useEffect(() => {
     document.title =
-      props.documentTitle ?? `${currentApp.label} » ${props.title}`;
-  }, [currentApp.label, props.title, props.documentTitle]);
+      props.documentTitle ?? `${currentProduct.label} » ${props.title}`;
+  }, [currentProduct.label, props.title, props.documentTitle]);
   return (
     <div className={classes.root}>
       <Paper component="main" className={classes.main}>

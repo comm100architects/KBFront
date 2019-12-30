@@ -12,16 +12,18 @@ import {
 import Drawer from "@material-ui/core/drawer";
 import AppHeader from "./AppHeader";
 import AppMenu from "./AppMenu";
-import { rawProducts, isMenuExist, RawProduct, getMenuPages } from "./Pages";
+import { isMenuExist, RawProduct, getMenuPages } from "./Pages";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import PageRouter from "./PageRouter";
 import GlobalContext from "./GlobalContext";
+import { fetchJson } from "./framework/network";
+import { GlobalSettings } from "./components/DSL/types";
 
 const theme = createMuiTheme();
 
 interface AppParam {
-  currentApp: string;
+  currentProduct: string;
   currentPage: string;
 }
 
@@ -57,17 +59,19 @@ function Root({
   currentPage,
   pageId,
   relatviePath,
+  globalSettings,
 }: {
   app: RawProduct;
   currentPage: string;
   pageId?: string;
   relatviePath: string;
+  globalSettings: GlobalSettings;
 }) {
   const classes = useStyles({});
   return (
-    <GlobalContext.Provider value={{ currentApp: app }}>
+    <GlobalContext.Provider value={{ currentProduct: app }}>
       <div className={classes.root}>
-        <AppHeader currentApp={app.name} />
+        <AppHeader currentProduct={app.name} menu={globalSettings.menu} />
         <Drawer variant="permanent" className={classes.appMenu}>
           <div className={classes.toolbar}></div>
           <AppMenu app={app!} selected={currentPage} />
@@ -75,10 +79,11 @@ function Root({
         <div className={classes.content}>
           <div className={classes.toolbar}></div>
           <PageRouter
-            currentApp={app.name}
+            currentProduct={app.name}
             currentPage={currentPage}
             pageId={pageId}
             relatviePath={relatviePath}
+            globalSettings={globalSettings}
           />
         </div>
       </div>
@@ -86,55 +91,78 @@ function Root({
   );
 }
 
-ReactDOM.render(
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <Router>
-      <Switch>
-        <Route exact path="/:currentApp">
-          {({ match }: RouteChildrenProps<AppParam>) => {
-            const currentApp = match?.params.currentApp;
-            const app = rawProducts.find(app => app.name === currentApp);
-            if (app) {
-              return <Redirect to={`/${app!.name}/${app!.defaultPage}`} />;
-            }
-            return <Page404 />;
-          }}
-        </Route>
-        <Route path="/:currentApp/:currentPage">
-          {({ match, location, history }: RouteChildrenProps<AppParam>) => {
-            const { currentApp, currentPage } = match!.params;
-            if (match!.isExact && !_.endsWith(location.pathname, "/")) {
-              history.replace(
-                `/${currentApp}/${currentPage}/${location.search}`,
-              );
-            }
-            const app = rawProducts.find(app => app.name === currentApp);
-            if (isMenuExist(currentPage, app?.menu ?? [])) {
-              const relatviePath = location.pathname.substring(
-                `/${currentApp}/${currentPage}/`.length,
-              );
-              console.log(`relatviePath: ${relatviePath}`);
-              const pageId = getMenuPages(currentPage, app?.menu ?? []).find(
-                pageRef => pageRef.relatviePath === relatviePath,
-              )?.pageId;
-              return (
-                <Root
-                  app={app!}
-                  currentPage={currentPage}
-                  pageId={pageId}
-                  relatviePath={relatviePath}
-                />
-              );
-            }
-            return <Page404 />;
-          }}
-        </Route>
-        <Route path="*">
-          <Page404 />;
-        </Route>
-      </Switch>
-    </Router>
-  </ThemeProvider>,
-  document.querySelector("#main"),
-);
+const getGlobalSettings = async () => {
+  const res = (await fetchJson("/globalSettings", "GET")) as GlobalSettings;
+  const menu = (await fetchJson(
+    `//${res.endPointPrefix}/menu`,
+    "GET",
+  )) as RawProduct[];
+  res.menu = menu;
+  return res;
+};
+
+getGlobalSettings()
+  .then((globalSettings: GlobalSettings) => {
+    ReactDOM.render(
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <Switch>
+            <Route exact path="/:currentProduct">
+              {({ match }: RouteChildrenProps<AppParam>) => {
+                const currentProduct = match?.params.currentProduct;
+                const app = globalSettings.menu.find(
+                  app => app.name === currentProduct,
+                );
+                if (app) {
+                  return <Redirect to={`/${app!.name}/${app!.defaultPage}`} />;
+                }
+                return <Page404 />;
+              }}
+            </Route>
+            <Route path="/:currentProduct/:currentPage">
+              {({ match, location, history }: RouteChildrenProps<AppParam>) => {
+                const { currentProduct, currentPage } = match!.params;
+                if (match!.isExact && !_.endsWith(location.pathname, "/")) {
+                  history.replace(
+                    `/${currentProduct}/${currentPage}/${location.search}`,
+                  );
+                }
+                const app = globalSettings.menu.find(
+                  app => app.name === currentProduct,
+                );
+                if (isMenuExist(currentPage, app?.menu ?? [])) {
+                  const relatviePath = location.pathname.substring(
+                    `/${currentProduct}/${currentPage}/`.length,
+                  );
+                  console.log(`relatviePath: ${relatviePath}`);
+                  const pageId = getMenuPages(
+                    currentPage,
+                    app?.menu ?? [],
+                  ).find(pageRef => pageRef.relatviePath === relatviePath)
+                    ?.pageId;
+                  return (
+                    <Root
+                      app={app!}
+                      currentPage={currentPage}
+                      pageId={pageId}
+                      relatviePath={relatviePath}
+                      globalSettings={globalSettings}
+                    />
+                  );
+                }
+                return <Page404 />;
+              }}
+            </Route>
+            <Route path="*">
+              <Page404 />;
+            </Route>
+          </Switch>
+        </Router>
+      </ThemeProvider>,
+      document.querySelector("#main"),
+    );
+  })
+  .catch(() => {
+    ReactDOM.render(<h4>Ooops...</h4>, document.querySelector("#main"));
+  });

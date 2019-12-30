@@ -14,6 +14,7 @@ import { RESTfulRepository } from "../../framework/repository";
 import { goToPath, toPath } from "../../framework/locationHelper";
 import { useHistory } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
+import { useTheme } from "@material-ui/core";
 
 export const makeUIRowComponent = async (
   endPointPrefix: string,
@@ -62,16 +63,18 @@ export const makeUIRowFormCtrol = async (
           setFieldValue(field.name, val === "true");
         }
       }
+      const theme = useTheme();
 
       return (
         <FormControl
           required={field.isRequired}
           error={!!errors[field.name]}
-          style={
-            row.indent
-              ? { display: "block", paddingLeft: `${row.indent * 30}px` }
-              : { display: "block" }
-          }
+          style={{
+            display: "block",
+            paddingLeft: row.indent ? `${theme.spacing(4)}px` : "0px",
+            marginTop: `${theme.spacing(3)}px`,
+            marginBottom: `${theme.spacing(3)}px`,
+          }}
         >
           <Field
             data-test-id={`form-field-${i}`}
@@ -83,6 +86,23 @@ export const makeUIRowFormCtrol = async (
       );
     }
   };
+};
+
+const groupRows = (
+  rows: UIRow[],
+  components: React.ComponentType<any>[],
+): React.ComponentType<any>[][] => {
+  let lastIndent = rows[0].indent || 0;
+  const ret = [];
+  for (let i = 0, prev = 0; i < rows.length; i++) {
+    const indent = rows[i].indent || 0;
+    if (lastIndent !== indent) {
+      ret.push(components.slice(prev, i));
+      prev = i;
+      lastIndent = indent;
+    }
+  }
+  return ret;
 };
 
 export const makeFormComponent = async ({

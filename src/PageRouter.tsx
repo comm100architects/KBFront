@@ -4,15 +4,17 @@ import { Suspense } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Spin from "./components/Spin";
 import LoadError from "./components/LoadError";
+import { isPromise } from "./framework/utils";
+import { makePageComponent } from "./components/DSL";
+import { GlobalSettings } from "./components/DSL/types";
+
 interface LazyPageProps {
-  currentApp: string;
+  currentProduct: string;
   currentPage: string;
   pageId?: string;
   relatviePath: string;
+  globalSettings: GlobalSettings;
 }
-import { isPromise } from "./framework/utils";
-import { fetchJson } from "./framework/network";
-import { makePageComponent } from "./components/DSL";
 
 const useStyles = makeStyles((_: Theme) =>
   createStyles({
@@ -47,21 +49,26 @@ export default class LazyPage extends React.Component<
     this.state = { page: this.getPage(props), error: null };
   }
 
-  getPage({ currentApp, currentPage, relatviePath, pageId }: LazyPageProps) {
+  getPage({
+    currentProduct,
+    currentPage,
+    relatviePath,
+    pageId,
+    globalSettings,
+  }: LazyPageProps) {
     if (pageId) {
       return React.lazy(async () => {
-        const settings = await fetchJson("/globalSettings", "GET");
-        const configUrl = `${settings.endPointPrefix}/pages/${pageId}`;
+        const configUrl = `${globalSettings.endPointPrefix}/pages/${pageId}`;
         const isNew = relatviePath.toLowerCase() === "new";
         return {
-          default: await makePageComponent(settings, configUrl, isNew),
+          default: await makePageComponent(globalSettings, configUrl, isNew),
         };
       });
     }
     return React.lazy(() =>
       import(
         /* webpackChunkName: "page" */
-        `./Products/${currentApp}/${currentPage}/index.tsx`
+        `./Products/${currentProduct}/${currentPage}/index.tsx`
       ).then(pack => {
         if (isPromise(pack.default)) {
           return pack.default.then((next: any) => ({ default: next }));
@@ -100,18 +107,18 @@ export default class LazyPage extends React.Component<
   }
 }
 
-// export default ({ currentApp, currentPage }: LazyPageProps) => {
+// export default ({ currentProduct, currentPage }: LazyPageProps) => {
 //   const lazyComponentsStore = React.useRef(
 //     {} as { [id: string]: React.LazyExoticComponent<React.ComponentType<any>> },
 //   ).current;
-//   const path = `${currentApp}/${currentPage}`;
+//   const path = `${currentProduct}/${currentPage}`;
 //   if (!lazyComponentsStore[path]) {
 //     const page: React.LazyExoticComponent<React.ComponentType<
 //       any
 //     >> = React.lazy(() =>
 //       import(
 //         /* webpackChunkName: "page" */
-//         `./Products/${currentApp}/${currentPage}/index.tsx`
+//         `./Products/${currentProduct}/${currentPage}/index.tsx`
 //       ).catch(() =>
 //         import(/* webpackMode: "eager" */ "./components/LoadError"),
 //       ),

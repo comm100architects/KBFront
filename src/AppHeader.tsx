@@ -6,7 +6,7 @@ import { ListItemLink } from "./Components/ListItemLink";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/toolbar";
 import Typography from "@material-ui/core/Typography";
-import { rawProducts, RawProduct } from "./Pages";
+import { RawProduct } from "./Pages";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -29,20 +29,26 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const AppName = (
-  currentApp: string,
+  currentProduct: string,
   app: RawProduct,
   className: string,
 ): JSX.Element => (
   <ListItemLink
     primary={app.label}
     to={`/${app.name}/${app.defaultPage}/`}
-    selected={app.name === currentApp}
+    selected={app.name === currentProduct}
     className={className}
   />
 );
 
-export default ({ currentApp }: { currentApp: string }): JSX.Element => {
-  const classes = useStyles({});
+export default ({
+  currentProduct,
+  menu,
+}: {
+  currentProduct: string;
+  menu: RawProduct[];
+}): JSX.Element => {
+  const classes = useStyles();
   return (
     <AppBar elevation={0} position="fixed" className={classes.header}>
       <Toolbar>
@@ -57,7 +63,7 @@ export default ({ currentApp }: { currentApp: string }): JSX.Element => {
         </div>
         <Typography component="div" noWrap>
           <List component="nav" className={classes.horizontalList}>
-            {rawProducts.map(app => AppName(currentApp, app, classes.link))}
+            {menu.map(app => AppName(currentProduct, app, classes.link))}
           </List>
         </Typography>
       </Toolbar>

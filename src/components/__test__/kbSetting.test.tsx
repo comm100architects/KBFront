@@ -16,6 +16,7 @@ const flushPromises = () => act(() => new Promise(setImmediate));
 const globalSettings: GlobalSettings = {
   endPointPrefix: "//localhost:3000",
   dateTimeFormat: "MM/dd/yyyy HH:mm:ss",
+  menu: [],
 };
 const entities: UIEntity[] = [
   {

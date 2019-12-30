@@ -1,6 +1,7 @@
 import css from "./gencss";
 import html from "./genhtml";
 import { int, guidPool, words, range, chance } from "./genhelper";
+import menu from "./genmenu";
 
 const fs = require("fs");
 
@@ -156,6 +157,7 @@ const data = range(10)
       designs: [],
       entities,
       pages,
+      menu: menu(),
     },
   );
 

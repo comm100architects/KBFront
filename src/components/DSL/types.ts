@@ -1,5 +1,6 @@
 import { CFormField } from "../Form";
 import _ from "lodash";
+import { RawProduct } from "../../Pages";
 
 export interface UIEntityFieldLabelForValue {
   key: number | boolean;
@@ -37,6 +38,7 @@ export interface UIEntity {
 export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
+  menu: Array<RawProduct>;
 }
 
 // structure: page include groups, each group include rows, each row is a control
