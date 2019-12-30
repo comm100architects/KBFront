@@ -136,16 +136,17 @@ getGlobalSettings()
                     `/${currentProduct}/${currentPage}/`.length,
                   );
                   console.log(`relatviePath: ${relatviePath}`);
-                  const pageId = getMenuPages(
-                    currentPage,
-                    app?.menu ?? [],
-                  ).find(pageRef => pageRef.relatviePath === relatviePath)
-                    ?.pageId;
+                  const page = getMenuPages(currentPage, app?.menu ?? []).find(
+                    pageRef => pageRef.relatviePath === relatviePath,
+                  );
+                  if (page && page.redirectTo) {
+                    history.replace(page.redirectTo + location.search);
+                  }
                   return (
                     <Root
                       app={app!}
                       currentPage={currentPage}
-                      pageId={pageId}
+                      pageId={page?.pageId}
                       relatviePath={relatviePath}
                       globalSettings={globalSettings}
                     />

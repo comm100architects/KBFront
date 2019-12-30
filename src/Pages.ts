@@ -7,6 +7,7 @@ import { CIconName } from "./components/Icons";
 export interface PageRef {
   relatviePath: string;
   pageId: string;
+  redirectTo?: string;
 }
 
 export interface RawMenuItem {

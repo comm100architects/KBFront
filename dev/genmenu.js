@@ -79,7 +79,7 @@ const kbAppMenu = [
         label: "Multiple Knowledge Bases",
         pages: [
           { relatviePath: "", pageId: "kb.multipleKbs" },
-          { relatviePath: "edit", pageId: "kb.multipleKbs.edit" },
+          { relatviePath: "edit", redirectTo: "../settings/" },
           { relatviePath: "new", pageId: "kb.multipleKbs.new" },
         ],
       },

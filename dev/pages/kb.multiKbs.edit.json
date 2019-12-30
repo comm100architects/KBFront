@@ -2,6 +2,7 @@
   "id": "kb.multipleKbs.edit",
   "title": "Settings",
   "entity": "knowledgeBases",
+  "isStandaloneEdit": true,
   "rows": [
     {
       "fieldName": "name",
