@@ -14,6 +14,7 @@ import {
   toPath,
   goToSearch,
   withQueryParam,
+  removeQueryParam,
 } from "../../framework/locationHelper";
 import { useHistory } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
@@ -228,7 +229,7 @@ export const makeEditFormComponent = async ({
     }, [entityId]);
 
     const handleCancel = () => {
-      goToPath(history, toPath("."));
+      goToPath(history, toPath(".", removeQueryParam("id")));
     };
 
     return (

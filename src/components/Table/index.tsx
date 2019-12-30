@@ -30,6 +30,10 @@ const useStyles = makeStyles((theme: Theme) =>
     tableWrapper: {
       overflowX: "auto",
     },
+    noRecords: {
+      height: 100,
+      borderBottom: "none",
+    },
   }),
 );
 
@@ -122,27 +126,39 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
               </TableRow>
             </TableHead>
             <TableBody>
-              {data.rows.map(row => {
-                return (
-                  <TableRow hover>
-                    {props.columns.map(col => {
-                      return (
-                        <TableCell key={col.id as string} align="left">
-                          {renderContent(
-                            col,
-                            row,
-                            props.onDelete && (() => props.onDelete!(row)),
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
+              {data.count === 0 ? (
+                <TableRow>
+                  <TableCell
+                    className={classes.noRecords}
+                    colSpan={props.columns.length}
+                    align="center"
+                  >
+                    No records to display
+                  </TableCell>
+                </TableRow>
+              ) : (
+                data.rows.map(row => {
+                  return (
+                    <TableRow hover>
+                      {props.columns.map(col => {
+                        return (
+                          <TableCell key={col.id as string} align="left">
+                            {renderContent(
+                              col,
+                              row,
+                              props.onDelete && (() => props.onDelete!(row)),
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
         </div>
-        {showPagination && (
+        {showPagination && data.count > 0 && (
           <CTablePagination
             pageSizeOptions={pageSizeOptions}
             count={data.count}
