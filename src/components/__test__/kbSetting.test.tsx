@@ -108,6 +108,7 @@ const entities: UIEntity[] = [
 const rawUIPage: RawUIPage = {
   title: "Settings",
   entity: entities[0],
+  parentEntities: [],
   rows: [
     {
       fieldName: "name",

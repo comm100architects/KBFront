@@ -8,7 +8,7 @@ import { Kb } from "./Entity/Kb";
 import { goToSearch, withQueryParam } from "../../../framework/locationHelper";
 import FormControl from "@material-ui/core/FormControl";
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((_: Theme) =>
   createStyles({
     kbs: {
       position: "absolute",

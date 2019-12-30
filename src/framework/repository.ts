@@ -16,7 +16,7 @@ export interface IRepository<Entity> {
 
 export interface QueryItem {
   key: string;
-  value: string;
+  value: string | number;
 }
 
 export class ReadonlyLocalRepository<

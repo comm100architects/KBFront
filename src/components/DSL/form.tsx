@@ -8,7 +8,7 @@ import { UIPage, UIRow } from "./types";
 import { Formik, Form, FormikHelpers, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { CButton } from "../Buttons";
-import { RESTfulRepository, IRepository } from "../../framework/repository";
+import { RESTfulRepository } from "../../framework/repository";
 import {
   goToPath,
   toPath,

@@ -1,6 +1,7 @@
 import { CFormField } from "../Form";
 import _ from "lodash";
 import { RawProduct } from "../../Pages";
+import { IRepository, RESTfulRepository } from "../../framework/repository";
 
 export interface UIEntityFieldLabelForValue {
   key: number | boolean;
@@ -48,6 +49,7 @@ export interface RawUIPage {
   entity: UIEntity;
   rows?: RawUIRow[];
   grid?: UIGrid;
+  parentEntities?: RawParentEntity[];
 }
 
 export interface UIGrid {
@@ -120,7 +122,7 @@ const normalizeRawUIRow = (
 
 export const normalizeRawUIPage = (
   settings: GlobalSettings,
-  { title, description, entity, rows, grid }: RawUIPage,
+  { title, description, entity, rows, grid, parentEntities }: RawUIPage,
   relatviePath = "",
 ): UIPage => {
   const defaultValues = entity.fields.reduce(
@@ -138,20 +140,46 @@ export const normalizeRawUIPage = (
     title,
     description,
     entity,
+    entityRepo: new RESTfulRepository<Entity>(
+      settings.endPointPrefix,
+      entity.name,
+    ),
     rows: rows?.map(row => normalizeRawUIRow(entity.fields, row)),
     grid,
     defaultValues,
     isDedicatedSingular: relatviePath === "",
+    parentEntities:
+      parentEntities?.map(e => ({
+        ...e,
+        repo: new RESTfulRepository<Entity>(settings.endPointPrefix, e.name),
+        data: [],
+      })) || [],
   };
 };
 
+interface RawParentEntity {
+  name: string;
+  fieldName: string;
+  position: "topRightCorner" | "left";
+}
+
+interface ParentEntity {
+  name: string;
+  fieldName: string;
+  position: "topRightCorner" | "left";
+  repo: IRepository<Entity>;
+  data: Entity[];
+}
+
 export interface UIPage {
   type: "singular" | "singularNew" | "list";
+  parentEntities: ParentEntity[];
   isDedicatedSingular: boolean;
   settings: GlobalSettings;
   title: string;
   description?: string;
   entity: UIEntity;
+  entityRepo: IRepository<Entity>;
   rows?: UIRow[];
   grid?: UIGrid;
   defaultValues: Entity;

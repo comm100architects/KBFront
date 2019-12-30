@@ -3,6 +3,13 @@
   "title": "Design",
   "entity": "designs",
   "description": "Design controls the layout of the category, article, search results and the not found error pages. You can customize the design of these pages by changing their appearances or adding more functionalities. <a href=\"https://ent1portal.comm100.com/kbadmin/doc/design/index.html\" target=\"_blank\">How do I customize the design?</a>",
+  "parentEntities": [
+    {
+      "name": "knowledgeBases",
+      "fieldName": "kbId",
+      "position": "topRightCorner"
+    }
+  ],
   "grid": {
     "columns": [
       {
