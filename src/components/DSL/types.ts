@@ -121,7 +121,7 @@ const normalizeRawUIRow = (
 export const normalizeRawUIPage = (
   settings: GlobalSettings,
   { title, description, entity, rows, grid }: RawUIPage,
-  isNew = false,
+  relatviePath = "",
 ): UIPage => {
   const defaultValues = entity.fields.reduce(
     (res, field) => {
@@ -133,7 +133,7 @@ export const normalizeRawUIPage = (
     { id: "" },
   );
   return {
-    type: rows ? (isNew ? "singularNew" : "singular") : "list",
+    type: rows ? (relatviePath === "new" ? "singularNew" : "singular") : "list",
     settings,
     title,
     description,
@@ -141,11 +141,13 @@ export const normalizeRawUIPage = (
     rows: rows?.map(row => normalizeRawUIRow(entity.fields, row)),
     grid,
     defaultValues,
+    isDedicatedSingular: relatviePath === "",
   };
 };
 
 export interface UIPage {
   type: "singular" | "singularNew" | "list";
+  isDedicatedSingular: boolean;
   settings: GlobalSettings;
   title: string;
   description?: string;

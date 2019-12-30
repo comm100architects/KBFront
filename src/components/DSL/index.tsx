@@ -5,16 +5,16 @@ import { fetchJson } from "../../framework/network";
 import { useHistory } from "react-router";
 import { GlobalContext, GlobalQueryString, GlobalState } from "./context";
 import { normalizeRawUIPage, UIPage, GlobalSettings } from "./types";
-import { makeFormComponent } from "./form";
+import { makeEditFormComponent, makeNewFormComponent } from "./form";
 import { makeGridComponent } from "./grid";
 
 const makePageBody = async (
   page: UIPage,
 ): Promise<React.ComponentType<any>> => {
   if (page.type === "singular") {
-    return await makeFormComponent(page);
+    return await makeEditFormComponent(page);
   } else if (page.type === "singularNew") {
-    return await makeFormComponent(page);
+    return await makeNewFormComponent(page);
   } else if (page.type === "list") {
     return await makeGridComponent(page);
   }
@@ -25,12 +25,12 @@ const makePageBody = async (
 export const makePageComponent = async (
   settings: GlobalSettings,
   configUrl: string,
-  isNew: boolean = false,
+  relatviePath: string = "",
 ): Promise<React.ComponentType<any>> => {
   const page = normalizeRawUIPage(
     settings,
     await fetchJson(configUrl, "GET"),
-    isNew,
+    relatviePath,
   );
   const Body = await makePageBody(page);
   Body.displayName = "PageBody";

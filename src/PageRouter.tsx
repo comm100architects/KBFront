@@ -59,9 +59,12 @@ export default class LazyPage extends React.Component<
     if (pageId) {
       return React.lazy(async () => {
         const configUrl = `${globalSettings.endPointPrefix}/pages/${pageId}`;
-        const isNew = relatviePath.toLowerCase() === "new";
         return {
-          default: await makePageComponent(globalSettings, configUrl, isNew),
+          default: await makePageComponent(
+            globalSettings,
+            configUrl,
+            relatviePath.toLowerCase(),
+          ),
         };
       });
     }
