@@ -2,7 +2,7 @@ import * as React from "react";
 import Typography from "@material-ui/core/typography";
 import Paper from "@material-ui/core/paper";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
-import GlobalContext from "../GlobalContext";
+import { GlobalContext } from "../GlobalContext";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,13 +25,17 @@ interface CPageProps extends React.Props<{}> {
   documentTitle?: string;
 }
 
-export default (props: CPageProps): JSX.Element => {
+export default ({
+  title,
+  documentTitle,
+  description,
+  children,
+}: CPageProps): JSX.Element => {
   const classes = useStyles({});
-  const { currentProduct } = React.useContext(GlobalContext);
+  const { product } = React.useContext(GlobalContext)!;
   React.useEffect(() => {
-    document.title =
-      props.documentTitle ?? `${currentProduct.label} » ${props.title}`;
-  }, [currentProduct.label, props.title, props.documentTitle]);
+    document.title = documentTitle ?? `${product.label} » ${title}`;
+  }, [product.label, title, documentTitle]);
   return (
     <div className={classes.root}>
       <Paper component="main" className={classes.main}>
@@ -41,12 +45,12 @@ export default (props: CPageProps): JSX.Element => {
           noWrap
           className={classes.title}
         >
-          {props.title}
+          {title}
         </Typography>
-        {props.description && (
-          <div dangerouslySetInnerHTML={{ __html: props.description }}></div>
+        {description && (
+          <div dangerouslySetInnerHTML={{ __html: description }}></div>
         )}
-        {props.children}
+        {children}
       </Paper>
     </div>
   );

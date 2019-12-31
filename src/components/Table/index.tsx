@@ -139,7 +139,7 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
               ) : (
                 data.rows.map(row => {
                   return (
-                    <TableRow hover>
+                    <TableRow hover key={row.id}>
                       {props.columns.map(col => {
                         return (
                           <TableCell key={col.id as string} align="left">

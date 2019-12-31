@@ -303,7 +303,7 @@ describe("render UIPage", () => {
 
     moxios.stubRequest(configUrl, { response: page });
 
-    const Page = await makePageComponent(settings, configUrl);
+    const Page = await makePageComponent(settings, configUrl, "kb");
     const wrapper = mount(
       <Router>
         <Page />

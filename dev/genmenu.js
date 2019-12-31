@@ -1,4 +1,4 @@
-const livechatAppMenu = [
+const livechatMenu = [
   { name: "dashboard", label: "Dashboard", icon: "dashboard" },
   { name: "agentConsole", label: "Get Online & Chat", icon: "chat" },
   { name: "install", label: "Install", icon: "code" },
@@ -35,15 +35,13 @@ const livechatAppMenu = [
   },
 ];
 
-const ticketAppMenu = [
+const ticketMenu = [
   { name: "dashboard", label: "Dashboard", icon: "dashboard" },
 ];
 
-const botAppMenu = [
-  { name: "dashboard", label: "Dashboard", icon: "dashboard" },
-];
+const botMenu = [{ name: "dashboard", label: "Dashboard", icon: "dashboard" }];
 
-const kbAppMenu = [
+const kbMenu = [
   { name: "articles", label: "Articles", icon: "description" },
   { name: "images", label: "Images", icon: "image" },
   {
@@ -87,7 +85,7 @@ const kbAppMenu = [
   },
 ];
 
-const accountAppMenu = [
+const accountMenu = [
   { name: "dashboard", label: "Dashboard", icon: "dashboard" },
 ];
 
@@ -95,21 +93,21 @@ export default () => [
   {
     name: "livechat",
     label: "Live Chat",
-    menu: livechatAppMenu,
+    menu: livechatMenu,
     defaultPage: "dashboard",
   },
   {
     name: "ticket",
     label: "Ticket",
-    menu: ticketAppMenu,
+    menu: ticketMenu,
     defaultPage: "dashboard",
   },
-  { name: "bot", label: "Bot", menu: botAppMenu, defaultPage: "dashboard" },
-  { name: "kb", label: "KB", menu: kbAppMenu, defaultPage: "articles" },
+  { name: "bot", label: "Bot", menu: botMenu, defaultPage: "dashboard" },
+  { name: "kb", label: "KB", menu: kbMenu, defaultPage: "articles" },
   {
     name: "account",
     label: "Account",
-    menu: accountAppMenu,
+    menu: accountMenu,
     defaultPage: "dashboard",
   },
 ];

@@ -16,7 +16,7 @@
         "fieldName": "title",
         "cellComponentType": "link",
         "headerLabel": "Page",
-        "linkPath": "edit?id=$id"
+        "linkPath": "edit?id=$id&kbId=$kbId"
       }
     ],
     "filters": [],

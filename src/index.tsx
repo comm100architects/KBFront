@@ -10,19 +10,19 @@ import {
   Theme,
 } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/drawer";
-import AppHeader from "./AppHeader";
-import AppMenu from "./AppMenu";
+import { makeHeader } from "./Header";
+import { makeMenu } from "./Menu";
 import { isMenuExist, RawProduct, getMenuPages } from "./Pages";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
-import PageRouter from "./PageRouter";
-import GlobalContext from "./GlobalContext";
+import { PageRouter } from "./PageRouter";
 import { fetchJson } from "./framework/network";
 import { GlobalSettings } from "./components/DSL/types";
+import { GlobalContext } from "./GlobalContext";
 
 const theme = createMuiTheme();
 
-interface AppParam {
+interface UrlParam {
   currentProduct: string;
   currentPage: string;
 }
@@ -30,7 +30,7 @@ interface AppParam {
 function Page404() {
   React.useEffect(() => {
     document.title = "404 Not Found";
-  });
+  }, []);
   return <h1>404 Not Found</h1>;
 }
 
@@ -39,11 +39,7 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       display: "flex",
     },
-    body: {
-      flexDirection: "row",
-      flexWrap: "nowrap",
-    },
-    appMenu: {
+    menu: {
       flexShrink: 0,
       width: 240,
     },
@@ -54,42 +50,39 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function Root({
-  app,
-  currentPage,
-  pageId,
-  relatviePath,
-  globalSettings,
-}: {
-  app: RawProduct;
+interface RootProps {
+  product: RawProduct;
   currentPage: string;
-  pageId?: string;
   relatviePath: string;
-  globalSettings: GlobalSettings;
-}) {
-  const classes = useStyles({});
-  return (
-    <GlobalContext.Provider value={{ currentProduct: app }}>
-      <div className={classes.root}>
-        <AppHeader currentProduct={app.name} menu={globalSettings.menu} />
-        <Drawer variant="permanent" className={classes.appMenu}>
-          <div className={classes.toolbar}></div>
-          <AppMenu app={app!} selected={currentPage} />
-        </Drawer>
-        <div className={classes.content}>
-          <div className={classes.toolbar}></div>
-          <PageRouter
-            currentProduct={app.name}
-            currentPage={currentPage}
-            pageId={pageId}
-            relatviePath={relatviePath}
-            globalSettings={globalSettings}
-          />
-        </div>
-      </div>
-    </GlobalContext.Provider>
-  );
+  pageId?: string;
 }
+
+const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
+  const Header = makeHeader(settings.menu);
+  return ({ product, currentPage, relatviePath, pageId }: RootProps) => {
+    const Menu = React.useMemo(() => makeMenu(product), [product.name]);
+    const classes = useStyles();
+    return (
+      <GlobalContext.Provider value={{ product, settings }}>
+        <div className={classes.root}>
+          <Header selected={product.name} />
+          <Drawer variant="permanent" className={classes.menu}>
+            <div className={classes.toolbar}></div>
+            <Menu selected={currentPage} />
+          </Drawer>
+          <div className={classes.content}>
+            <div className={classes.toolbar}></div>
+            <PageRouter
+              currentPage={currentPage}
+              pageId={pageId}
+              relatviePath={relatviePath}
+            />
+          </div>
+        </div>
+      </GlobalContext.Provider>
+    );
+  };
+};
 
 const getGlobalSettings = async () => {
   const res = (await fetchJson("/globalSettings", "GET")) as GlobalSettings;
@@ -101,58 +94,73 @@ const getGlobalSettings = async () => {
   return res;
 };
 
+const makeRedirectToProductDefaultPage = (settings: GlobalSettings) => ({
+  match,
+}: RouteChildrenProps<UrlParam>) => {
+  const currentProduct = match?.params.currentProduct;
+  const product = settings.menu.find(
+    product => product.name === currentProduct,
+  );
+  if (product) {
+    return <Redirect to={`/${product!.name}/${product!.defaultPage}`} />;
+  }
+  return <Page404 />;
+};
+
+const makeCurrentPage = (settings: GlobalSettings) => {
+  const Root = makeRoot(settings);
+  Root.displayName = "Root";
+  return ({ match, location, history }: RouteChildrenProps<UrlParam>) => {
+    const { currentProduct, currentPage } = match!.params;
+    // make sure add slash after currentPage, much easier for relative path
+    if (match!.isExact && !_.endsWith(location.pathname, "/")) {
+      history.replace(`/${currentProduct}/${currentPage}/${location.search}`);
+    }
+
+    const product = settings.menu.find(
+      product => product.name === currentProduct,
+    );
+
+    if (!isMenuExist(currentPage, product?.menu ?? [])) {
+      return <Page404 />;
+    }
+
+    const relatviePath = location.pathname.substring(
+      `/${currentProduct}/${currentPage}/`.length,
+    );
+
+    // pageRef could be null
+    const pageRef = getMenuPages(currentPage, product!.menu).find(
+      pageRef => pageRef.relatviePath === relatviePath,
+    );
+
+    if (pageRef?.redirectTo) {
+      history.replace(pageRef.redirectTo + location.search);
+    }
+
+    return (
+      <Root
+        product={product!}
+        currentPage={currentPage}
+        pageId={pageRef?.pageId}
+        relatviePath={relatviePath}
+      />
+    );
+  };
+};
+
 getGlobalSettings()
-  .then((globalSettings: GlobalSettings) => {
+  .then((settings: GlobalSettings) => {
     ReactDOM.render(
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
           <Switch>
             <Route exact path="/:currentProduct">
-              {({ match }: RouteChildrenProps<AppParam>) => {
-                const currentProduct = match?.params.currentProduct;
-                const app = globalSettings.menu.find(
-                  app => app.name === currentProduct,
-                );
-                if (app) {
-                  return <Redirect to={`/${app!.name}/${app!.defaultPage}`} />;
-                }
-                return <Page404 />;
-              }}
+              {makeRedirectToProductDefaultPage(settings)}
             </Route>
             <Route path="/:currentProduct/:currentPage">
-              {({ match, location, history }: RouteChildrenProps<AppParam>) => {
-                const { currentProduct, currentPage } = match!.params;
-                if (match!.isExact && !_.endsWith(location.pathname, "/")) {
-                  history.replace(
-                    `/${currentProduct}/${currentPage}/${location.search}`,
-                  );
-                }
-                const app = globalSettings.menu.find(
-                  app => app.name === currentProduct,
-                );
-                if (isMenuExist(currentPage, app?.menu ?? [])) {
-                  const relatviePath = location.pathname.substring(
-                    `/${currentProduct}/${currentPage}/`.length,
-                  );
-                  const page = getMenuPages(currentPage, app?.menu ?? []).find(
-                    pageRef => pageRef.relatviePath === relatviePath,
-                  );
-                  if (page && page.redirectTo) {
-                    history.replace(page.redirectTo + location.search);
-                  }
-                  return (
-                    <Root
-                      app={app!}
-                      currentPage={currentPage}
-                      pageId={page?.pageId}
-                      relatviePath={relatviePath}
-                      globalSettings={globalSettings}
-                    />
-                  );
-                }
-                return <Page404 />;
-              }}
+              {makeCurrentPage(settings)}
             </Route>
             <Route path="*">
               <Page404 />;

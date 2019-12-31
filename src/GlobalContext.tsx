@@ -1,12 +1,12 @@
-import * as React from "react";
+import React from "react";
 import { RawProduct } from "./Pages";
+import { GlobalSettings } from "./components/DSL/types";
 
-export interface RawGlobalContext {
-  readonly currentProduct: RawProduct;
+export interface GlobalContextValue {
+  readonly product: RawProduct;
+  readonly settings: GlobalSettings;
 }
 
-const emptyGlobalContext: RawGlobalContext = {
-  currentProduct: { name: "", label: "", defaultPage: "", menu: [] },
-};
-
-export default React.createContext(emptyGlobalContext);
+export const GlobalContext = React.createContext(
+  null as GlobalContextValue | null,
+);

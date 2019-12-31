@@ -55,12 +55,12 @@ export const CSelect = (props: CSelectProps) => {
         className={classes.root}
         displayEmpty={true}
       >
-        {props.options.map(({ id, value, label, icon }) => {
+        {props.options.map(({ id, value, label, icon }, i) => {
           return (
             <MenuItem
               data-test-id={`select-option-${id}`}
               id={id}
-              key={value}
+              key={i}
               value={value}
             >
               <span className={classes.icon}>

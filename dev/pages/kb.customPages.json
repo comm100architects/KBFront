@@ -20,7 +20,7 @@
       {
         "fieldName": "title",
         "cellComponentType": "link",
-        "linkPath": "edit?id=$id"
+        "linkPath": "edit?id=$id&kbId=$kbId"
       },
       {
         "fieldName": "modified",

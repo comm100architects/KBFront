@@ -6,14 +6,12 @@ import Spin from "./components/Spin";
 import LoadError from "./components/LoadError";
 import { isPromise } from "./framework/utils";
 import { makePageComponent } from "./components/DSL";
-import { GlobalSettings } from "./components/DSL/types";
+import { GlobalContext } from "./GlobalContext";
 
-interface LazyPageProps {
-  currentProduct: string;
+interface PageRouterProps {
   currentPage: string;
   pageId?: string;
   relatviePath: string;
-  globalSettings: GlobalSettings;
 }
 
 const useStyles = makeStyles((_: Theme) =>
@@ -36,103 +34,48 @@ const Loading = (_: {}) => {
   );
 };
 
-export default class LazyPage extends React.Component<
-  LazyPageProps,
-  {
-    page: React.LazyExoticComponent<React.ComponentType<any>>;
-    error: Error | null;
-  }
-> {
-  constructor(props: LazyPageProps) {
-    super(props);
-
-    this.state = { page: this.getPage(props), error: null };
-  }
-
-  getPage({
-    currentProduct,
-    currentPage,
-    relatviePath,
-    pageId,
-    globalSettings,
-  }: LazyPageProps) {
-    if (pageId) {
-      return React.lazy(async () => {
-        const configUrl = `${globalSettings.endPointPrefix}/pages/${pageId}`;
-        return {
-          default: await makePageComponent(
-            globalSettings,
-            configUrl,
-            relatviePath.toLowerCase(),
-          ),
-        };
-      });
-    }
-    return React.lazy(() =>
-      import(
-        /* webpackChunkName: "page" */
-        `./Products/${currentProduct}/${currentPage}/index.tsx`
-      ).then(pack => {
-        if (isPromise(pack.default)) {
-          return pack.default.then((next: any) => ({ default: next }));
+export const PageRouter = (props: PageRouterProps) => {
+  const { currentPage, relatviePath, pageId } = props;
+  const { settings, product } = React.useContext(GlobalContext)!;
+  const [count, setCount] = React.useState(0);
+  const LazyPage = React.useMemo(
+    () =>
+      React.lazy(async () => {
+        try {
+          if (pageId) {
+            return {
+              default: await makePageComponent(
+                settings,
+                `${settings.endPointPrefix}/pages/${pageId}`,
+                relatviePath.toLowerCase(),
+              ),
+            };
+          } else {
+            const pack = await import(
+              /* webpackChunkName: "page" */
+              `./Products/${product.name}/${currentPage}/index.tsx`
+            );
+            if (isPromise(pack.default)) {
+              const component = await pack.default;
+              return { default: component };
+            }
+            return pack;
+          }
+        } catch (e) {
+          console.log(e);
+          return {
+            default: () => (
+              <LoadError error={e} onReload={() => setCount(count + 1)} />
+            ),
+          };
         }
-        return pack;
       }),
-    );
-  }
+    [currentPage, relatviePath, pageId, product, count],
+  );
+  return (
+    <Suspense fallback={<Loading />}>
+      <LazyPage />
+    </Suspense>
+  );
+};
 
-  componentDidCatch(error: Error) {
-    this.setState({ error });
-  }
-
-  componentDidUpdate(nextProps: LazyPageProps) {
-    if (_.isEqual(this.props, nextProps)) return;
-
-    this.setState({ page: this.getPage(nextProps), error: null });
-  }
-
-  reload() {
-    this.setState({ page: this.getPage(this.props), error: null });
-  }
-
-  render() {
-    const Page = this.state.page;
-    if (this.state.error) {
-      return (
-        <LoadError error={this.state.error} onReload={() => this.reload()} />
-      );
-    }
-    return (
-      <Suspense fallback={<Loading />}>
-        <Page />
-      </Suspense>
-    );
-  }
-}
-
-// export default ({ currentProduct, currentPage }: LazyPageProps) => {
-//   const lazyComponentsStore = React.useRef(
-//     {} as { [id: string]: React.LazyExoticComponent<React.ComponentType<any>> },
-//   ).current;
-//   const path = `${currentProduct}/${currentPage}`;
-//   if (!lazyComponentsStore[path]) {
-//     const page: React.LazyExoticComponent<React.ComponentType<
-//       any
-//     >> = React.lazy(() =>
-//       import(
-//         /* webpackChunkName: "page" */
-//         `./Products/${currentProduct}/${currentPage}/index.tsx`
-//       ).catch(() =>
-//         import(/* webpackMode: "eager" */ "./components/LoadError"),
-//       ),
-//     );
-//
-//     lazyComponentsStore[path] = page;
-//   }
-//   const LazyPage = lazyComponentsStore[path];
-//   return (
-//     <Suspense fallback={<Loading />}>
-//       <LazyPage />
-//     </Suspense>
-//   );
-// };
