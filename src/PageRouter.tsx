@@ -85,7 +85,7 @@ export default class LazyPage extends React.Component<
     this.setState({ error });
   }
 
-  componentWillReceiveProps(nextProps: LazyPageProps) {
+  componentDidUpdate(nextProps: LazyPageProps) {
     if (_.isEqual(this.props, nextProps)) return;
 
     this.setState({ page: this.getPage(nextProps), error: null });

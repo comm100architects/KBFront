@@ -135,7 +135,6 @@ getGlobalSettings()
                   const relatviePath = location.pathname.substring(
                     `/${currentProduct}/${currentPage}/`.length,
                   );
-                  console.log(`relatviePath: ${relatviePath}`);
                   const page = getMenuPages(currentPage, app?.menu ?? []).find(
                     pageRef => pageRef.relatviePath === relatviePath,
                   );

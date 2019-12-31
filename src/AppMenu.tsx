@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const renderMenuItem = (item: RawMenuItem): JSX.Element => (
-  <SelectedMenuItem.Consumer>
+  <SelectedMenuItem.Consumer key={item.name}>
     {({ appName, selected }) => (
       <ListItemLink
         selected={selected === item.name}
@@ -73,13 +73,13 @@ function AppMenuComponent(props: { app: RawProduct; selected: string }) {
   const classes = useStyles({});
   const { app, selected } = props;
 
-  const children = app.menu.map(item => {
+  const children = app.menu.map((item, i) => {
     if ((item as RawMenuItem).name) {
       return renderMenuItem(item as RawMenuItem);
     }
     const submenu = item as RawSubMenu;
     const open = submenu.items.some(item => item.name === selected);
-    return <SubMenuComponent menu={submenu} open={open} />;
+    return <SubMenuComponent key={i} menu={submenu} open={open} />;
   });
 
   return (

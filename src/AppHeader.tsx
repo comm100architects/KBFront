@@ -34,6 +34,7 @@ const AppName = (
   className: string,
 ): JSX.Element => (
   <ListItemLink
+    key={app.name}
     primary={app.label}
     to={`/${app.name}/${app.defaultPage}/`}
     selected={app.name === currentProduct}
