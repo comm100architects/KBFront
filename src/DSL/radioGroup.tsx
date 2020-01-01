@@ -1,7 +1,7 @@
 import { UIRow, Entity } from "./types";
-import { CRadioGroupProps, CRadioGroup } from "../RadioGroup";
-import { withProps } from "../../framework/hoc";
-import { RESTfulRepository } from "../../framework/repository";
+import { CRadioGroupProps, CRadioGroup } from "../components/RadioGroup";
+import { withProps } from "../framework/hoc";
+import { RESTfulRepository } from "../framework/repository";
 
 export const makeRadioGroup = async (
   endPointPrefix: string,

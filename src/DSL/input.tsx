@@ -1,5 +1,5 @@
 import React from "react";
-import { CInput } from "../Input";
+import { CInput } from "../components/Input";
 import { FieldInputProps } from "formik";
 import { UIRow } from "./types";
 

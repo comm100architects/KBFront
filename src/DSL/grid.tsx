@@ -6,23 +6,23 @@ import {
   GlobalSettings,
   UIGridColumn,
 } from "./types";
-import { CButton, CIconButton, CLink } from "../Buttons";
+import { CButton, CIconButton, CLink } from "../components/Buttons";
 import {
   emptyTableSource,
   ITableSource,
   LocalTableSource,
-} from "../Table/CTableSource";
-import { CTable, CTableColumn } from "../Table";
-import { CIcon, CIconName } from "../Icons";
+} from "../components/Table/CTableSource";
+import { CTable, CTableColumn } from "../components/Table";
+import { CIcon, CIconName } from "../components/Icons";
 import moment from "moment";
-import { undefinedDefault, replaceVariables } from "../../framework/utils";
+import { undefinedDefault, replaceVariables } from "../framework/utils";
 import {
   toPath,
   goToSearch,
   withQueryParam,
-} from "../../framework/locationHelper";
-import { QueryItem } from "../../framework/repository";
-import { CSelect } from "../Select";
+} from "../framework/locationHelper";
+import { QueryItem } from "../framework/repository";
+import { CSelect } from "../components/Select";
 import { useHistory } from "react-router";
 import Query from "query-string";
 

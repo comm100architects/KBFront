@@ -17,7 +17,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import { PageRouter } from "./PageRouter";
 import { fetchJson } from "./framework/network";
-import { GlobalSettings } from "./components/DSL/types";
+import { GlobalSettings } from "./DSL/types";
 import { GlobalContext } from "./GlobalContext";
 
 const theme = createMuiTheme();

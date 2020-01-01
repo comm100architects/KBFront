@@ -7,19 +7,19 @@ import { makeCheckbox } from "./checkbox";
 import { UIPage, UIRow } from "./types";
 import { Formik, Form, FormikHelpers, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
-import { CButton } from "../Buttons";
-import { RESTfulRepository } from "../../framework/repository";
+import { CButton } from "../components/Buttons";
+import { RESTfulRepository } from "../framework/repository";
 import {
   goToPath,
   toPath,
   goToSearch,
   withQueryParam,
   removeQueryParam,
-} from "../../framework/locationHelper";
+} from "../framework/locationHelper";
 import { useHistory, Prompt } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
 import { useTheme } from "@material-ui/core";
-import { CSelect } from "../Select";
+import { CSelect } from "../components/Select";
 import Query from "query-string";
 
 export const makeUIRowComponent = async (

@@ -2,7 +2,7 @@ import React from "react";
 import { FieldInputProps } from "formik";
 import { FormLabel } from "@material-ui/core";
 import { UIRow } from "./types";
-import { CCodeEditor } from "../CodeEditor";
+import { CCodeEditor } from "../components/CodeEditor";
 
 export const makeCodeEditor = async (
   row: UIRow,

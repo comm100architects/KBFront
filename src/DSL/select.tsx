@@ -1,7 +1,7 @@
 import { UIRow, Entity } from "./types";
-import { CSelectProps, CSelect } from "../Select";
-import { withProps } from "../../framework/hoc";
-import { RESTfulRepository } from "../../framework/repository";
+import { CSelectProps, CSelect } from "../components/Select";
+import { withProps } from "../framework/hoc";
+import { RESTfulRepository } from "../framework/repository";
 
 export const makeSelect = async (
   endPointPrefix: string,

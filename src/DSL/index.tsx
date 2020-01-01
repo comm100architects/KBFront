@@ -1,7 +1,7 @@
 import React from "react";
 import _ from "lodash";
-import CPage from "../Page";
-import { fetchJson } from "../../framework/network";
+import CPage from "../components/Page";
+import { fetchJson } from "../framework/network";
 import { normalizeRawUIPage, UIPage, GlobalSettings } from "./types";
 import { makeEditFormComponent, makeNewFormComponent } from "./form";
 import { makeGridComponent } from "./grid";

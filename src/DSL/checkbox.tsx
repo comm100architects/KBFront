@@ -1,7 +1,7 @@
 import React from "react";
 import { UIRow } from "./types";
 import { FieldInputProps } from "formik";
-import { CCheckbox } from "../Checkbox";
+import { CCheckbox } from "../components/Checkbox";
 
 export const makeCheckbox = async ({
   field,

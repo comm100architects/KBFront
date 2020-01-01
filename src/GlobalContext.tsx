@@ -1,6 +1,6 @@
 import React from "react";
 import { RawProduct } from "./Pages";
-import { GlobalSettings } from "./components/DSL/types";
+import { GlobalSettings } from "./DSL/types";
 
 export interface GlobalContextValue {
   readonly product: RawProduct;

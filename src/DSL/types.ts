@@ -1,7 +1,6 @@
-import { CFormField } from "../Form";
 import _ from "lodash";
-import { RawProduct } from "../../Pages";
-import { IRepository, RESTfulRepository } from "../../framework/repository";
+import { RawProduct } from "../Pages";
+import { IRepository, RESTfulRepository } from "../framework/repository";
 
 export interface UIEntityFieldLabelForValue {
   key: number | boolean;
@@ -182,6 +181,3 @@ export interface EntityInfo {
   source: string | Entity | Entity[];
 }
 
-export type CustomComponent = () => Promise<React.ComponentType>;
-
-export type CustomFormFieldComponent = () => Promise<CFormField<Entity>>;
