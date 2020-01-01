@@ -5,8 +5,8 @@ import {
   RawUIPage,
   GlobalSettings,
   UIEntity,
-} from "../DSL/types";
-import { makePageComponent } from "../DSL";
+} from "../gen/types";
+import { makePageComponent } from "../gen";
 import { mount } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
 import { act } from "react-dom/test-utils";

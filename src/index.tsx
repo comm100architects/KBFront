@@ -12,26 +12,20 @@ import {
 import Drawer from "@material-ui/core/drawer";
 import { makeHeader } from "./Header";
 import { makeMenu } from "./Menu";
-import { isMenuExist, RawProduct, getMenuPages } from "./DSL/types";
+import { isMenuExist, RawProduct, getMenuPages } from "./gen/types";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import { PageRouter } from "./PageRouter";
 import { fetchJson } from "./framework/network";
-import { GlobalSettings } from "./DSL/types";
+import { GlobalSettings } from "./gen/types";
 import { GlobalContext } from "./GlobalContext";
+import { Page404 } from "./components/Page404";
 
 const theme = createMuiTheme();
 
 interface UrlParam {
   currentProduct: string;
   currentPage: string;
-}
-
-function Page404() {
-  React.useEffect(() => {
-    document.title = "404 Not Found";
-  }, []);
-  return <h1>404 Not Found</h1>;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -172,5 +166,5 @@ getGlobalSettings()
     );
   })
   .catch(() => {
-    ReactDOM.render(<h4>Ooops...</h4>, document.querySelector("#main"));
+    ReactDOM.render(<h2>Ooops...</h2>, document.querySelector("#main"));
   });

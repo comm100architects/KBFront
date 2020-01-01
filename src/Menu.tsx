@@ -7,7 +7,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Collapse from "@material-ui/core/Collapse";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { RawProduct, RawMenuItem, RawSubMenu } from "./DSL/types";
+import { RawProduct, RawMenuItem, RawSubMenu } from "./gen/types";
 import { ListItemLink } from "./Components/ListItemLink";
 import { CIcon } from "./components/Icons";
 

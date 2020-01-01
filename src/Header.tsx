@@ -6,7 +6,7 @@ import { ListItemLink } from "./Components/ListItemLink";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/toolbar";
 import Typography from "@material-ui/core/Typography";
-import { RawProduct } from "./Pages";
+import { RawProduct } from "./gen/types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

@@ -5,7 +5,7 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Spin from "./components/Spin";
 import LoadError from "./components/LoadError";
 import { isPromise } from "./framework/utils";
-import { makePageComponent } from "./DSL";
+import { makePageComponent } from "./gen";
 import { GlobalContext } from "./GlobalContext";
 
 interface PageRouterProps {

@@ -1,6 +1,6 @@
 import React from "react";
-import { RawProduct } from "./DSL/types";
-import { GlobalSettings } from "./DSL/types";
+import { RawProduct } from "./gen/types";
+import { GlobalSettings } from "./gen/types";
 
 export interface GlobalContextValue {
   readonly product: RawProduct;
