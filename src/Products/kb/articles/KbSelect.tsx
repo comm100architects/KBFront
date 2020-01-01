@@ -50,7 +50,6 @@ export const KbSelect = () => {
           <FormControl>
             <CSelect
               id="kbSelect"
-              title="Knowlegbase:"
               value={kbId}
               options={kbs.map(({ id, name }) => ({ value: id, label: name }))}
               onChange={handleKbChange}

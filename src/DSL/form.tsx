@@ -1,9 +1,9 @@
 import React from "react";
-import { makeInput } from "./input";
+import { makeInput } from "./Input";
 import { Entity } from "./types";
-import { makeRadioGroup } from "./radioGroup";
-import { makeSelect } from "./select";
-import { makeCheckbox } from "./checkbox";
+import { makeRadioGroup } from "./RadioGroup";
+import { makeSelect } from "./Select";
+import { makeCheckbox } from "./Checkbox";
 import { UIPage, UIRow } from "./types";
 import { Formik, Form, FormikHelpers, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
@@ -18,9 +18,10 @@ import {
 } from "../framework/locationHelper";
 import { useHistory, Prompt } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
-import { useTheme } from "@material-ui/core";
+import FormLabel from "@material-ui/core/FormLabel";
 import { CSelect } from "../components/Select";
 import Query from "query-string";
+import useTheme from "@material-ui/core/styles/useTheme";
 
 export const makeUIRowComponent = async (
   endPointPrefix: string,
@@ -77,11 +78,12 @@ export const makeUIRowFormCtrol = async (
           error={!!errors[field.name]}
           style={{
             display: "block",
-            paddingLeft: row.indent ? `${theme.spacing(4)}px` : "0px",
-            marginTop: `${theme.spacing(3)}px`,
-            marginBottom: `${theme.spacing(3)}px`,
+            // paddingLeft: row.indent ? `${theme.spacing(4)}px` : "0px",
+            // marginTop: `${theme.spacing(3)}px`,
+            // marginBottom: `${theme.spacing(3)}px`,
           }}
         >
+          {field.title && <FormLabel component="div">{field.title}</FormLabel>}
           <Field
             data-test-id={`form-field-${i}`}
             title={field.title}

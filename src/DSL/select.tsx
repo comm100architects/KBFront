@@ -21,7 +21,6 @@ export const makeSelect = async (
           label: option[field.referenceEntityFieldNameForLabel!],
         })),
       ),
-      title: field.title,
     });
   }
 
@@ -32,7 +31,6 @@ export const makeSelect = async (
         label,
         icon,
       })),
-      title: field.title,
     });
   }
 

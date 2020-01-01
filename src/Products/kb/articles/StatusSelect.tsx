@@ -7,7 +7,6 @@ export const StatusSelect = (props: Partial<CSelectProps>) => {
     <CSelect
       {...props}
       id="articleStatus"
-      title="Status"
       options={[
         {
           label: "All Status",

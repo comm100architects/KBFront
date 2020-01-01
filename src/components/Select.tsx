@@ -5,7 +5,6 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CIconName, CIcon } from "./Icons";
 import { CElementProps } from "./base";
 import { FieldInputProps } from "formik";
-import FormLabel from "@material-ui/core/FormLabel";
 
 export interface CSelectOption extends CElementProps {
   value?: string | number;
@@ -17,7 +16,6 @@ export interface CSelectProps
   extends CElementProps,
     Partial<FieldInputProps<string | number | undefined>> {
   options: CSelectOption[];
-  title?: string;
 }
 
 const useStyle = makeStyles((theme: Theme) =>
@@ -39,39 +37,32 @@ export const CSelect = (props: CSelectProps) => {
   const classes = useStyle();
   const labelId = props.id ? `${props.id}-label` : undefined;
   return (
-    <div>
-      {props.title && (
-        <FormLabel htmlFor={props.id} id={labelId} component="div">
-          {props.title}
-        </FormLabel>
-      )}
-      <Select
-        id={props.id}
-        labelId={labelId}
-        value={props.value || props.options[0]?.value}
-        name={props.name}
-        onChange={props.onChange}
-        onBlur={props.onBlur}
-        className={classes.root}
-        displayEmpty={true}
-      >
-        {props.options.map(({ id, value, label, icon }, i) => {
-          return (
-            <MenuItem
-              data-test-id={`select-option-${id}`}
-              id={id}
-              key={i}
-              value={value}
-            >
-              <span className={classes.icon}>
-                {icon && <CIcon name={icon} />}
-              </span>
-              {label}
-            </MenuItem>
-          );
-        })}
-      </Select>
-    </div>
+    <Select
+      id={props.id}
+      labelId={labelId}
+      value={props.value || props.options[0]?.value}
+      name={props.name}
+      onChange={props.onChange}
+      onBlur={props.onBlur}
+      className={classes.root}
+      displayEmpty={true}
+    >
+      {props.options.map(({ id, value, label, icon }, i) => {
+        return (
+          <MenuItem
+            data-test-id={`select-option-${id}`}
+            id={id}
+            key={i}
+            value={value}
+          >
+            <span className={classes.icon}>
+              {icon && <CIcon name={icon} />}
+            </span>
+            {label}
+          </MenuItem>
+        );
+      })}
+    </Select>
   );
 };
 CSelect.displayName = "CSelect";
