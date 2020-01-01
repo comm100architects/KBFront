@@ -53,15 +53,15 @@ export default ({ error, onReload }: LoadErrorProps) => {
               &nbsp;{error.message}
             </span>
           }
-          action={[
+          action={
             <IconButton
               aria-label="reload"
               onClick={() => onReload()}
               color="inherit"
             >
               <ReloadIcon className={classes.icon} />
-            </IconButton>,
-          ]}
+            </IconButton>
+          }
         />
       </Snackbar>
     </Page>

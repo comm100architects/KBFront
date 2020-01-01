@@ -11,7 +11,7 @@ const parseCssModeKeywords = name =>
     .split(",")
     .map(s => s.trim())
     .filter(s => !!s)
-    .map(s => s.substr(1, s.length - 1));
+    .map(s => s.substr(1, s.length - 2));
 
 const cssProperties = parseCssModeKeywords("propertyKeywords_");
 const cssValues = parseCssModeKeywords("valueKeywords_");

@@ -1,13 +1,20 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { FieldInputProps } from "formik";
-import { CCodeEdit } from "../CodeEditor";
 import { FormLabel } from "@material-ui/core";
 import { UIRow } from "./types";
+
+const CodeEditor = React.lazy(() =>
+  import(
+    /* webpackChunkName: "codeEditor" */
+    `../CodeEditor`
+  ),
+);
 
 export const makeCodeEditor = async (
   row: UIRow,
 ): Promise<React.ComponentType<FieldInputProps<any>>> => {
   const title = row.field.title;
+
   return props => {
     return (
       <>
@@ -16,7 +23,9 @@ export const makeCodeEditor = async (
             {title}
           </FormLabel>
         )}
-        <CCodeEdit {...props} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <CodeEditor {...props} />
+        </Suspense>
       </>
     );
   };
