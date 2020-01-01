@@ -16,7 +16,7 @@ import {
   withQueryParam,
   removeQueryParam,
 } from "../../framework/locationHelper";
-import { useHistory } from "react-router";
+import { useHistory, Prompt } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
 import { useTheme } from "@material-ui/core";
 import { CSelect } from "../Select";
@@ -111,6 +111,24 @@ const groupRows = (
   return ret;
 };
 
+const ConfirmLeave = () => {
+  const message =
+    "Changes you made may not be saved. Do you want to leave this page?";
+  React.useEffect(() => {
+    if (window.onbeforeunload) {
+      console.warn("Should not override onbeforeunload");
+    }
+
+    window.onbeforeunload = () => {
+      return message;
+    };
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, []);
+  return <Prompt message={message} />;
+};
+
 const makeRowComponents = async (endPointPrefix: string, rows: UIRow[]) => {
   const rowComponents = await Promise.all(
     rows!.map((row: UIRow, i: number) =>
@@ -150,34 +168,31 @@ export const makeNewFormComponent = async ({
 
     return (
       <>
-        {
-          <Formik
-            initialValues={defaultValues}
-            validate={handleValidation.bind(null, rows!)}
-            onSubmit={handleSubmit}
-            enableReinitialize={true}
-            data-test-id={`form-${entity.name}`}
-          >
-            {props => (
-              <Form>
-                {rowComponents.map((Row, i) => (
-                  <Row key={i} {...props} />
-                ))}
-                {
-                  <div>
-                    <CButton
-                      type="submit"
-                      primary
-                      disabled={!props.dirty || props.isSubmitting}
-                      text="Save"
-                    />
-                    <CButton text="Cancel" onClick={handleCancel} />
-                  </div>
-                }
-              </Form>
-            )}
-          </Formik>
-        }
+        <Formik
+          initialValues={defaultValues}
+          validate={handleValidation.bind(null, rows!)}
+          onSubmit={handleSubmit}
+          enableReinitialize={true}
+          data-test-id={`form-${entity.name}`}
+        >
+          {props => (
+            <Form>
+              {rowComponents.map((Row, i) => (
+                <Row key={i} {...props} />
+              ))}
+              <div>
+                <CButton
+                  type="submit"
+                  primary
+                  disabled={!props.dirty || props.isSubmitting}
+                  text="Save"
+                />
+                <CButton text="Cancel" onClick={handleCancel} />
+              </div>
+              {(props.dirty || props.isSubmitting) && <ConfirmLeave />}
+            </Form>
+          )}
+        </Formik>
       </>
     );
   };
@@ -263,25 +278,24 @@ export const makeEditFormComponent = async ({
                 {rowComponents.map((Row, i) => (
                   <Row key={i} {...props} />
                 ))}
-                {
-                  <div>
+                <div>
+                  <CButton
+                    type="submit"
+                    primary
+                    disabled={!props.dirty || props.isSubmitting}
+                    text="Save Changes"
+                  />
+                  {isDedicatedSingular ? (
                     <CButton
-                      type="submit"
-                      primary
+                      type="reset"
                       disabled={!props.dirty || props.isSubmitting}
-                      text="Save Changes"
+                      text="Discard"
                     />
-                    {isDedicatedSingular ? (
-                      <CButton
-                        type="reset"
-                        disabled={!props.dirty || props.isSubmitting}
-                        text="Discard"
-                      />
-                    ) : (
-                      <CButton text="Cancel" onClick={handleCancel} />
-                    )}
-                  </div>
-                }
+                  ) : (
+                    <CButton text="Cancel" onClick={handleCancel} />
+                  )}
+                </div>
+                {(props.dirty || props.isSubmitting) && <ConfirmLeave />}
               </Form>
             )}
           </Formik>
