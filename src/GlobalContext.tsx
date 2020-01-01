@@ -1,5 +1,5 @@
 import React from "react";
-import { RawProduct } from "./Pages";
+import { RawProduct } from "./DSL/types";
 import { GlobalSettings } from "./DSL/types";
 
 export interface GlobalContextValue {

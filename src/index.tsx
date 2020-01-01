@@ -12,7 +12,7 @@ import {
 import Drawer from "@material-ui/core/drawer";
 import { makeHeader } from "./Header";
 import { makeMenu } from "./Menu";
-import { isMenuExist, RawProduct, getMenuPages } from "./Pages";
+import { isMenuExist, RawProduct, getMenuPages } from "./DSL/types";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import { PageRouter } from "./PageRouter";
