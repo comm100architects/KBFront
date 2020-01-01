@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-interface CCodeEditorProps extends FieldInputProps<string> {}
+export interface CCodeEditorProps extends FieldInputProps<string> {}
 
 const CCodeEditor: React.ComponentType<CCodeEditorProps> = (
   props: CCodeEditorProps,
