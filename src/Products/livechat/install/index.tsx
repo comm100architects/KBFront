@@ -1,6 +1,5 @@
 import * as React from "react";
-import Page from "../../../components/Page";
+import { CPage } from "../../../components/Page";
 
-export default () => <Page title="Install"></Page>;
-
+export default () => <CPage title="Install"></CPage>;
 

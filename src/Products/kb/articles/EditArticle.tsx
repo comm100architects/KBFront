@@ -1,6 +1,6 @@
-import * as React from "react";
-import * as _ from "lodash";
-import Page from "../../../components/Page";
+import React from "react";
+import _ from "lodash";
+import { CPage } from "../../../components/Page";
 import { CButton } from "../../../components/Buttons";
 import { Article } from "./Entity/Article";
 import { ErrorMessage, Formik, Field, Form, FormikHelpers } from "formik";
@@ -165,7 +165,7 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
   };
 
   return (
-    <Page title={props.title}>
+    <CPage title={props.title}>
       <Formik
         initialValues={props.article}
         validate={handleValidation}
@@ -214,6 +214,6 @@ export function ArticleComponent(props: EditArticleProps): JSX.Element {
           </Form>
         )}
       </Formik>
-    </Page>
+    </CPage>
   );
 }

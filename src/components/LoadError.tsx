@@ -1,5 +1,5 @@
 import * as React from "react";
-import Page from "./Page";
+import { CPage } from "./Page";
 import IconButton from "@material-ui/core/IconButton";
 import ErrorIcon from "@material-ui/icons/Error";
 import ReloadIcon from "@material-ui/icons/Replay";
@@ -34,7 +34,7 @@ interface LoadErrorProps {
 export default ({ error, onReload }: LoadErrorProps) => {
   const classes = useStyles();
   return (
-    <Page title="Load Error">
+    <CPage title="Load Error">
       <Snackbar
         open
         className={classes.root}
@@ -64,6 +64,6 @@ export default ({ error, onReload }: LoadErrorProps) => {
           }
         />
       </Snackbar>
-    </Page>
+    </CPage>
   );
 };

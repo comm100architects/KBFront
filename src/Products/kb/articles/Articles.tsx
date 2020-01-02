@@ -1,5 +1,5 @@
 import React from "react";
-import Page from "../../../components/Page";
+import { CPage } from "../../../components/Page";
 import { CIconButton, CButton } from "../../../components/Buttons";
 import { CIcon } from "../../../components/Icons";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
@@ -236,7 +236,7 @@ export default (): JSX.Element => {
 
   const classes = useStyles();
   return (
-    <Page title="Articles">
+    <CPage title="Articles">
       <div className={classes.root}>
         <div className={classes.categoryTree}>
           <MenuItem>All Articles</MenuItem>
@@ -274,7 +274,7 @@ export default (): JSX.Element => {
           Hello Hello Hello Hello Hello Hello Hello
         </CDialog>
       </div>
-    </Page>
+    </CPage>
   );
 };
 

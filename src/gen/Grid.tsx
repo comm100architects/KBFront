@@ -25,6 +25,7 @@ import { QueryItem } from "../framework/repository";
 import { CSelect } from "../components/Select";
 import { useHistory } from "react-router";
 import Query from "query-string";
+import { CPage } from "../components/Page";
 
 export const makeGridComponent = async (page: UIPage) => {
   const grid = page.grid!;
@@ -48,7 +49,7 @@ export const makeGridComponent = async (page: UIPage) => {
       value: (query[fieldName] as string) || data[0]?.id!,
     }));
     return (
-      <>
+      <CPage title={page.title} description={page.description}>
         {topRightParentEntity && (
           <div style={{ position: "absolute", top: "24px", right: "24px" }}>
             <CSelect
@@ -76,7 +77,7 @@ export const makeGridComponent = async (page: UIPage) => {
           </div>
           <Table filters={filters} />
         </div>
-      </>
+      </CPage>
     );
   };
 };

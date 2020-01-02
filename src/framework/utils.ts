@@ -19,19 +19,23 @@ export const splitFirst = (str: string, sep: string) => {
 export const undefinedDefault = (val: undefined | any, defaults: any): any =>
   val === undefined ? defaults : val;
 
+const variableRegexp = /\$((?!\d)\w+)/g;
+export const hasVariable = (s: string) => variableRegexp.test(s);
 export const replaceVariables = (
   temp: string,
-  values: { [id: string]: any },
+  values: { [id: string]: any } | undefined,
 ): string =>
-  temp.replace(
-    // variable name contains \w and not start with number
-    /\$((?!\d)\w+)/g,
-    (name, fieldName) => {
-      const v = values[fieldName];
-      if (v === undefined) {
-        console.warn(`variable ${fieldName} does not exists`);
-        return name;
-      }
-      return v.toString();
-    },
-  );
+  values
+    ? temp.replace(
+        // variable name contains \w and not start with number
+        variableRegexp,
+        (name, fieldName) => {
+          const v = values[fieldName];
+          if (v === undefined) {
+            console.warn(`variable ${fieldName} does not exists`);
+            return name;
+          }
+          return v.toString();
+        },
+      )
+    : temp;

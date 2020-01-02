@@ -1,6 +1,6 @@
 {
   "id": "kb.designs.edit",
-  "title": "Edit CSS File",
+  "title": "Edit $title",
   "entity": "designs",
   "rows": [
     {

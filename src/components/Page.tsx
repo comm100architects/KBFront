@@ -20,12 +20,12 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface CPageProps extends React.Props<{}> {
-  title: string;
+  title?: string;
   description?: string;
   documentTitle?: string;
 }
 
-export default ({
+export const CPage = ({
   title,
   documentTitle,
   description,
@@ -34,7 +34,7 @@ export default ({
   const classes = useStyles({});
   const { product } = React.useContext(GlobalContext)!;
   React.useEffect(() => {
-    document.title = documentTitle ?? `${product.label} » ${title}`;
+    if (title) document.title = documentTitle ?? `${product.label} » ${title}`;
   }, [product.label, title, documentTitle]);
   return (
     <div className={classes.root}>
@@ -55,3 +55,4 @@ export default ({
     </div>
   );
 };
+CPage.displayName = "CPage";

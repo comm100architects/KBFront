@@ -1,5 +1,5 @@
 import * as React from "react";
-import Page from "../../../components/Page";
+import { CPage } from "../../../components/Page";
 
-export default () => <Page title="Chat Button"></Page>;
+export default () => <CPage title="Chat Button"></CPage>;
 

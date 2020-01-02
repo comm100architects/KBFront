@@ -31,15 +31,19 @@ interface CCodeEditorProps extends FieldInputProps<string> {}
 const CCodeEditor: React.ComponentType<CCodeEditorProps> = (
   props: CCodeEditorProps,
 ) => {
-  const handleBlur = (_editor: any, event: Event) => {
-    props.onBlur(event);
+  // const [value, setValue] = React.useState(props.value);
+
+  const handleBlur = (_editor: any) => {
+    props.onBlur({ target: { name: props.name } });
   };
   const handleBeforeChange = (_editor: any, _data: any, val: string) => {
+    console.log("handleBeforeChange");
+    // setValue(val);
     props.onChange({ target: { value: val, name: props.name } });
   };
   const classes = useStyles();
   const lang = React.useMemo(
-    () => hljs.highlightAuto(props.value).language || "mixedhtml",
+    () => hljs.highlightAuto(props.value || "").language || "mixedhtml",
     [],
   );
   return (
