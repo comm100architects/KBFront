@@ -5,6 +5,7 @@ import { makeRadioGroup } from "./RadioGroup";
 import { makeSelect } from "./Select";
 import { makeCheckbox } from "./Checkbox";
 import { UIPage, UIRow } from "./types";
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { Formik, Form, FormikHelpers, FormikProps, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { CButton } from "../components/Buttons";
@@ -21,7 +22,20 @@ import FormLabel from "@material-ui/core/FormLabel";
 import { CSelect } from "../components/Select";
 import Query from "query-string";
 import { CPage } from "../components/Page";
-import { replaceVariables } from "../framework/utils";
+import { hasVariable, replaceVariables } from "../framework/utils";
+
+const useStyles = makeStyles((_: Theme) =>
+  createStyles({
+    formControl: {
+      display: "block",
+    },
+    topRightCorner: {
+      position: "absolute",
+      top: "24px",
+      right: "24px",
+    },
+  }),
+);
 
 export const makeUIRowComponent = async (
   endPointPrefix: string,
@@ -42,7 +56,7 @@ export const makeUIRowComponent = async (
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
 };
-export const makeUIRowFormCtrol = async (
+export const makeUIRow = async (
   endPointPrefix: string,
   row: UIRow,
   i: number,
@@ -55,10 +69,11 @@ export const makeUIRowFormCtrol = async (
     hiddenPred = (self: any) => f.call(self);
   }
   const { field } = row;
-  return ({ initialValues, setFieldValue, values, errors }) => {
+  return ({ initialValue, setFieldValue, values, error }) => {
+    const classes = useStyles();
     if (hiddenPred(values)) {
-      if (initialValues[field.name] !== values[field.name]) {
-        setFieldValue(field.name, initialValues[field.name]);
+      if (initialValue !== values[field.name]) {
+        setFieldValue(field.name, initialValue);
       }
       return <></>;
     } else {
@@ -70,18 +85,12 @@ export const makeUIRowFormCtrol = async (
           setFieldValue(field.name, val === "true");
         }
       }
-      // const theme = useTheme();
 
       return (
         <FormControl
+          className={classes.formControl}
           required={field.isRequired}
-          error={!!errors[field.name]}
-          style={{
-            display: "block",
-            // paddingLeft: row.indent ? `${theme.spacing(4)}px` : "0px",
-            // marginTop: `${theme.spacing(3)}px`,
-            // marginBottom: `${theme.spacing(3)}px`,
-          }}
+          error={error}
         >
           {field.title && <FormLabel component="div">{field.title}</FormLabel>}
           <Field
@@ -130,94 +139,136 @@ const LeaveConfirm = () => {
   return <Prompt message={message} />;
 };
 
-const makeRowComponents = async (endPointPrefix: string, rows: UIRow[]) => {
+const makeRows = async (
+  endPointPrefix: string,
+  rows: UIRow[],
+): Promise<React.ComponentType<any>> => {
   const rowComponents = await Promise.all(
-    rows!.map((row: UIRow, i: number) =>
-      makeUIRowFormCtrol(endPointPrefix, row, i),
-    ),
+    rows!.map((row: UIRow, i: number) => makeUIRow(endPointPrefix, row, i)),
   );
   for (const r of rowComponents) {
     r.displayName = "UIRow";
   }
-  return rowComponents;
+  return ({ initialValues, setFieldValue, values, errors }) => (
+    <>
+      {rowComponents.map((Row, i) => (
+        <Row
+          key={i}
+          initialValue={initialValues[rows![i].field.name]}
+          setFieldValue={setFieldValue}
+          values={values}
+          error={!!errors[rows![i].field.name]}
+        />
+      ))}
+    </>
+  );
+};
+
+const makeFormik = async (
+  rows: UIRow[],
+  endPointPrefix: string,
+): Promise<React.ComponentType<any>> => {
+  const Rows = await makeRows(endPointPrefix, rows);
+  return ({ initialValues, isDiscardOrCancel, onSubmit }) => {
+    const history = useHistory();
+    const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
+
+    const handleValidation = (values: Entity) => {
+      const errors: { [key: string]: string } = {};
+      for (let i = 0; i < rows!.length; i++) {
+        const { field } = rows![i];
+        if (field.isRequired && !values[field.name]) {
+          errors[field.name] = `${field.title} is required`;
+        }
+      }
+      return errors;
+    };
+    const handleSubmit = async (
+      values: Entity,
+      { setSubmitting }: FormikHelpers<Entity>,
+    ) => {
+      await onSubmit(values);
+      setSubmitting(false);
+      if (!isDiscardOrCancel) {
+        goBack();
+      }
+    };
+    const goBack = () => {
+      setDisableLeaveConfirm(true);
+      setTimeout(
+        () => goToPath(history, toPath(".", removeQueryParam("id"))),
+        20,
+      );
+    };
+
+    return (
+      <Formik
+        initialValues={initialValues}
+        validate={handleValidation}
+        validateOnChange={false}
+        validateOnMount={false}
+        onSubmit={handleSubmit}
+        enableReinitialize={true}
+      >
+        {(props: FormikProps<Entity>) => (
+          <Form>
+            <Rows
+              initialValues={props.initialValues}
+              values={props.values}
+              errors={props.errors}
+              setFieldValue={props.setFieldValue}
+            />
+            <div>
+              <CButton
+                type="submit"
+                primary
+                disabled={!props.dirty || props.isSubmitting}
+                text="Save Changes"
+              />
+              {isDiscardOrCancel ? (
+                <CButton
+                  type="reset"
+                  disabled={!props.dirty || props.isSubmitting}
+                  text="Discard"
+                />
+              ) : (
+                <CButton text="Cancel" onClick={goBack} />
+              )}
+              {(props.dirty || props.isSubmitting) && !disableLeaveConfirm && (
+                <LeaveConfirm />
+              )}
+            </div>
+          </Form>
+        )}
+      </Formik>
+    );
+  };
 };
 
 export const makeNewFormComponent = async ({
   title,
   description,
   rows,
-  entity,
   entityRepo,
   defaultValues,
   settings,
 }: UIPage): Promise<React.ComponentType<any>> => {
-  const { endPointPrefix } = settings;
-  const rowComponents = await makeRowComponents(endPointPrefix, rows!);
+  const MyFormik = await makeFormik(rows!, settings.endPointPrefix);
 
   return () => {
-    const history = useHistory();
-    const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
     const handleSubmit = async (values: Entity) => {
       await entityRepo.add(values);
-      setDisableLeaveConfirm(true);
-      setTimeout(() => goToPath(history, toPath(".")), 0);
     };
-
-    const handleCancel = () => {
-      setDisableLeaveConfirm(true);
-      setTimeout(() => goToPath(history, toPath(".")), 0);
-    };
-
-    const form = (props: FormikProps<Entity>) => (
-      <Form>
-        {rowComponents.map((Row, i) => (
-          <Row
-            key={i}
-            initialValues={props.initialValues}
-            setFieldValue={props.setFieldValue}
-            values={props.values}
-            errors={props.errors}
-          />
-        ))}
-        <div>
-          <CButton
-            type="submit"
-            primary
-            disabled={!props.dirty || props.isSubmitting}
-            text="Save"
-          />
-          <CButton text="Cancel" onClick={handleCancel} />
-        </div>
-        {(props.dirty || props.isSubmitting) && !disableLeaveConfirm && (
-          <LeaveConfirm />
-        )}
-      </Form>
-    );
     return (
       <CPage title={title} description={description}>
-        <Formik
+        <MyFormik
           initialValues={defaultValues}
-          validate={handleValidation.bind(null, rows!)}
           onSubmit={handleSubmit}
-          enableReinitialize={true}
-          data-test-id={`form-${entity.name}`}
-          component={form}
-        ></Formik>
+          isDiscardOrCancel={false}
+        />
       </CPage>
     );
   };
-};
-
-const handleValidation = (rows: UIRow[], values: Entity) => {
-  console.log("handleValidation");
-  const errors: { [key: string]: string } = {};
-  for (let i = 0; i < rows!.length; i++) {
-    const { field } = rows![i];
-    if (field.isRequired && !values[field.name]) {
-      errors[field.name] = `${field.title} is required`;
-    }
-  }
-  return errors;
 };
 
 export const makeEditFormComponent = async ({
@@ -225,93 +276,50 @@ export const makeEditFormComponent = async ({
   description,
   settings,
   rows,
-  entity,
   entityRepo,
   isDedicatedSingular,
 }: UIPage): Promise<React.ComponentType<any>> => {
-  const { endPointPrefix } = settings;
-  const rowComponents = await makeRowComponents(endPointPrefix, rows!);
-
   const list = isDedicatedSingular
     ? ((await entityRepo.getList()) as Entity[])
     : [];
+  const options = list.map(({ id, name, title }) => ({
+    value: id,
+    label: name || title,
+  }));
   const firstEntity = list.length > 0 ? list[0] : undefined;
+  const MyFormik = await makeFormik(rows!, settings.endPointPrefix);
 
   return () => {
+    const classes = useStyles();
     const history = useHistory();
-    const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
-
-    const handleSubmit = async (values: Entity) => {
-      await entityRepo.update(values.id!, values);
-      setDisableLeaveConfirm(true);
-      setTimeout(
-        () => goToPath(history, toPath(".", removeQueryParam("id"))),
-        0,
-      );
-    };
 
     const query = Query.parse(history.location.search) as {
       [key: string]: string | number | undefined;
     };
     const entityId = query.id || firstEntity?.id;
-    const [values, setValues] = React.useState(firstEntity);
+    const initialValues = query.id ? undefined : firstEntity;
+    const [values, setValues] = React.useState(initialValues);
     React.useEffect(() => {
-      entityRepo.get(entityId).then(setValues);
+      if (entityId !== initialValues?.id)
+        entityRepo.get(entityId).then(setValues);
     }, [entityId]);
 
-    const handleCancel = () => {
-      setDisableLeaveConfirm(true);
-      setTimeout(
-        () => goToPath(history, toPath(".", removeQueryParam("id"))),
-        0,
-      );
+    const handleSubmit = async (values: Entity) => {
+      setValues(await entityRepo.update(values.id!, values));
     };
-    const form = (props: FormikProps<Entity>) => (
-      <Form>
-        {rowComponents.map((Row, i) => (
-          <Row
-            key={i}
-            initialValues={props.initialValues}
-            setFieldValue={props.setFieldValue}
-            values={props.values}
-            errors={props.errors}
-          />
-        ))}
-        <div>
-          <CButton
-            type="submit"
-            primary
-            disabled={!props.dirty || props.isSubmitting}
-            text="Save Changes"
-          />
-          {isDedicatedSingular ? (
-            <CButton
-              type="reset"
-              disabled={!props.dirty || props.isSubmitting}
-              text="Discard"
-            />
-          ) : (
-            <CButton text="Cancel" onClick={handleCancel} />
-          )}
-        </div>
-        {(props.dirty || props.isSubmitting) && !disableLeaveConfirm && (
-          <LeaveConfirm />
-        )}
-      </Form>
-    );
+
     return (
       <CPage
-        title={values && replaceVariables(title, values)}
+        title={
+          hasVariable(title) ? values && replaceVariables(title, values) : title
+        }
         description={description}
       >
-        {isDedicatedSingular && list.length > 1 && (
-          <div style={{ position: "absolute", top: "24px", right: "24px" }}>
+        {isDedicatedSingular && options.length > 1 && (
+          <div className={classes.topRightCorner}>
             <CSelect
               value={entityId}
-              options={list.map(({ id, name, title }) => ({
-                value: id,
-                label: name || title,
-              }))}
+              options={options}
               onChange={({
                 target,
               }: React.ChangeEvent<{ value: string | number }>) => {
@@ -321,16 +329,11 @@ export const makeEditFormComponent = async ({
           </div>
         )}
         {values && (
-          <Formik
+          <MyFormik
             initialValues={values}
-            validate={handleValidation.bind(null, rows!)}
-            validateOnChange={false}
-            validateOnMount={false}
             onSubmit={handleSubmit}
-            enableReinitialize={true}
-            data-test-id={`form-${entity.name}`}
-            component={form}
-          ></Formik>
+            isDiscardOrCancel={isDedicatedSingular}
+          />
         )}
       </CPage>
     );
