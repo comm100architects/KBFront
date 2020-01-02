@@ -112,7 +112,7 @@ const groupRows = (
   return ret;
 };
 
-const ConfirmLeave = () => {
+const LeaveConfirm = () => {
   const message =
     "Changes you made may not be saved. Do you want to leave this page?";
   React.useEffect(() => {
@@ -156,19 +156,19 @@ export const makeNewFormComponent = async ({
 
   return () => {
     const history = useHistory();
-    const handleSubmit = async (
-      values: Entity,
-      { setSubmitting }: FormikHelpers<Entity>,
-    ) => {
+    const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
+    const handleSubmit = async (values: Entity) => {
       await entityRepo.add(values);
-      goToPath(history, toPath("."));
-      setSubmitting(false);
+      setDisableLeaveConfirm(true);
+      setTimeout(() => goToPath(history, toPath(".")), 0);
     };
 
     const handleCancel = () => {
-      goToPath(history, toPath("."));
+      setDisableLeaveConfirm(true);
+      setTimeout(() => goToPath(history, toPath(".")), 0);
     };
-    const CForm = (props: FormikProps<Entity>) => (
+
+    const form = (props: FormikProps<Entity>) => (
       <Form>
         {rowComponents.map((Row, i) => (
           <Row
@@ -188,7 +188,9 @@ export const makeNewFormComponent = async ({
           />
           <CButton text="Cancel" onClick={handleCancel} />
         </div>
-        {(props.dirty || props.isSubmitting) && <ConfirmLeave />}
+        {(props.dirty || props.isSubmitting) && !disableLeaveConfirm && (
+          <LeaveConfirm />
+        )}
       </Form>
     );
     return (
@@ -199,7 +201,7 @@ export const makeNewFormComponent = async ({
           onSubmit={handleSubmit}
           enableReinitialize={true}
           data-test-id={`form-${entity.name}`}
-          component={CForm}
+          component={form}
         ></Formik>
       </CPage>
     );
@@ -237,14 +239,15 @@ export const makeEditFormComponent = async ({
 
   return () => {
     const history = useHistory();
-    const handleSubmit = async (
-      values: Entity,
-      { setSubmitting }: FormikHelpers<Entity>,
-    ) => {
-      {
-        setValues(await entityRepo.update(values.id!, values));
-        setSubmitting(false);
-      }
+    const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
+
+    const handleSubmit = async (values: Entity) => {
+      await entityRepo.update(values.id!, values);
+      setDisableLeaveConfirm(true);
+      setTimeout(
+        () => goToPath(history, toPath(".", removeQueryParam("id"))),
+        0,
+      );
     };
 
     const query = Query.parse(history.location.search) as {
@@ -257,48 +260,45 @@ export const makeEditFormComponent = async ({
     }, [entityId]);
 
     const handleCancel = () => {
-      goToPath(history, toPath(".", removeQueryParam("id")));
-    };
-    console.log("render CPage");
-    const CForm = (props: FormikProps<Entity>) => {
-      console.log("render", props);
-      return (
-        <Form>
-          {rowComponents.map((Row, i) => (
-            <Row
-              key={i}
-              initialValues={props.initialValues}
-              setFieldValue={props.setFieldValue}
-              values={props.values}
-              errors={props.errors}
-            />
-          ))}
-          {React.useMemo(
-            () => (
-              <div>
-                <CButton
-                  type="submit"
-                  primary
-                  disabled={!props.dirty || props.isSubmitting}
-                  text="Save Changes"
-                />
-                {isDedicatedSingular ? (
-                  <CButton
-                    type="reset"
-                    disabled={!props.dirty || props.isSubmitting}
-                    text="Discard"
-                  />
-                ) : (
-                  <CButton text="Cancel" onClick={handleCancel} />
-                )}
-                {(props.dirty || props.isSubmitting) && <ConfirmLeave />}
-              </div>
-            ),
-            [props.dirty, props.isSubmitting],
-          )}
-        </Form>
+      setDisableLeaveConfirm(true);
+      setTimeout(
+        () => goToPath(history, toPath(".", removeQueryParam("id"))),
+        0,
       );
     };
+    const form = (props: FormikProps<Entity>) => (
+      <Form>
+        {rowComponents.map((Row, i) => (
+          <Row
+            key={i}
+            initialValues={props.initialValues}
+            setFieldValue={props.setFieldValue}
+            values={props.values}
+            errors={props.errors}
+          />
+        ))}
+        <div>
+          <CButton
+            type="submit"
+            primary
+            disabled={!props.dirty || props.isSubmitting}
+            text="Save Changes"
+          />
+          {isDedicatedSingular ? (
+            <CButton
+              type="reset"
+              disabled={!props.dirty || props.isSubmitting}
+              text="Discard"
+            />
+          ) : (
+            <CButton text="Cancel" onClick={handleCancel} />
+          )}
+        </div>
+        {(props.dirty || props.isSubmitting) && !disableLeaveConfirm && (
+          <LeaveConfirm />
+        )}
+      </Form>
+    );
     return (
       <CPage
         title={values && replaceVariables(title, values)}
@@ -329,7 +329,7 @@ export const makeEditFormComponent = async ({
             onSubmit={handleSubmit}
             enableReinitialize={true}
             data-test-id={`form-${entity.name}`}
-            component={CForm}
+            component={form}
           ></Formik>
         )}
       </CPage>
