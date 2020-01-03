@@ -8,7 +8,11 @@ function log(s) {
 const execCmd = cmd => {
   log(cmd);
   const parts = cmd.split(" ");
-  return spawn(parts[0], parts.slice(1), {
+  let preCmd = parts[0];
+  if (process.platform === "win32") {
+    preCmd = preCmd === "npm" ? "npm.cmd" : preCmd;
+  }
+  return spawn(preCmd, parts.slice(1), {
     stdio: "inherit",
   });
 };
@@ -70,4 +74,3 @@ gulp.task("default", () => {
   );
   watch(["dev/server.js"], "npm run server");
 });
-
