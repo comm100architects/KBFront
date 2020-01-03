@@ -308,13 +308,11 @@ export const makeEditFormComponent = async ({
       setValues(await entityRepo.update(values.id!, values));
     };
 
+    const pageTitle = () =>
+      hasVariable(title) ? values && replaceVariables(title, values) : title;
+
     return (
-      <CPage
-        title={
-          hasVariable(title) ? values && replaceVariables(title, values) : title
-        }
-        description={description}
-      >
+      <CPage title={pageTitle()} description={description}>
         {isDedicatedSingular && options.length > 1 && (
           <div className={classes.topRightCorner}>
             <CSelect
