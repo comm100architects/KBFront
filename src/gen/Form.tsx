@@ -6,6 +6,7 @@ import { makeSelect } from "./Select";
 import { makeCheckbox } from "./Checkbox";
 import { UIPage, UIRow } from "./types";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import InputLabel from "@material-ui/core/InputLabel";
 import { Formik, Form, FormikHelpers, FormikProps, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { CButton } from "../components/Buttons";
@@ -24,15 +25,27 @@ import Query from "query-string";
 import { CPage } from "../components/Page";
 import { hasVariable, replaceVariables } from "../framework/utils";
 
-const useStyles = makeStyles((_: Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
       display: "block",
+      marginBottom: theme.spacing(3),
+    },
+    formControlIndent: {
+      display: "block",
+      marginBottom: theme.spacing(3),
+      marginLeft: theme.spacing(3),
     },
     topRightCorner: {
       position: "absolute",
-      top: "24px",
-      right: "24px",
+      top: theme.spacing(3),
+      right: theme.spacing(3),
+    },
+    formFooter: {
+      marginTop: theme.spacing(2),
+      "& > button": {
+        marginRight: theme.spacing(2),
+      },
     },
   }),
 );
@@ -66,7 +79,7 @@ export const makeUIRow = async (
     const f = new Function(`return this.${expression}`);
     hiddenPred = (self: any) => f.call(self);
   }
-  const { field } = row;
+  const { field, indent } = row;
   return ({ initialValue, setFieldValue, values, error }) => {
     const classes = useStyles();
     if (hiddenPred(values)) {
@@ -86,7 +99,9 @@ export const makeUIRow = async (
 
       return (
         <FormControl
-          className={classes.formControl}
+          className={
+            indent > 0 ? classes.formControlIndent : classes.formControl
+          }
           required={field.isRequired}
           error={error}
         >
@@ -162,6 +177,7 @@ const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
 const makeFormik = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   const Rows = await makeRows(rows);
   return ({ initialValues, isDiscardOrCancel, onSubmit }) => {
+    const classes = useStyles();
     const history = useHistory();
     const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
 
@@ -210,7 +226,7 @@ const makeFormik = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
               errors={props.errors}
               setFieldValue={props.setFieldValue}
             />
-            <div>
+            <div className={classes.formFooter}>
               <CButton
                 type="submit"
                 primary
@@ -281,6 +297,7 @@ export const makeEditFormComponent = async ({
   rows,
   entityRepo,
   isDedicatedSingular,
+  entity,
 }: UIPage): Promise<React.ComponentType<any>> => {
   const list = isDedicatedSingular
     ? ((await entityRepo.getList()) as Entity[])
@@ -318,15 +335,18 @@ export const makeEditFormComponent = async ({
       <CPage title={pageTitle()} description={description}>
         {isDedicatedSingular && options.length > 1 && (
           <div className={classes.topRightCorner}>
-            <CSelect
-              value={entityId}
-              options={options}
-              onChange={({
-                target,
-              }: React.ChangeEvent<{ value: string | number }>) => {
-                goToSearch(history, withQueryParam("id", target.value));
-              }}
-            />
+            <FormControl>
+              {entity.title && <InputLabel>{entity.title}</InputLabel>}
+              <CSelect
+                value={entityId}
+                options={options}
+                onChange={({
+                  target,
+                }: React.ChangeEvent<{ value: string | number }>) => {
+                  goToSearch(history, withQueryParam("id", target.value));
+                }}
+              />
+            </FormControl>
           </div>
         )}
         {values && (

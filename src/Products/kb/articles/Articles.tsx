@@ -53,7 +53,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     categoryTree: {
-      width: 200,
+      width: 204,
       flexShrink: 0,
       display: "flex",
       flexDirection: "column",

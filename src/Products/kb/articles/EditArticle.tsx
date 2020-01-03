@@ -67,7 +67,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     formRight: {
-      minWidth: 200,
+      minWidth: 204,
       display: "flex",
       flexDirection: "column",
       "& > *": {

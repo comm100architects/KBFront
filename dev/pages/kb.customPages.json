@@ -6,7 +6,8 @@
     {
       "name": "knowledgeBases",
       "fieldName": "kbId",
-      "position": "topRightCorner"
+      "position": "topRightCorner",
+      "title": "Knowledge Base"
     }
   ],
   "grid": {

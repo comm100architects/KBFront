@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme: Theme) =>
       position: "relative",
     },
     title: {
-      marginBottom: theme.spacing(2),
+      marginBottom: theme.spacing(5),
     },
   }),
 );

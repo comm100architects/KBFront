@@ -1,5 +1,6 @@
 {
   "name": "knowledgeBases",
+  "title": "Knowledge Base",
   "fields": [
     { "name": "id", "type": "guid" },
     {

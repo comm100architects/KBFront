@@ -32,6 +32,7 @@ export interface UIEntityField {
 
 export interface UIEntity {
   name: string;
+  title?: string;
   fields: UIEntityField[];
 }
 
@@ -164,6 +165,7 @@ export const normalizeRawUIPage = (
 interface RawParentEntity {
   name: string;
   fieldName: string;
+  title?: string;
   position: "topRightCorner" | "left";
 }
 
@@ -173,6 +175,7 @@ interface ParentEntity {
   position: "topRightCorner" | "left";
   repo: IRepository<Entity>;
   data: Entity[];
+  title?: string;
 }
 
 export interface UIPage {

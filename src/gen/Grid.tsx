@@ -7,6 +7,8 @@ import {
   UIGridColumn,
 } from "./types";
 import { CButton, CIconButton, CLink } from "../components/Buttons";
+import InputLabel from "@material-ui/core/InputLabel";
+import FormControl from "@material-ui/core/FormControl";
 import {
   emptyTableSource,
   ITableSource,
@@ -34,8 +36,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     topRightCorner: {
       position: "absolute",
-      top: "24px",
-      right: "24px",
+      top: theme.spacing(3),
+      right: theme.spacing(3),
     },
     tableToolbar: {
       display: "flex",
@@ -47,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
       display: "flex",
     },
     tableFilterRoot: {
-      marginRight: theme.spacing(1),
+      marginLeft: theme.spacing(2),
     },
   }),
 );
@@ -136,21 +138,31 @@ export const makeGridComponent = async (page: UIPage) => {
       <CPage title={page.title} description={page.description}>
         {topRightParentEntity && (
           <div className={classes.topRightCorner}>
-            <CSelect
-              value={parentEntityId}
-              options={topRightParentEntity.data.map(({ id, name, title }) => ({
-                value: id,
-                label: name || title,
-              }))}
-              onChange={({
-                target,
-              }: React.ChangeEvent<{ value: string | number }>) => {
-                goToSearch(
-                  history,
-                  withQueryParam(topRightParentEntity.fieldName, target.value),
-                );
-              }}
-            />
+            <FormControl>
+              {topRightParentEntity.title && (
+                <InputLabel>{topRightParentEntity.title}</InputLabel>
+              )}
+              <CSelect
+                value={parentEntityId}
+                options={topRightParentEntity.data.map(
+                  ({ id, name, title }) => ({
+                    value: id,
+                    label: name || title,
+                  }),
+                )}
+                onChange={({
+                  target,
+                }: React.ChangeEvent<{ value: string | number }>) => {
+                  goToSearch(
+                    history,
+                    withQueryParam(
+                      topRightParentEntity.fieldName,
+                      target.value,
+                    ),
+                  );
+                }}
+              />
+            </FormControl>
           </div>
         )}
         <div>
