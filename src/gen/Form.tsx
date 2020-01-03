@@ -16,7 +16,7 @@ import {
   withQueryParam,
   removeQueryParam,
 } from "../framework/locationHelper";
-import { useHistory, Prompt } from "react-router";
+import { useHistory, Prompt, useLocation } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
 import FormLabel from "@material-ui/core/FormLabel";
 import { CSelect } from "../components/Select";
@@ -38,30 +38,28 @@ const useStyles = makeStyles((_: Theme) =>
 );
 
 export const makeUIRowComponent = async (
-  endPointPrefix: string,
   row: UIRow,
 ): Promise<React.ComponentType<any>> => {
   switch (row.componentType) {
     case "select":
-      return makeSelect(endPointPrefix, row);
+      return makeSelect(row.field);
     case "checkbox":
-      return makeCheckbox(row);
+      return makeCheckbox(row.field);
     case "radioGroup":
-      return makeRadioGroup(endPointPrefix, row);
+      return makeRadioGroup(row.field);
     case "input":
-      return makeInput(row);
+      return makeInput();
     case "codeEditor":
-      return makeCodeEditor(row);
+      return makeCodeEditor();
     default:
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
 };
 export const makeUIRow = async (
-  endPointPrefix: string,
   row: UIRow,
   i: number,
 ): Promise<React.ComponentType<any>> => {
-  const component = await makeUIRowComponent(endPointPrefix, row);
+  const component = await makeUIRowComponent(row);
   let hiddenPred = (_: any) => false;
   if (row.conditionsToHide) {
     const expression = row.conditionsToHide[0];
@@ -139,12 +137,9 @@ const LeaveConfirm = () => {
   return <Prompt message={message} />;
 };
 
-const makeRows = async (
-  endPointPrefix: string,
-  rows: UIRow[],
-): Promise<React.ComponentType<any>> => {
+const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   const rowComponents = await Promise.all(
-    rows!.map((row: UIRow, i: number) => makeUIRow(endPointPrefix, row, i)),
+    rows!.map((row: UIRow, i: number) => makeUIRow(row, i)),
   );
   for (const r of rowComponents) {
     r.displayName = "UIRow";
@@ -164,11 +159,8 @@ const makeRows = async (
   );
 };
 
-const makeFormik = async (
-  rows: UIRow[],
-  endPointPrefix: string,
-): Promise<React.ComponentType<any>> => {
-  const Rows = await makeRows(endPointPrefix, rows);
+const makeFormik = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
+  const Rows = await makeRows(rows);
   return ({ initialValues, isDiscardOrCancel, onSubmit }) => {
     const history = useHistory();
     const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
@@ -250,15 +242,27 @@ export const makeNewFormComponent = async ({
   description,
   rows,
   entityRepo,
+  entity,
   defaultValues,
-  settings,
 }: UIPage): Promise<React.ComponentType<any>> => {
-  const MyFormik = await makeFormik(rows!, settings.endPointPrefix);
+  const MyFormik = await makeFormik(rows!);
 
   return () => {
     const handleSubmit = async (values: Entity) => {
-      await entityRepo.add(values);
+      const newValues = Object.keys(query).reduce((res, k) => {
+        if (
+          entity.fields.some(
+            ({ name, type }) => name === k && type === "reference",
+          )
+        ) {
+          return { ...res, [k]: query[k] } as Entity;
+        }
+        return res;
+      }, values);
+      await entityRepo.add(newValues);
     };
+    const location = useLocation();
+    const query = Query.parse(location.search) as { [key: string]: string };
     return (
       <CPage title={title} description={description}>
         <MyFormik
@@ -274,7 +278,6 @@ export const makeNewFormComponent = async ({
 export const makeEditFormComponent = async ({
   title,
   description,
-  settings,
   rows,
   entityRepo,
   isDedicatedSingular,
@@ -287,7 +290,7 @@ export const makeEditFormComponent = async ({
     label: name || title,
   }));
   const firstEntity = list.length > 0 ? list[0] : undefined;
-  const MyFormik = await makeFormik(rows!, settings.endPointPrefix);
+  const MyFormik = await makeFormik(rows!);
 
   return () => {
     const classes = useStyles();

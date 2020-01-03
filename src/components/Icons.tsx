@@ -24,12 +24,13 @@ import GroupWorkIcon from "@material-ui/icons/GroupWork";
 import CreateIcon from "@material-ui/icons/Create";
 import CodeIcon from "@material-ui/icons/Code";
 import { withProps } from "../framework/hoc";
+import { SvgIconProps } from "@material-ui/core/SvgIcon";
 
-const allIcons: { [id: string]: (props: any) => JSX.Element } = {
-  starPrimary: () => <StarIcon color="primary" />,
-  starAction: () => <StarIcon color="action" />,
-  dotPrimary: () => <DotIcon color="primary" />,
-  dotSecondary: () => <DotIcon color="secondary" />,
+const allIcons: { [id: string]: (props: SvgIconProps) => JSX.Element } = {
+  starPrimary: withProps(StarIcon, { color: "primary" }),
+  starAction: withProps(StarIcon, { color: "action" }),
+  dotPrimary: withProps(DotIcon, { color: "primary" }),
+  dotSecondary: withProps(DotIcon, { color: "secondary" }),
   send: SendIcon,
   inbox: InboxIcon,
   edit: EditIcon,
@@ -85,7 +86,7 @@ export type CIconName =
 const getIcon = memoize(
   (name: string): JSX.Element => {
     const Icon = allIcons[name];
-    return <Icon />;
+    return <Icon fontSize="small" />;
   },
 );
 

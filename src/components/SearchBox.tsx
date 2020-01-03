@@ -6,26 +6,29 @@ import Paper from "@material-ui/core/Paper";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 
-interface SearchBoxProps {
+export interface SearchBoxProps {
   label?: string;
   value: string;
-  onSearch(keyword: string): void;
+  onChange(event: { target: { value: string } }): void;
 }
 
-export default ({
+export const CSearchBox = ({
   label = "Keyword",
   value = "",
-  onSearch,
+  onChange,
 }: SearchBoxProps) => {
   const [keyword, setKeyword] = React.useState(value);
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
-    onSearch(keyword);
+    onChange({ target: { value: keyword } });
   };
   const handleInput = (event: React.ChangeEvent<{ value: string }>) =>
     setKeyword(event.target.value);
 
-  const handleReset = () => setKeyword("");
+  const handleReset = () => {
+    setKeyword("");
+    onChange({ target: { value: "" } });
+  };
 
   React.useEffect(() => setKeyword(value), [value]);
 

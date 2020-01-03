@@ -27,7 +27,10 @@
         "cellComponentType": "text"
       }
     ],
-    "filters": [],
+    "filters": [
+      { "componentType": "select", "fieldName": "status" },
+      { "componentType": "keywordSearch" }
+    ],
     "isAllowNew": true,
     "newEntityButtonLabel": "New Custom Page",
     "isAllowEdit": true,

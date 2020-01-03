@@ -23,9 +23,85 @@ import {
 } from "../framework/locationHelper";
 import { QueryItem } from "../framework/repository";
 import { CSelect } from "../components/Select";
+import { makeSelect } from "./Select";
+import { makeKeywordSearch } from "./KeywordSearch";
 import { useHistory } from "react-router";
 import Query from "query-string";
 import { CPage } from "../components/Page";
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    topRightCorner: {
+      position: "absolute",
+      top: "24px",
+      right: "24px",
+    },
+    tableToolbar: {
+      display: "flex",
+    },
+    tableToolbarLeft: {
+      flexGrow: 1,
+    },
+    tableToolbarRight: {
+      display: "flex",
+    },
+    tableFilterRoot: {
+      marginRight: theme.spacing(1),
+    },
+  }),
+);
+
+const makeFilters = async (page: UIPage): Promise<React.ComponentType<any>> => {
+  const filters = await Promise.all(
+    page.grid!.filters.map(filter => {
+      switch (filter.componentType) {
+        case "select":
+          const field = page.entity.fields.find(
+            ({ name }) => name === filter.fieldName,
+          )!;
+          return makeSelect(field, field.title);
+        case "keywordSearch":
+          return makeKeywordSearch();
+        default:
+          throw new Error(
+            `Unknown filter componentType: ${filter.componentType}`,
+          );
+      }
+    }),
+  );
+  return ({
+    onFilter,
+    parameters,
+  }: {
+    onFilter: (p: { [key: string]: string }) => void;
+    parameters: { [key: string]: string };
+  }) => {
+    const classes = useStyles();
+    const handleChange = (
+      key: string,
+      { target }: { target: { value: string } },
+    ) => {
+      onFilter({ ...parameters, [key]: target.value.toString() });
+    };
+
+    return (
+      <>
+        {filters.map((Filter, i) => {
+          const name = page.grid!.filters[i].fieldName || "keyword";
+          return (
+            <div className={classes.tableFilterRoot} key={name}>
+              <Filter
+                value={parameters[name]}
+                onChange={(e: any) => handleChange(name, e)}
+              />
+            </div>
+          );
+        })}
+      </>
+    );
+  };
+};
 
 export const makeGridComponent = async (page: UIPage) => {
   const grid = page.grid!;
@@ -38,20 +114,28 @@ export const makeGridComponent = async (page: UIPage) => {
     ({ position }) => position === "topRightCorner",
   );
   const Table = await makeTableComponent(page);
+  const Filters = await makeFilters(page);
   return () => {
+    const classes = useStyles();
     const history = useHistory();
     const query = Query.parse(history.location.search);
     const parentEntityId = query[
       topRightParentEntity?.fieldName || ""
     ] as string;
-    const filters: QueryItem[] = parentEntities.map(({ fieldName, data }) => ({
-      key: fieldName,
-      value: (query[fieldName] as string) || data[0]?.id!,
-    }));
+
+    const queryItems: QueryItem[] = parentEntities.map(
+      ({ fieldName, data }) => ({
+        key: fieldName,
+        value: (query[fieldName] as string) || data[0]?.id!,
+      }),
+    );
+
+    const [parameters, setParameters] = React.useState({});
+
     return (
       <CPage title={page.title} description={page.description}>
         {topRightParentEntity && (
-          <div style={{ position: "absolute", top: "24px", right: "24px" }}>
+          <div className={classes.topRightCorner}>
             <CSelect
               value={parentEntityId}
               options={topRightParentEntity.data.map(({ id, name, title }) => ({
@@ -70,12 +154,21 @@ export const makeGridComponent = async (page: UIPage) => {
           </div>
         )}
         <div>
-          <div>
-            {isAllowNew && (
-              <CButton primary text={newEntityButtonLabel} to="new" />
-            )}
+          <div className={classes.tableToolbar}>
+            <div className={classes.tableToolbarLeft}>
+              {isAllowNew && (
+                <CButton
+                  primary
+                  text={newEntityButtonLabel}
+                  to={toPath("new")}
+                />
+              )}
+            </div>
+            <div className={classes.tableToolbarRight}>
+              <Filters parameters={parameters} onFilter={setParameters} />
+            </div>
           </div>
-          <Table filters={filters} />
+          <Table queryItems={queryItems} filters={parameters} />
         </div>
       </CPage>
     );
@@ -180,18 +273,37 @@ const makeTableComponent = async (page: UIPage) => {
     asc: true,
   };
 
-  return ({ filters }: { filters: QueryItem[] }) => {
+  return ({
+    queryItems,
+    filters,
+  }: {
+    queryItems: QueryItem[];
+    filters: { [key: string]: string };
+  }) => {
     const [source, setSource] = React.useState(
       () => emptyTableSource as ITableSource<Entity>,
     );
 
+    const fetchSource = () => {
+      const items = queryItems.concat(
+        Object.keys(filters)
+          .map(key => ({
+            key,
+            value: (filters as { [key: string]: string })[key],
+          }))
+          .filter(({ value }) => value !== ""),
+      );
+      setSource(new LocalTableSource(entityRepo.getList(items)));
+    };
+
     React.useEffect(() => {
-      setSource(new LocalTableSource(entityRepo.getList(filters)));
-    }, [...filters.map(({ value }) => value)]);
+      console.log(filters);
+      fetchSource();
+    }, [queryItems, filters]);
     const handleDelete = async (row: Entity) => {
       if (window.confirm(grid.confirmDeleteMessage)) {
         await entityRepo.delete(row.id!);
-        setSource(new LocalTableSource(entityRepo.getList(filters)));
+        fetchSource();
       }
     };
     return (

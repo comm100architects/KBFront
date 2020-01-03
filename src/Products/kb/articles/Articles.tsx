@@ -5,7 +5,7 @@ import { CIcon } from "../../../components/Icons";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import MenuItem from "@material-ui/core/MenuItem";
 import moment from "moment";
-import SearchBox from "../../../components/SearchBox";
+import { CSearchBox } from "../../../components/SearchBox";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import Typography from "@material-ui/core/Typography";
@@ -221,8 +221,8 @@ export default (): JSX.Element => {
     });
   }, [filter.kbId]);
 
-  const handleSearchKeyword = (q: string) => {
-    const keyword = q || undefined;
+  const handleSearchKeyword = ({ target }: { target: { value: string } }) => {
+    const keyword = target.value || undefined;
     goToSearch(history, withQueryParam("keyword", keyword));
     setFilter({ ...filter, keyword });
   };
@@ -256,8 +256,8 @@ export default (): JSX.Element => {
                 ) => setFilter({ ...filter, status: event.target.value })}
               />
             </FormControl>
-            <SearchBox
-              onSearch={handleSearchKeyword}
+            <CSearchBox
+              onChange={handleSearchKeyword}
               value={filter.keyword || ""}
             />
           </div>

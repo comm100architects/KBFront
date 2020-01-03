@@ -1,18 +1,12 @@
-import { UIRow, Entity } from "./types";
+import { UIEntityField } from "./types";
 import { CRadioGroupProps, CRadioGroup } from "../components/RadioGroup";
 import { withProps } from "../framework/hoc";
-import { RESTfulRepository } from "../framework/repository";
 
 export const makeRadioGroup = async (
-  endPointPrefix: string,
-  { field }: UIRow,
+  field: UIEntityField,
 ): Promise<React.ComponentType<CRadioGroupProps>> => {
   if (field.type === "reference") {
-    const repo = new RESTfulRepository<Entity>(
-      endPointPrefix,
-      field.referenceEntityName!,
-    );
-    const options = await repo.getList();
+    const options = await field.referenceRepo!.getList();
     return withProps(CRadioGroup, {
       options: options.map(option => ({
         value: option.id,
