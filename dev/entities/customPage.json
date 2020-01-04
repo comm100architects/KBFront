@@ -11,7 +11,8 @@
       "type": "reference",
       "referenceEntityName": "knowledgeBases",
       "referenceEntityFieldNameForLabel": "name",
-      "isRequired": true
+      "isRequired": true,
+      "title": "Knowledge Base"
     },
     {
       "name": "title",
@@ -40,7 +41,8 @@
     {
       "name": "body",
       "type": "string",
-      "default": ""
+      "default": "",
+      "title": "Body"
     },
     {
       "name": "modified",

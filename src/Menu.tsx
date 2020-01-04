@@ -13,7 +13,6 @@ import { CIcon } from "./components/Icons";
 
 const useStyles = makeStyles(theme => ({
   root: {
-    width: 240,
     flexShrink: 0,
     backgroundColor: theme.palette.background.paper,
   },

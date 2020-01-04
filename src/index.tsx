@@ -9,7 +9,6 @@ import {
   createMuiTheme,
   Theme,
 } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/drawer";
 import { makeHeader } from "./Header";
 import { makeMenu } from "./Menu";
 import { isMenuExist, RawProduct, getMenuPages } from "./gen/types";
@@ -20,6 +19,7 @@ import { fetchJson } from "./framework/network";
 import { GlobalSettings } from "./gen/types";
 import { GlobalContext } from "./GlobalContext";
 import { Page404 } from "./components/Page404";
+import { CConfirmDialog } from "./components/Dialog";
 
 const theme = createMuiTheme();
 
@@ -32,6 +32,13 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       display: "flex",
+    },
+    menuBackground: {
+      borderRight: `solid 1px ${theme.palette.divider}`,
+      backgroundColor: "white",
+      height: "100%",
+      position: "fixed",
+      width: 241,
     },
     menu: {
       flexShrink: 0,
@@ -60,10 +67,11 @@ const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
       <GlobalContext.Provider value={{ product, settings }}>
         <div className={classes.root}>
           <Header selected={product.name} />
-          <Drawer variant="permanent" className={classes.menu}>
+          <div className={classes.menuBackground}></div>
+          <div className={classes.menu}>
             <div className={classes.toolbar}></div>
             <Menu selected={currentPage} />
-          </Drawer>
+          </div>
           <div className={classes.content}>
             <div className={classes.toolbar}></div>
             <PageRouter
@@ -143,12 +151,19 @@ const makeCurrentPage = (settings: GlobalSettings) => {
   };
 };
 
+const handleUserConfirm = async (
+  message: string,
+  callback: (b: boolean) => void,
+) => {
+  callback(await CConfirmDialog(message));
+};
+
 getGlobalSettings()
   .then((settings: GlobalSettings) => {
     ReactDOM.render(
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Router>
+        <Router getUserConfirmation={handleUserConfirm}>
           <Switch>
             <Route exact path="/:currentProduct">
               {makeRedirectToProductDefaultPage(settings)}

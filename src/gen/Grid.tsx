@@ -14,6 +14,7 @@ import {
   ITableSource,
   LocalTableSource,
 } from "../components/Table/CTableSource";
+import { CConfirmDialog } from "../components/Dialog";
 import { CTable, CTableColumn } from "../components/Table";
 import { CIcon, CIconName } from "../components/Icons";
 import moment from "moment";
@@ -272,7 +273,7 @@ const makeTableComponent = async (page: UIPage) => {
         sortable: undefinedDefault(column.isAllowSort, true),
         content: (row: Entity) =>
           rowContent(page.settings, field, column, row, fieldData),
-        width: column.width,
+        width: column.cellComponentType === "icon" ? "16px" : column.width,
       };
     }),
   );
@@ -338,10 +339,11 @@ const makeTableComponent = async (page: UIPage) => {
     }, [queryItems, filters]);
     const handleDelete = async (row: Entity) => {
       if (
-        window.confirm(
-          grid.confirmDeleteMessage ||
-            "Are you sure you want to delete this record?",
-        )
+        await CConfirmDialog("Are you sure you want to delete this record?")
+        // window.confirm(
+        //   grid.confirmDeleteMessage ||
+        //     "Are you sure you want to delete this record?",
+        // )
       ) {
         await entityRepo.delete(row.id!);
         fetchSource();

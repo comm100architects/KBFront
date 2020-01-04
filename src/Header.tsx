@@ -51,7 +51,7 @@ export const makeHeader = (menu: RawProduct[]) => {
     const classes = useStyles();
     const selectedIndex = menu.findIndex(({ name }) => name === selected);
     return (
-      <AppBar elevation={0} position="fixed" className={classes.header}>
+      <AppBar elevation={0} position="absolute" className={classes.header}>
         <Toolbar>
           <div className={classes.grow}>
             <Link href="https://comm100.com" target="_blank">
