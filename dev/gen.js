@@ -131,7 +131,7 @@ const data = range(10)
         int(1, 10)(),
         {
           id: customPageId,
-          title: chance.sentence,
+          title: words(3),
           modified: chance.date,
           status: int(0, 1),
           kbId: () => kb.id,

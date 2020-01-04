@@ -6,7 +6,8 @@
     {
       "name": "knowledgeBases",
       "fieldName": "kbId",
-      "position": "topRightCorner"
+      "position": "topRightCorner",
+      "title": "Knowledge Base"
     }
   ],
   "grid": {
@@ -27,7 +28,10 @@
         "cellComponentType": "text"
       }
     ],
-    "filters": [],
+    "filters": [
+      { "componentType": "select", "fieldName": "status" },
+      { "componentType": "keywordSearch" }
+    ],
     "isAllowNew": true,
     "newEntityButtonLabel": "New Custom Page",
     "isAllowEdit": true,

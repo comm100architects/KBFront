@@ -19,8 +19,10 @@ export const splitFirst = (str: string, sep: string) => {
 export const undefinedDefault = (val: undefined | any, defaults: any): any =>
   val === undefined ? defaults : val;
 
-const variableRegexp = /\$((?!\d)\w+)/g;
-export const hasVariable = (s: string) => variableRegexp.test(s);
+const variableRegexp = () => /\$((?!\d)\w+)/g;
+export const hasVariable = (s: string): boolean => {
+  return variableRegexp().test(s);
+};
 export const replaceVariables = (
   temp: string,
   values: { [id: string]: any } | undefined,
@@ -28,7 +30,7 @@ export const replaceVariables = (
   values
     ? temp.replace(
         // variable name contains \w and not start with number
-        variableRegexp,
+        variableRegexp(),
         (name, fieldName) => {
           const v = values[fieldName];
           if (v === undefined) {

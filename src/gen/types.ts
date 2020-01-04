@@ -24,14 +24,15 @@ export interface UIEntityField {
   isRequired?: boolean;
   title?: string;
   labelsForValue?: UIEntityFieldLabelForValue[];
-  fields?: UIEntityField[];
   referenceEntityName?: string;
   referenceEntityFieldNameForLabel?: string;
+  referenceRepo?: IRepository<Entity>;
   default?: any;
 }
 
 export interface UIEntity {
   name: string;
+  title?: string;
   fields: UIEntityField[];
 }
 
@@ -39,6 +40,11 @@ export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
   menu: Array<RawProduct>;
+}
+
+export interface UIGridFilter {
+  fieldName?: string;
+  componentType: "select" | "keywordSearch";
 }
 
 // structure: page include groups, each group include rows, each row is a control
@@ -58,6 +64,7 @@ export interface UIGrid {
   isAllowEdit: boolean;
   isAllowDelete: boolean;
   confirmDeleteMessage?: string;
+  filters: UIGridFilter[];
 }
 
 export interface UIGridColumn {
@@ -114,7 +121,16 @@ export const normalizeRawUIPage = (
   { title, description, entity, rows, grid, parentEntities }: RawUIPage,
   relatviePath = "",
 ): UIPage => {
-  const defaultValues = entity.fields.reduce(
+  const entityFields = entity.fields.map(field => ({
+    ...field,
+    referenceRepo: field.referenceEntityName
+      ? new RESTfulRepository<Entity>(
+          settings.endPointPrefix,
+          field.referenceEntityName,
+        )
+      : undefined,
+  }));
+  const defaultValues = entityFields.reduce(
     (res, field) => {
       return {
         ...res,
@@ -128,12 +144,12 @@ export const normalizeRawUIPage = (
     settings,
     title,
     description,
-    entity,
+    entity: { ...entity, fields: entityFields },
     entityRepo: new RESTfulRepository<Entity>(
       settings.endPointPrefix,
       entity.name,
     ),
-    rows: rows?.map(row => normalizeRawUIRow(entity.fields, row)),
+    rows: rows?.map(row => normalizeRawUIRow(entityFields, row)),
     grid,
     defaultValues,
     isDedicatedSingular: relatviePath === "",
@@ -149,6 +165,7 @@ export const normalizeRawUIPage = (
 interface RawParentEntity {
   name: string;
   fieldName: string;
+  title?: string;
   position: "topRightCorner" | "left";
 }
 
@@ -158,6 +175,7 @@ interface ParentEntity {
   position: "topRightCorner" | "left";
   repo: IRepository<Entity>;
   data: Entity[];
+  title?: string;
 }
 
 export interface UIPage {

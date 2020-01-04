@@ -6,6 +6,7 @@ import { makeSelect } from "./Select";
 import { makeCheckbox } from "./Checkbox";
 import { UIPage, UIRow } from "./types";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import InputLabel from "@material-ui/core/InputLabel";
 import { Formik, Form, FormikHelpers, FormikProps, Field } from "formik";
 import FormControl from "@material-ui/core/FormControl";
 import { CButton } from "../components/Buttons";
@@ -16,7 +17,7 @@ import {
   withQueryParam,
   removeQueryParam,
 } from "../framework/locationHelper";
-import { useHistory, Prompt } from "react-router";
+import { useHistory, Prompt, useLocation } from "react-router";
 import { makeCodeEditor } from "./CodeEditor";
 import FormLabel from "@material-ui/core/FormLabel";
 import { CSelect } from "../components/Select";
@@ -24,51 +25,61 @@ import Query from "query-string";
 import { CPage } from "../components/Page";
 import { hasVariable, replaceVariables } from "../framework/utils";
 
-const useStyles = makeStyles((_: Theme) =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
       display: "block",
+      marginBottom: theme.spacing(3),
+    },
+    formControlIndent: {
+      display: "block",
+      marginBottom: theme.spacing(3),
+      marginLeft: theme.spacing(3),
     },
     topRightCorner: {
       position: "absolute",
-      top: "24px",
-      right: "24px",
+      top: theme.spacing(3),
+      right: theme.spacing(3),
+    },
+    formFooter: {
+      marginTop: theme.spacing(2),
+      "& > button": {
+        marginRight: theme.spacing(2),
+      },
     },
   }),
 );
 
 export const makeUIRowComponent = async (
-  endPointPrefix: string,
   row: UIRow,
 ): Promise<React.ComponentType<any>> => {
   switch (row.componentType) {
     case "select":
-      return makeSelect(endPointPrefix, row);
+      return makeSelect(row.field);
     case "checkbox":
-      return makeCheckbox(row);
+      return makeCheckbox(row.field);
     case "radioGroup":
-      return makeRadioGroup(endPointPrefix, row);
+      return makeRadioGroup(row.field);
     case "input":
-      return makeInput(row);
+      return makeInput();
     case "codeEditor":
-      return makeCodeEditor(row);
+      return makeCodeEditor();
     default:
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
 };
 export const makeUIRow = async (
-  endPointPrefix: string,
   row: UIRow,
   i: number,
 ): Promise<React.ComponentType<any>> => {
-  const component = await makeUIRowComponent(endPointPrefix, row);
+  const component = await makeUIRowComponent(row);
   let hiddenPred = (_: any) => false;
   if (row.conditionsToHide) {
     const expression = row.conditionsToHide[0];
     const f = new Function(`return this.${expression}`);
     hiddenPred = (self: any) => f.call(self);
   }
-  const { field } = row;
+  const { field, indent } = row;
   return ({ initialValue, setFieldValue, values, error }) => {
     const classes = useStyles();
     if (hiddenPred(values)) {
@@ -88,7 +99,9 @@ export const makeUIRow = async (
 
       return (
         <FormControl
-          className={classes.formControl}
+          className={
+            indent > 0 ? classes.formControlIndent : classes.formControl
+          }
           required={field.isRequired}
           error={error}
         >
@@ -139,12 +152,9 @@ const LeaveConfirm = () => {
   return <Prompt message={message} />;
 };
 
-const makeRows = async (
-  endPointPrefix: string,
-  rows: UIRow[],
-): Promise<React.ComponentType<any>> => {
+const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   const rowComponents = await Promise.all(
-    rows!.map((row: UIRow, i: number) => makeUIRow(endPointPrefix, row, i)),
+    rows!.map((row: UIRow, i: number) => makeUIRow(row, i)),
   );
   for (const r of rowComponents) {
     r.displayName = "UIRow";
@@ -164,12 +174,10 @@ const makeRows = async (
   );
 };
 
-const makeFormik = async (
-  rows: UIRow[],
-  endPointPrefix: string,
-): Promise<React.ComponentType<any>> => {
-  const Rows = await makeRows(endPointPrefix, rows);
+const makeFormik = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
+  const Rows = await makeRows(rows);
   return ({ initialValues, isDiscardOrCancel, onSubmit }) => {
+    const classes = useStyles();
     const history = useHistory();
     const [disableLeaveConfirm, setDisableLeaveConfirm] = React.useState(false);
 
@@ -218,7 +226,7 @@ const makeFormik = async (
               errors={props.errors}
               setFieldValue={props.setFieldValue}
             />
-            <div>
+            <div className={classes.formFooter}>
               <CButton
                 type="submit"
                 primary
@@ -250,15 +258,27 @@ export const makeNewFormComponent = async ({
   description,
   rows,
   entityRepo,
+  entity,
   defaultValues,
-  settings,
 }: UIPage): Promise<React.ComponentType<any>> => {
-  const MyFormik = await makeFormik(rows!, settings.endPointPrefix);
+  const MyFormik = await makeFormik(rows!);
 
   return () => {
     const handleSubmit = async (values: Entity) => {
-      await entityRepo.add(values);
+      const newValues = Object.keys(query).reduce((res, k) => {
+        if (
+          entity.fields.some(
+            ({ name, type }) => name === k && type === "reference",
+          )
+        ) {
+          return { ...res, [k]: query[k] } as Entity;
+        }
+        return res;
+      }, values);
+      await entityRepo.add(newValues);
     };
+    const location = useLocation();
+    const query = Query.parse(location.search) as { [key: string]: string };
     return (
       <CPage title={title} description={description}>
         <MyFormik
@@ -274,10 +294,10 @@ export const makeNewFormComponent = async ({
 export const makeEditFormComponent = async ({
   title,
   description,
-  settings,
   rows,
   entityRepo,
   isDedicatedSingular,
+  entity,
 }: UIPage): Promise<React.ComponentType<any>> => {
   const list = isDedicatedSingular
     ? ((await entityRepo.getList()) as Entity[])
@@ -287,7 +307,7 @@ export const makeEditFormComponent = async ({
     label: name || title,
   }));
   const firstEntity = list.length > 0 ? list[0] : undefined;
-  const MyFormik = await makeFormik(rows!, settings.endPointPrefix);
+  const MyFormik = await makeFormik(rows!);
 
   return () => {
     const classes = useStyles();
@@ -308,24 +328,25 @@ export const makeEditFormComponent = async ({
       setValues(await entityRepo.update(values.id!, values));
     };
 
+    const pageTitle = () =>
+      hasVariable(title) ? values && replaceVariables(title, values) : title;
+
     return (
-      <CPage
-        title={
-          hasVariable(title) ? values && replaceVariables(title, values) : title
-        }
-        description={description}
-      >
+      <CPage title={pageTitle()} description={description}>
         {isDedicatedSingular && options.length > 1 && (
           <div className={classes.topRightCorner}>
-            <CSelect
-              value={entityId}
-              options={options}
-              onChange={({
-                target,
-              }: React.ChangeEvent<{ value: string | number }>) => {
-                goToSearch(history, withQueryParam("id", target.value));
-              }}
-            />
+            <FormControl>
+              {entity.title && <InputLabel>{entity.title}</InputLabel>}
+              <CSelect
+                value={entityId}
+                options={options}
+                onChange={({
+                  target,
+                }: React.ChangeEvent<{ value: string | number }>) => {
+                  goToSearch(history, withQueryParam("id", target.value));
+                }}
+              />
+            </FormControl>
           </div>
         )}
         {values && (

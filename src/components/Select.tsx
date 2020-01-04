@@ -25,6 +25,7 @@ const useStyle = makeStyles((theme: Theme) =>
         display: "flex",
         alignItems: "center",
       },
+      width: 204,
     },
     icon: {
       marginRight: theme.spacing(1),

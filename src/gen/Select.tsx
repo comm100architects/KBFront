@@ -1,37 +1,34 @@
-import { UIRow, Entity } from "./types";
-import { CSelectProps, CSelect } from "../components/Select";
+import { UIEntityField } from "./types";
+import { CSelect, CSelectProps } from "../components/Select";
 import { withProps } from "../framework/hoc";
-import { RESTfulRepository } from "../framework/repository";
 
 export const makeSelect = async (
-  endPointPrefix: string,
-  { field }: UIRow,
-): Promise<React.ComponentType<CSelectProps>> => {
+  field: UIEntityField,
+  nullOptionLabel?: string,
+): Promise<React.ComponentType<any>> => {
   if (field.type === "reference") {
-    const nullOption = [{ value: "", label: "\u3000" }];
-    const repo = new RESTfulRepository<Entity>(
-      endPointPrefix,
-      field.referenceEntityName!,
-    );
-    const options = await repo.getList();
+    const options = await field.referenceRepo!.getList();
     return withProps(CSelect, {
-      options: nullOption.concat(
-        options.map(option => ({
+      options: [
+        { value: "", label: nullOptionLabel || "\u3000" },
+        ...options.map(option => ({
           value: option.id as string,
           label: option[field.referenceEntityFieldNameForLabel!],
         })),
-      ),
+      ],
     });
   }
 
   if (field.labelsForValue) {
-    return withProps(CSelect, {
-      options: field.labelsForValue.map(({ key, label, icon }) => ({
+    const options = [
+      ...(nullOptionLabel ? [{ value: "", label: nullOptionLabel }] : []),
+      ...field.labelsForValue.map(({ key, label, icon }) => ({
         value: key,
         label,
         icon,
       })),
-    });
+    ];
+    return withProps(CSelect, { options: options });
   }
 
   throw new Error(

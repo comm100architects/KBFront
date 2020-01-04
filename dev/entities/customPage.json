@@ -7,6 +7,13 @@
       "isRequired": true
     },
     {
+      "name": "kbId",
+      "type": "reference",
+      "referenceEntityName": "knowledgeBases",
+      "referenceEntityFieldNameForLabel": "name",
+      "isRequired": true
+    },
+    {
       "name": "title",
       "type": "string",
       "minLength": 0,
@@ -21,16 +28,19 @@
         { "key": 0, "label": "Private", "icon": "dotSecondary" },
         { "key": 1, "label": "Published", "icon": "dotPrimary" }
       ],
-      "title": "Status"
+      "title": "Status",
+      "default": 0
     },
     {
       "name": "customUrl",
       "type": "string",
-      "title": "Custom URL"
+      "title": "Custom URL",
+      "default": ""
     },
     {
       "name": "body",
-      "type": "string"
+      "type": "string",
+      "default": ""
     },
     {
       "name": "modified",
