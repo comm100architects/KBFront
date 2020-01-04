@@ -1,0 +1,21 @@
+{
+  "name": "categories",
+  "fields": [
+    { "name": "id", "type": "guid" },
+    {
+      "name": "kbId",
+      "type": "reference",
+      "referenceEntityName": "knowledgeBases",
+      "referenceEntityFieldNameForLabel": "name",
+      "isRequired": true
+    },
+    { "name": "title", "type": "string", "title": "Name" },
+    {
+      "name": "parentId",
+      "type": "reference",
+      "referenceEntityName": "categories",
+      "referenceEntityFieldNameForLabel": "name"
+    }
+  ]
+}
+

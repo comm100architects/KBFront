@@ -267,12 +267,6 @@ export default (): JSX.Element => {
             onDelete={handleDelete}
           />
         </div>
-        <CDialog title="Dialog Title">
-          Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello
-          Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello
-          Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello Hello
-          Hello Hello Hello Hello Hello Hello Hello
-        </CDialog>
       </div>
     </CPage>
   );

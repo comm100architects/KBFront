@@ -191,12 +191,17 @@ const getLabel = (
   settings: GlobalSettings,
   field: UIEntityField,
   entity: Entity,
+  data: { [id: string]: Entity },
 ) => {
   if (field.labelsForValue) {
     return field.labelsForValue[entity[field.name]].label;
   }
   if (field.type === "dateTime") {
     return moment(entity[field.name]).format(settings.dateTimeFormat);
+  }
+  if (field.type === "reference") {
+    const item = data[entity[field.name]];
+    return item.title || item.label;
   }
   return entity[field.name] + "";
 };
@@ -206,18 +211,22 @@ const rowContent = (
   field: UIEntityField,
   column: UIGridColumn,
   row: Entity,
+  fieldData: { [id: string]: Entity },
 ) => {
   const textType = () => {
-    return getLabel(settings, field, row);
+    return getLabel(settings, field, row, fieldData);
   };
 
   const linkType = () => {
     const to = replaceVariables(column.linkPath!, row);
-    return <CLink text={getLabel(settings, field, row)} to={to} />;
+    return <CLink text={getLabel(settings, field, row, fieldData)} to={to} />;
   };
 
   const iconType = () => {
-    const { label, icon } = field.labelsForValue![row[field.name]];
+    const value = row[field.name];
+    const { label, icon } = field.labelsForValue!.find(
+      ({ key }) => key === value,
+    )!;
     const iconName = icon! as CIconName;
     if (column.linkPath) {
       const to = replaceVariables(column.linkPath!, row);
@@ -240,18 +249,33 @@ const makeTableComponent = async (page: UIPage) => {
   const grid = page.grid!;
   const { columns, isAllowEdit, isAllowDelete } = grid;
   const entityRepo = page.entityRepo;
-  const tableColumns: CTableColumn<Entity>[] = columns.map(column => {
-    const field = page.entity.fields.find(
-      ({ name }) => column.fieldName === name,
-    )!;
-    return {
-      id: field.name,
-      header: undefinedDefault(column.headerLabel, field.title),
-      sortable: undefinedDefault(column.isAllowSort, true),
-      content: (row: Entity) => rowContent(page.settings, field, column, row),
-      width: column.width,
-    };
-  });
+  const tableColumns: CTableColumn<Entity>[] = await Promise.all(
+    columns.map(async column => {
+      const field = page.entity.fields.find(
+        ({ name }) => column.fieldName === name,
+      )!;
+
+      const list =
+        field.type === "reference" ? await field.referenceRepo!.getList() : [];
+
+      const fieldData = list.reduce((res, item) => {
+        return { ...res, [item.id!]: item };
+      }, {});
+
+      return {
+        id: field.name,
+        header: column.headerIcon ? (
+          <CIcon name={column.headerIcon} />
+        ) : (
+          undefinedDefault(column.headerLabel, field.title)
+        ),
+        sortable: undefinedDefault(column.isAllowSort, true),
+        content: (row: Entity) =>
+          rowContent(page.settings, field, column, row, fieldData),
+        width: column.width,
+      };
+    }),
+  );
   tableColumns.push({
     id: "operations",
     header: "Operations",
@@ -313,7 +337,12 @@ const makeTableComponent = async (page: UIPage) => {
       fetchSource();
     }, [queryItems, filters]);
     const handleDelete = async (row: Entity) => {
-      if (window.confirm(grid.confirmDeleteMessage)) {
+      if (
+        window.confirm(
+          grid.confirmDeleteMessage ||
+            "Are you sure you want to delete this record?",
+        )
+      ) {
         await entityRepo.delete(row.id!);
         fetchSource();
       }

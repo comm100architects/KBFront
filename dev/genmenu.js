@@ -43,6 +43,16 @@ const botMenu = [{ name: "dashboard", label: "Dashboard", icon: "dashboard" }];
 
 const kbMenu = [
   { name: "articles", label: "Articles", icon: "description" },
+  {
+    name: "articles2",
+    label: "Articles2",
+    icon: "description",
+    pages: [
+      { relatviePath: "", pageId: "kb.articles" },
+      { relatviePath: "new", pageId: "kb.articles.new" },
+      { relatviePath: "edit", pageId: "kb.articles.edit" },
+    ],
+  },
   { name: "images", label: "Images", icon: "image" },
   {
     name: "designs",

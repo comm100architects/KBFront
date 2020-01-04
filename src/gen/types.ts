@@ -69,6 +69,7 @@ export interface UIGrid {
 
 export interface UIGridColumn {
   headerLabel?: string;
+  headerIcon?: CIconName;
   isAllowSort?: boolean;
   fieldName: string;
   cellComponentType: "link" | "text" | "icon";

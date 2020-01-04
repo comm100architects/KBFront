@@ -5,8 +5,7 @@
   "rows": [
     {
       "fieldName": "body",
-      "componentType": "codeEditor",
-      "codeLanguage": "css"
+      "componentType": "codeEditor"
     }
   ]
 }

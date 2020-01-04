@@ -1,7 +1,7 @@
 {
-  "id": "kb.customPages.edit",
-  "title": "Edit Custom Page",
-  "entity": "customPages",
+  "id": "kb.articles.new",
+  "title": "New Article",
+  "entity": "articles",
   "rows": [
     {
       "fieldName": "title",
@@ -14,6 +14,10 @@
     {
       "fieldName": "body",
       "componentType": "codeEditor"
+    },
+    {
+      "fieldName": "categoryId",
+      "componentType": "select"
     },
     {
       "fieldName": "status",

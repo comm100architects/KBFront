@@ -13,8 +13,7 @@
     },
     {
       "fieldName": "body",
-      "componentType": "codeEditor",
-      "codeLanguage": "text/html"
+      "componentType": "codeEditor"
     },
     {
       "fieldName": "status",

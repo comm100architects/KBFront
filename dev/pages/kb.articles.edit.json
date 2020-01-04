@@ -1,7 +1,7 @@
 {
-  "id": "kb.customPages.edit",
-  "title": "Edit Custom Page",
-  "entity": "customPages",
+  "id": "kb.articles.edit",
+  "title": "Edit Article",
+  "entity": "articles",
   "rows": [
     {
       "fieldName": "title",
@@ -17,6 +17,10 @@
     },
     {
       "fieldName": "status",
+      "componentType": "select"
+    },
+    {
+      "fieldName": "categoryId",
       "componentType": "select"
     }
   ]
