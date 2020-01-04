@@ -89,7 +89,7 @@ const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
 const getGlobalSettings = async () => {
   const res = (await fetchJson("/globalSettings", "GET")) as GlobalSettings;
   const menu = (await fetchJson(
-    `//${res.endPointPrefix}/menu`,
+    `${res.endPointPrefix}/menu`,
     "GET",
   )) as RawProduct[];
   res.menu = menu;
