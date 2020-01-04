@@ -174,7 +174,7 @@ const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   );
 };
 
-const makeFormik = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
+const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   const Rows = await makeRows(rows);
   return ({ initialValues, isDiscardOrCancel, onSubmit }) => {
     const classes = useStyles();
@@ -261,7 +261,7 @@ export const makeNewFormComponent = async ({
   entity,
   defaultValues,
 }: UIPage): Promise<React.ComponentType<any>> => {
-  const MyFormik = await makeFormik(rows!);
+  const Form = await makeForm(rows!);
 
   return () => {
     const handleSubmit = async (values: Entity) => {
@@ -281,7 +281,7 @@ export const makeNewFormComponent = async ({
     const query = Query.parse(location.search) as { [key: string]: string };
     return (
       <CPage title={title} description={description}>
-        <MyFormik
+        <Form
           initialValues={defaultValues}
           onSubmit={handleSubmit}
           isDiscardOrCancel={false}
@@ -307,7 +307,7 @@ export const makeEditFormComponent = async ({
     label: name || title,
   }));
   const firstEntity = list.length > 0 ? list[0] : undefined;
-  const MyFormik = await makeFormik(rows!);
+  const Form = await makeForm(rows!);
 
   return () => {
     const classes = useStyles();
@@ -350,7 +350,7 @@ export const makeEditFormComponent = async ({
           </div>
         )}
         {values && (
-          <MyFormik
+          <Form
             initialValues={values}
             onSubmit={handleSubmit}
             isDiscardOrCancel={isDedicatedSingular}
