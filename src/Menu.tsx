@@ -8,7 +8,7 @@ import Collapse from "@material-ui/core/Collapse";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { RawProduct, RawMenuItem, RawSubMenu } from "./gen/types";
-import { ListItemLink } from "./Components/ListItemLink";
+import { ListItemLink } from "./components/ListItemLink";
 import { CIcon } from "./components/Icons";
 
 const useStyles = makeStyles(theme => ({

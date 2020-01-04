@@ -11,7 +11,7 @@ import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CTablePagination } from "./Pagination";
 import { ITableSource } from "./CTableSource";
 import { Row, Sort } from "./Types";
-import { CElementProps } from "../base";
+import { CElementProps } from "../Base";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

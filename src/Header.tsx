@@ -2,9 +2,9 @@ import * as React from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import Link from "@material-ui/core/Link";
-import { ListItemLink } from "./Components/ListItemLink";
+import { ListItemLink } from "./components/ListItemLink";
 import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/toolbar";
+import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import { RawProduct } from "./gen/types";
 

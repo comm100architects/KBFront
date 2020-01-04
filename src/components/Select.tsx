@@ -3,7 +3,7 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import { CIconName, CIcon } from "./Icons";
-import { CElementProps } from "./base";
+import { CElementProps } from "./Base";
 import { FieldInputProps } from "formik";
 
 export interface CSelectOption extends CElementProps {

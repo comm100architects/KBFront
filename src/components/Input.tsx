@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FieldInputProps } from "formik";
 import Input from "@material-ui/core/Input";
-import { CElementProps } from "./base";
+import { CElementProps } from "./Base";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 
 interface CInputProps extends FieldInputProps<string>, CElementProps {

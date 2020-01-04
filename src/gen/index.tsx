@@ -2,8 +2,8 @@ import React from "react";
 import _ from "lodash";
 import { fetchJson } from "../framework/network";
 import { normalizeRawUIPage, UIPage, GlobalSettings } from "./types";
-import { makeEditFormComponent, makeNewFormComponent } from "./form";
-import { makeGridComponent } from "./grid";
+import { makeEditFormComponent, makeNewFormComponent } from "./Form";
+import { makeGridComponent } from "./Grid";
 
 const makePage = async (page: UIPage): Promise<React.ComponentType<any>> => {
   if (page.type === "singular") {
