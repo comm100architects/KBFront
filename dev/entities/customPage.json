@@ -26,7 +26,7 @@
       "name": "status",
       "type": "enum",
       "labelsForValue": [
-        { "key": 0, "label": "Private", "icon": "dotSecondary" },
+        { "key": 0, "label": "Draft", "icon": "dotSecondary" },
         { "key": 1, "label": "Published", "icon": "dotPrimary" }
       ],
       "title": "Status",

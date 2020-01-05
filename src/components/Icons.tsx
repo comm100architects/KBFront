@@ -84,12 +84,18 @@ export type CIconName =
   | "dummy";
 
 const getIcon = memoize(
-  (name: string): JSX.Element => {
+  (name: string, title?: string): JSX.Element => {
     const Icon = allIcons[name];
-    return <Icon fontSize="small" />;
+    return <Icon titleAccess={title} fontSize="small" />;
   },
 );
 
-export const CIcon = ({ name }: { name: CIconName }): JSX.Element => {
-  return getIcon(name);
+export const CIcon = ({
+  name,
+  title,
+}: {
+  name: CIconName;
+  title?: string;
+}): JSX.Element => {
+  return getIcon(name, title);
 };

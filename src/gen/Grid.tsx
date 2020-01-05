@@ -243,7 +243,7 @@ const rowContent = (
       const to = replaceVariables(column.linkPath!, row);
       return <CIconButton title={label} icon={iconName} to={to} />;
     }
-    return <CIcon name={iconName} />;
+    return <CIcon title={label} name={iconName} />;
   };
 
   switch (column.cellComponentType) {
