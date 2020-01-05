@@ -1,7 +1,7 @@
 import path from "path";
 import css from "./gencss";
 import html from "./genhtml";
-import { int, guidPool, words, range, chance } from "./genhelper";
+import { int, guidPool, words, range, chance, keywords } from "./genhelper";
 import menu from "./genmenu";
 import _ from "lodash";
 const fs = require("fs");
@@ -109,6 +109,17 @@ const data = range(10)
           2,
         ),
       );
+
+      const [tagId, referenceTagId] = guidPool();
+      const tags = generate([
+        10,
+        {
+          id: tagId,
+          name: words(3),
+          kbId: () => kb.id,
+        },
+      ]);
+
       const articles = generate([
         int(10, 50)(),
         {
@@ -121,7 +132,7 @@ const data = range(10)
           numOfHelpful: int(20, 50),
           numOfNotHelpful: int(20, 50),
           modifiedTime: chance.date,
-          tags: [3, chance.word],
+          tagIds: [3, () => keywords(tags.map(t => t.id))],
           featured: chance.bool,
           status: int(0, 1),
         },
@@ -170,6 +181,7 @@ const data = range(10)
       result.articles = result.articles.concat(articles);
       result.customPages = result.customPages.concat(customPages);
       result.designs = result.designs.concat(designs);
+      result.tags = result.tags.concat(tags);
       kb.numOfArticles = articles.length;
       kb.numOfCustomPages = customPages.length;
       kb.homeCustomPageId = referenceCustomPageId();
@@ -185,6 +197,7 @@ const data = range(10)
       entities,
       pages,
       menu: menu(),
+      tags: [],
     },
   );
 

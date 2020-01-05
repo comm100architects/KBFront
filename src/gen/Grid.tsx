@@ -1,4 +1,5 @@
 import React from "react";
+import _ from "lodash";
 import {
   UIPage,
   Entity,
@@ -201,8 +202,17 @@ const getLabel = (
     return moment(entity[field.name]).format(settings.dateTimeFormat);
   }
   if (field.type === "reference") {
+    const value = entity[field.name];
+    if (_.isArray(value)) {
+      const items = value as string[];
+      return items
+        .map(id => {
+          return data[id].name || data[id].title;
+        })
+        .toString();
+    }
     const item = data[entity[field.name]];
-    return item.title || item.label;
+    return item.title || item.name;
   }
   return entity[field.name] + "";
 };

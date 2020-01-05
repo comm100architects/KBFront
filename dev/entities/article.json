@@ -78,7 +78,7 @@
       ]
     },
     {
-      "name": "tags",
+      "name": "tagIds",
       "type": "reference",
       "referenceEntityName": "tags",
       "referenceEntityFieldNameForLabel": "name",

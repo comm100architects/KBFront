@@ -34,6 +34,10 @@
         "cellComponentType": "text"
       },
       {
+        "fieldName": "tagIds",
+        "cellComponentType": "text"
+      },
+      {
         "fieldName": "numOfHelpful",
         "headerIcon": "thumbUp",
         "cellComponentType": "text"
