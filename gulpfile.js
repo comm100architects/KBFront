@@ -65,10 +65,5 @@ const watch = (globs, cmd, doNotRunAtStart) => {
 };
 
 gulp.task("default", () => {
-  // watch(
-  //   ["dev/gen*.js", "dev/entities/*.json", "dev/pages/*.json"],
-  //   "npm run gen",
-  //   true,
-  // );
   watch(["dev/server.js", "dev/webpack.config"], "npm run server");
 });

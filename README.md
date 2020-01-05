@@ -1,12 +1,7 @@
 ## 运行
 获取代码后执行
 1. `npm install`
-2. `npm run gen`
-3. `npx gulp`
-
-npx gulp会启动多个服务
-1. localhost:9000，本地服务器，包括webpack和json-server。单独运行的命令是npm run server
-2. dev/gen*.js改动后自动更新json-server的数据源。单独生成数据的命令是npm run gen
+2. `npm run server`
 
 ## 设计
 

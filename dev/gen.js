@@ -72,132 +72,132 @@ const pages = fs
     });
   });
 
-export default () =>
-  range(10)
-    .map(() =>
-      generate({
-        id: chance.guid,
-        name: words(3),
-        allowFeedback: chance.bool,
-        visibility: () => (chance.bool() ? 0 : 1),
-        status: () => (chance.bool() ? 0 : 1),
-        homePageType: () => (chance.bool() ? 0 : 1),
-        numOfArticles: () => 0,
-        numOfImages: int(0, 100),
-        numOfCustomPages: () => 0,
-      }),
-    )
-    .reduce(
-      (result, kb) => {
-        const [categoryId, referenceCategoryId] = guidPool();
-        result.categories = result.categories.concat(
-          genTree(
-            "parentCategoryId",
-            {
-              id: categoryId,
-              kbId: () => kb.id,
-              title: words(2),
-              index: int(2, 1000),
-            },
-            3,
-            {
-              id: categoryId(),
-              kbId: kb.id,
-              title: "/",
-              parentCategoryId: "",
-              index: 0,
-            },
-            2,
-          ),
-        );
-
-        const tags = generate([
-          10,
+const data = range(10)
+  .map(() =>
+    generate({
+      id: chance.guid,
+      name: words(3),
+      allowFeedback: chance.bool,
+      visibility: () => (chance.bool() ? 0 : 1),
+      status: () => (chance.bool() ? 0 : 1),
+      homePageType: () => (chance.bool() ? 0 : 1),
+      numOfArticles: () => 0,
+      numOfImages: int(0, 100),
+      numOfCustomPages: () => 0,
+    }),
+  )
+  .reduce(
+    (result, kb) => {
+      const [categoryId, referenceCategoryId] = guidPool();
+      result.categories = result.categories.concat(
+        genTree(
+          "parentCategoryId",
           {
-            id: chance.guid,
-            name: words(3),
+            id: categoryId,
             kbId: () => kb.id,
+            title: words(2),
+            index: int(2, 1000),
           },
-        ]);
-
-        const articles = generate([
-          int(10, 50)(),
+          3,
           {
-            id: chance.guid,
-            kbId: () => kb.id,
-            categoryId: referenceCategoryId,
-            title: chance.sentence,
-            body: html,
-            url: chance.url,
-            numOfHelpful: int(20, 50),
-            numOfNotHelpful: int(20, 50),
-            modifiedTime: chance.date,
-            tagIds: [3, () => keywords(tags.map(t => t.id))],
-            featured: chance.bool,
-            status: int(0, 1),
+            id: categoryId(),
+            kbId: kb.id,
+            title: "/",
+            parentCategoryId: "",
+            index: 0,
           },
-        ]);
+          2,
+        ),
+      );
 
-        const [customPageId, referenceCustomPageId] = guidPool();
-        const customPages = generate([
-          int(1, 10)(),
-          {
-            id: customPageId,
-            title: words(3),
-            modified: chance.date,
-            status: int(0, 1),
-            kbId: () => kb.id,
-            body: html,
-          },
-        ]);
+      const tags = generate([
+        10,
+        {
+          id: chance.guid,
+          name: words(3),
+          kbId: () => kb.id,
+        },
+      ]);
 
-        const designs = [
+      const articles = generate([
+        int(10, 50)(),
+        {
+          id: chance.guid,
+          kbId: () => kb.id,
+          categoryId: referenceCategoryId,
+          title: words(3),
+          body: html,
+          url: chance.url,
+          numOfHelpful: int(20, 50),
+          numOfNotHelpful: int(20, 50),
+          modifiedTime: chance.date,
+          tagIds: [3, () => keywords(tags.map(t => t.id))],
+          featured: chance.bool,
+          status: int(0, 1),
+        },
+      ]);
+
+      const [customPageId, referenceCustomPageId] = guidPool();
+      const customPages = generate([
+        int(1, 10)(),
+        {
+          id: customPageId,
+          title: words(3),
+          modified: chance.date,
+          status: int(0, 1),
+          kbId: () => kb.id,
+          body: html,
+        },
+      ]);
+
+      const designs = [
+        generate({
+          id: chance.guid,
+          title: "CSS File",
+          body: css,
+          modifiedTime: chance.date,
+          status: int(0, 1),
+          kbId: () => kb.id,
+        }),
+      ].concat(
+        [
+          "Category Page",
+          "Article Page",
+          "Search Result Page",
+          "404 Page (Page Not Found)",
+        ].map(title =>
           generate({
             id: chance.guid,
-            title: "CSS File",
-            body: css,
+            title,
+            body: html,
             modifiedTime: chance.date,
             status: int(0, 1),
             kbId: () => kb.id,
           }),
-        ].concat(
-          [
-            "Category Page",
-            "Article Page",
-            "Search Result Page",
-            "404 Page (Page Not Found)",
-          ].map(title =>
-            generate({
-              id: chance.guid,
-              title,
-              body: html,
-              modifiedTime: chance.date,
-              status: int(0, 1),
-              kbId: () => kb.id,
-            }),
-          ),
-        );
+        ),
+      );
 
-        result.articles = result.articles.concat(articles);
-        result.customPages = result.customPages.concat(customPages);
-        result.designs = result.designs.concat(designs);
-        result.tags = result.tags.concat(tags);
-        kb.numOfArticles = articles.length;
-        kb.numOfCustomPages = customPages.length;
-        kb.homeCustomPageId = referenceCustomPageId();
-        result.knowledgeBases.push(kb);
-        return result;
-      },
-      {
-        knowledgeBases: [],
-        categories: [],
-        articles: [],
-        customPages: [],
-        designs: [],
-        entities,
-        pages,
-        menu: menu(),
-        tags: [],
-      },
-    );
+      result.articles = result.articles.concat(articles);
+      result.customPages = result.customPages.concat(customPages);
+      result.designs = result.designs.concat(designs);
+      result.tags = result.tags.concat(tags);
+      kb.numOfArticles = articles.length;
+      kb.numOfCustomPages = customPages.length;
+      kb.homeCustomPageId = referenceCustomPageId();
+      result.knowledgeBases.push(kb);
+      return result;
+    },
+    {
+      knowledgeBases: [],
+      categories: [],
+      articles: [],
+      customPages: [],
+      designs: [],
+      entities,
+      pages,
+      menu: menu(),
+      tags: [],
+    },
+  );
 
+console.log(JSON.stringify(data, null, 2));
