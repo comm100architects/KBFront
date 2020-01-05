@@ -334,7 +334,6 @@ const makeTableComponent = async (page: UIPage) => {
     };
 
     React.useEffect(() => {
-      console.log(filters);
       fetchSource();
     }, [queryItems, filters]);
     const handleDelete = async (row: Entity) => {

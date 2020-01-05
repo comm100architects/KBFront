@@ -1,9 +1,0 @@
-{
-  "/kb/:kbId/categories": "/categories?kbId=:kbId",
-  "/kb/:kbId/categories/:id": "/categories/:id?kbId=:kbId",
-  "/kb/:kbId/articles": "/articles?kbId=:kbId",
-  "/kb/:kbId/articles/:id": "/articles/:id?kbId=:kbId",
-  "/kb/:kbId/articles?keyword=:keyword": "/articles?kbId=:kbId&q=:keyword",
-  "/articles?kbId=:kbId&keyword=:keyword": "/articles?kbId=:kbId&q=:keyword",
-  "/customPages?kbId=:kbId&keyword=:keyword": "/customPages?kbId=:kbId&q=:keyword"
-}

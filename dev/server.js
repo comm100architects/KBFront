@@ -1,58 +1,31 @@
-import { createServer } from "http";
+import jsonServer from "json-server";
+import path from "path";
+import express from "express";
 import { existsSync, readFileSync } from "fs";
+import { port } from "./ports";
 
-const hostname = "127.0.0.1";
-const port = 9000;
+const serveFile = s => (_, res) => {
+  res.sendFile(path.join(__dirname, s));
+};
 
-//Create HTTP server and listen on port 3000 for requests
-const server = createServer((req, res) => {
-  //Set the response HTTP header with HTTP status and Content type
-  res.statusCode = 200;
-  if (
-    req.url.indexOf("/dist") !== -1 ||
-    req.url.indexOf("/node_modules") !== -1
-  ) {
-    if (req.url.indexOf(".chunk.") === -1) {
-      writeFile(`./${req.url}`, res);
-    } else {
-      // simulate network delay
-      setTimeout(() => writeFile(`./${req.url}`, res), 500);
-    }
-    return;
-  }
+const server = jsonServer.create();
 
-  if (/^\/globalSettings$/i.test(req.url)) {
-    res.setHeader("content-type", "application/json");
-    writeFile("./dev/settings.json", res);
-    return;
-  }
+server.get("/", serveFile("../index.html"));
+server.get("/favicon.ico", serveFile("../favicon.ico"));
+server.get("/globalSettings", serveFile("./settings.json"));
+server.use("/dist", express.static(path.join(__dirname, "../dist")));
+server.use(jsonServer.defaults());
+server.use(
+  jsonServer.rewriter({
+    "/api/articles?kbId=:kbId&keyword=:keyword":
+      "/api/articles?kbId=:kbId&q=:keyword",
+    "/api/customPages?kbId=:kbId&keyword=:keyword":
+      "/api/customPages?kbId=:kbId&q=:keyword",
+  }),
+);
+server.use("/api", jsonServer.router("dist/db.json"));
+server.get("/*", serveFile("../index.html"));
 
-  if (/^\/dev\/[^.]+\.json$/i.test(req.url)) {
-    res.setHeader("content-type", "application/json");
-    writeFile(`./${req.url}`, res);
-    return;
-  }
-
-  if (req.url.indexOf("favicon") !== -1) {
-    writeFile("./favicon.ico", res);
-    return;
-  }
-
-  res.setHeader("Content-Type", "text/html");
-  writeFile("./index.html", res);
-});
-
-function writeFile(filename, res) {
-  if (existsSync(filename)) {
-    res.end(readFileSync(filename));
-    return;
-  }
-
-  res.statusCode = 404;
-  res.end("Not Found");
-}
-
-//listen for request on port 3000, and as a callback function have the port listened on logged
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
 });

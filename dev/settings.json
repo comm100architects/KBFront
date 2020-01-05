@@ -1,4 +1,4 @@
 {
-  "endPointPrefix": "//localhost:3000",
+  "endPointPrefix": "/api",
   "dateTimeFormat": "MM/DD/YYYY HH:mm:ss"
 }

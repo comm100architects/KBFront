@@ -1,10 +1,11 @@
+import path from "path";
 import css from "./gencss";
 import html from "./genhtml";
 import { int, guidPool, words, range, chance } from "./genhelper";
 import menu from "./genmenu";
 import _ from "lodash";
-
 const fs = require("fs");
+const _p = s => path.join(__dirname, s);
 
 const generate = sc => {
   if (Array.isArray(sc)) {
@@ -50,21 +51,21 @@ const genTree = (parentIdName, sc, childrenCount, parent, depth) => {
 };
 
 const entities = fs
-  .readdirSync("./dev/entities")
+  .readdirSync(_p("./entities"))
   .filter(name => /\.json$/.test(name))
   .map(name =>
     JSON.parse(
-      fs.readFileSync(`./dev/entities/${name}`, { encoding: "utf-8" }),
+      fs.readFileSync(_p(`./entities/${name}`), { encoding: "utf-8" }),
     ),
   )
   .map(entity => Object.assign(entity, { id: entity.name }));
 
 const pages = fs
-  .readdirSync("./dev/pages")
+  .readdirSync(_p("./pages"))
   .filter(name => /\.json$/.test(name))
   .map(name => {
     const page = JSON.parse(
-      fs.readFileSync(`./dev/pages/${name}`, { encoding: "utf-8" }),
+      fs.readFileSync(_p(`./pages/${name}`), { encoding: "utf-8" }),
     );
     return Object.assign(page, {
       entity: entities.find(({ name }) => name === page.entity),
@@ -187,4 +188,8 @@ const data = range(10)
     },
   );
 
-console.log(JSON.stringify(data, null, 2));
+if (!fs.existsSync(_p("../dist"))) {
+  fs.mkdirSync(_p("../dist"));
+}
+
+fs.writeFileSync(_p("../dist/db.json"), JSON.stringify(data, null, 2));

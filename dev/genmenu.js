@@ -42,10 +42,10 @@ const ticketMenu = [
 const botMenu = [{ name: "dashboard", label: "Dashboard", icon: "dashboard" }];
 
 const kbMenu = [
-  { name: "articles", label: "Articles", icon: "description" },
+  // { name: "articles", label: "Articles", icon: "description" },
   {
-    name: "articles2",
-    label: "Articles2",
+    name: "articles",
+    label: "Articles",
     icon: "description",
     pages: [
       { relatviePath: "", pageId: "kb.articles" },

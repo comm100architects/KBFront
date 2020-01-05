@@ -165,6 +165,11 @@ getGlobalSettings()
         <CssBaseline />
         <Router getUserConfirmation={handleUserConfirm}>
           <Switch>
+            <Route exact path="/">
+              () => (
+              <Redirect to={`/${settings.menu[0].name}`} />
+              );
+            </Route>
             <Route exact path="/:currentProduct">
               {makeRedirectToProductDefaultPage(settings)}
             </Route>
@@ -172,7 +177,7 @@ getGlobalSettings()
               {makeCurrentPage(settings)}
             </Route>
             <Route path="*">
-              <Page404 />;
+              <Page404 />
             </Route>
           </Switch>
         </Router>
