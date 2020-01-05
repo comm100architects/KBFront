@@ -186,5 +186,5 @@ getGlobalSettings()
     );
   })
   .catch(() => {
-    ReactDOM.render(<h2>Ooops...</h2>, document.querySelector("#main"));
+    ReactDOM.render(<h2>Ooooops...</h2>, document.querySelector("#main"));
   });

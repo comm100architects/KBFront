@@ -33,6 +33,7 @@ import { useHistory } from "react-router";
 import Query from "query-string";
 import { CPage } from "../components/Page";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -243,7 +244,11 @@ const rowContent = (
       const to = replaceVariables(column.linkPath!, row);
       return <CIconButton title={label} icon={iconName} to={to} />;
     }
-    return <CIcon title={label} name={iconName} />;
+    return (
+      <Tooltip title={label}>
+        <CIcon name={iconName} />
+      </Tooltip>
+    );
   };
 
   switch (column.cellComponentType) {

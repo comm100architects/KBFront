@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "gen": "node -r esm dev/gen.js",
-    "js": "webpack",
     "test": "jest",
-    "js:watch": "webpack --watch",
     "test:watch": "jest --watch",
     "server": "node -r esm dev/server.js"
   },
@@ -41,6 +39,7 @@
     "babel-cli": "^6.26.0",
     "babel-jest": "^24.9.0",
     "chance": "^1.1.4",
+    "chokidar": "^3.3.1",
     "css-loader": "^3.4.0",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.15.1",
@@ -61,7 +60,8 @@
     "typescript-transformer-jsx-remove-data-test-id": "^1.0.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.9.0"
+    "webpack-dev-middleware": "^3.7.2",
+    "webpack-dev-server": "^3.10.1"
   },
   "dependencies": {
     "@material-ui/core": "^4.6.1",

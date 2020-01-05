@@ -1,20 +1,21 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const {
-  removeDataTestIdTransformer,
-} = require("typescript-transformer-jsx-remove-data-test-id");
+import path from "path";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import { removeDataTestIdTransformer } from "typescript-transformer-jsx-remove-data-test-id";
 
-module.exports = {
+export default {
   mode: "development",
   resolve: {
     extensions: [".ts", ".tsx", ".js"],
   },
   entry: "./src/index.tsx",
   output: {
-    path: path.join(__dirname, "dist"),
-    filename: "[name].bundle.[contenthash].js",
-    chunkFilename: "[name].chunk.[contenthash].js",
-    publicPath: "/dist/",
+    filename: "[name].bundle.[hash].js",
+    chunkFilename: "[name].chunk.[hash].js",
+    publicPath: "/",
+  },
+  devServer: {
+    hot: true,
+    historyApiFallback: true,
   },
   module: {
     rules: [
@@ -40,8 +41,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src/index.html"),
-      filename: "../index.html", //relative to root of the application
+      template: path.join(__dirname, "../src/index.html"),
     }),
   ],
 };

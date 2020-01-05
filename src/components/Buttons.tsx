@@ -8,6 +8,7 @@ import {
 import * as H from "history";
 import { CIcon, CIconName } from "./Icons";
 import { CElementProps } from "./Base";
+import Tooltip from "@material-ui/core/Tooltip";
 
 interface CLinkBaseProps extends CElementProps {
   onClick?: React.MouseEventHandler<{}>;
@@ -72,6 +73,15 @@ const Link = React.forwardRef<HTMLAnchorElement, RouterLinkProps>(
 
 export const CIconButton = (props: CIconButtonProps) => {
   if (props.onClick) {
+    if (props.title) {
+      return (
+        <Tooltip title={props.title}>
+          <IconButton onClick={props.onClick}>
+            <CIcon name={props.icon} />
+          </IconButton>
+        </Tooltip>
+      );
+    }
     return (
       <IconButton title={props.title} onClick={props.onClick}>
         <CIcon name={props.icon} />
@@ -79,12 +89,24 @@ export const CIconButton = (props: CIconButtonProps) => {
     );
   }
   if (props.to) {
+    if (props.title) {
+      return (
+        <Tooltip title={props.title}>
+          <IconButton
+            component={Link}
+            to={props.to}
+            target={props.external ? "_blank" : ""}
+          >
+            <CIcon name={props.icon} />
+          </IconButton>
+        </Tooltip>
+      );
+    }
     return (
       <IconButton
         component={Link}
         to={props.to}
         target={props.external ? "_blank" : ""}
-        title={props.title}
       >
         <CIcon name={props.icon} />
       </IconButton>

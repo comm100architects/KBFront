@@ -20,17 +20,8 @@ export const makeSelect = async (
   }
 
   if (field.labelsForValue) {
-    const hasIcon = !!field.labelsForValue[0].icon;
     const options = [
-      ...(nullOptionLabel
-        ? [
-            {
-              value: "",
-              label: nullOptionLabel,
-              icon: hasIcon ? "dummy" : undefined,
-            },
-          ]
-        : []),
+      ...(nullOptionLabel ? [{ value: "", label: nullOptionLabel }] : []),
       ...field.labelsForValue.map(({ key, label, icon }) => ({
         value: key,
         label,

@@ -7,7 +7,6 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import ViewIcon from "@material-ui/icons/Pageview";
 import AddIcon from "@material-ui/icons/Add";
-import { memoize } from "lodash";
 import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import ThumbDownIcon from "@material-ui/icons/ThumbDown";
 import DescriptionIcon from "@material-ui/icons/Description";
@@ -83,19 +82,12 @@ export type CIconName =
   | "code"
   | "dummy";
 
-const getIcon = memoize(
-  (name: string, title?: string): JSX.Element => {
-    const Icon = allIcons[name];
-    return <Icon titleAccess={title} fontSize="small" />;
+export const CIcon = React.forwardRef(
+  (
+    props: { name: CIconName },
+    ref: React.Ref<HTMLOrSVGElement>,
+  ): JSX.Element => {
+    const Icon = allIcons[props.name];
+    return <Icon {...props} innerRef={ref} fontSize="small" />;
   },
 );
-
-export const CIcon = ({
-  name,
-  title,
-}: {
-  name: CIconName;
-  title?: string;
-}): JSX.Element => {
-  return getIcon(name, title);
-};

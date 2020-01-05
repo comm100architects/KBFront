@@ -5,9 +5,8 @@
 3. `npx gulp`
 
 npx gulp会启动多个服务
-* localhost:9000，本地服务器，包括json-server和static files。单独运行的命令是npm run server
-* webpack编译，源代码改动后会自动编译。单独编译的命令是npm run js
-* dev/gen*.js改动后自动更新json-server的数据源。单独生成数据的命令是npm run gen
+1. localhost:9000，本地服务器，包括webpack和json-server。单独运行的命令是npm run server
+2. dev/gen*.js改动后自动更新json-server的数据源。单独生成数据的命令是npm run gen
 
 ## 设计
 
