@@ -116,7 +116,7 @@ const data = range(10)
           kbId: () => kb.id,
           categoryId: referenceCategoryId,
           title: chance.sentence,
-          content: html,
+          body: html,
           url: chance.url,
           numOfHelpful: int(20, 50),
           numOfNotHelpful: int(20, 50),
