@@ -30,24 +30,26 @@ interface UrlParam {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: {
-      display: "flex",
-    },
     menuBackground: {
-      borderRight: `solid 1px ${theme.palette.divider}`,
-      backgroundColor: "white",
+      backgroundColor: theme.palette.background.paper,
       height: "100%",
       position: "fixed",
+      top: 0,
       width: 241,
+      zIndex: -1,
+      borderRight: `solid 1px ${theme.palette.divider}`,
+    },
+    body: {
+      display: "flex",
     },
     menu: {
-      flexShrink: 0,
-      width: 240,
+      height: 0,
+      position: "sticky",
+      top: 0,
     },
     content: {
       flexGrow: 1,
     },
-    toolbar: theme.mixins.toolbar,
   }),
 );
 
@@ -65,15 +67,13 @@ const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
     const classes = useStyles();
     return (
       <GlobalContext.Provider value={{ product, settings }}>
-        <div className={classes.root}>
-          <Header selected={product.name} />
-          <div className={classes.menuBackground}></div>
+        <Header selected={product.name} />
+        <div className={classes.menuBackground}></div>
+        <div className={classes.body}>
           <div className={classes.menu}>
-            <div className={classes.toolbar}></div>
             <Menu selected={currentPage} />
           </div>
           <div className={classes.content}>
-            <div className={classes.toolbar}></div>
             <PageRouter
               currentPage={currentPage}
               pageId={pageId}
@@ -162,29 +162,31 @@ getGlobalSettings()
   .then((settings: GlobalSettings) => {
     ReactDOM.render(
       <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router getUserConfirmation={handleUserConfirm}>
-          <Switch>
-            <Route exact path="/">
-              () => (
-              <Redirect to={`/${settings.menu[0].name}`} />
-              );
-            </Route>
-            <Route exact path="/:currentProduct">
-              {makeRedirectToProductDefaultPage(settings)}
-            </Route>
-            <Route path="/:currentProduct/:currentPage">
-              {makeCurrentPage(settings)}
-            </Route>
-            <Route path="*">
-              <Page404 />
-            </Route>
-          </Switch>
-        </Router>
+        <GlobalContext.Provider value={{ settings }}>
+          <CssBaseline />
+          <Router getUserConfirmation={handleUserConfirm}>
+            <Switch>
+              <Route exact path="/">
+                () => (
+                <Redirect to={`/${settings.menu[0].name}`} />
+                );
+              </Route>
+              <Route exact path="/:currentProduct">
+                {makeRedirectToProductDefaultPage(settings)}
+              </Route>
+              <Route path="/:currentProduct/:currentPage">
+                {makeCurrentPage(settings)}
+              </Route>
+              <Route path="*">
+                <Page404 />
+              </Route>
+            </Switch>
+          </Router>
+        </GlobalContext.Provider>
       </ThemeProvider>,
       document.querySelector("#main"),
     );
   })
   .catch(() => {
-    ReactDOM.render(<h2>Ooooops...</h2>, document.querySelector("#main"));
+    ReactDOM.render(<h2>Oops...</h2>, document.querySelector("#main"));
   });

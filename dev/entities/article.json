@@ -73,9 +73,10 @@
         {
           "key": false,
           "label": "Not Featured",
-          "icon": "dummy"
+          "icon": "blank"
         }
-      ]
+      ],
+      "title": "Featured"
     },
     {
       "name": "tagIds",

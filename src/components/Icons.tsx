@@ -51,7 +51,7 @@ const allIcons: { [id: string]: (props: SvgIconProps) => JSX.Element } = {
   groupWork: GroupWorkIcon,
   create: CreateIcon,
   code: CodeIcon,
-  dummy: withProps(CodeIcon, { style: { visibility: "hidden" } }),
+  blank: withProps(CodeIcon, { style: { visibility: "hidden" } }),
 };
 
 export type CIconName =
@@ -80,7 +80,7 @@ export type CIconName =
   | "groupWork"
   | "create"
   | "code"
-  | "dummy";
+  | "blank";
 
 export const CIcon = React.forwardRef(
   (

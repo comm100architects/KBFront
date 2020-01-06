@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 0,
     },
     header: {
-      zIndex: theme.zIndex.drawer + 1,
+      position: "initial",
     },
     link: {
       borderRadius: theme.shape.borderRadius,

@@ -65,7 +65,7 @@ const makeFilters = async (page: UIPage): Promise<React.ComponentType<any>> => {
           const field = page.entity.fields.find(
             ({ name }) => name === filter.fieldName,
           )!;
-          return makeSelect(field, field.title);
+          return makeSelect(field, field.title || "\u3000");
         case "keywordSearch":
           return makeKeywordSearch();
         default:
@@ -278,6 +278,14 @@ const makeTableComponent = async (page: UIPage) => {
         return { ...res, [item.id!]: item };
       }, {});
 
+      const getWidth = () => {
+        if (column.width) return column.width;
+        if (column.cellComponentType === "icon") return "16px";
+        if (field?.type === "dateTime") {
+          return `${page.settings.dateTimeFormat.length + 3}ch`;
+        }
+      };
+
       return {
         id: field.name,
         header: column.headerIcon ? (
@@ -288,7 +296,7 @@ const makeTableComponent = async (page: UIPage) => {
         sortable: undefinedDefault(column.isAllowSort, true),
         content: (row: Entity) =>
           rowContent(page.settings, field, column, row, fieldData),
-        width: column.cellComponentType === "icon" ? "16px" : column.width,
+        width: getWidth(),
       };
     }),
   );

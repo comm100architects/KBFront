@@ -36,7 +36,9 @@ const Loading = (_: {}) => {
 
 export const PageRouter = (props: PageRouterProps) => {
   const { currentPage, relatviePath, pageId } = props;
-  const { settings, product } = React.useContext(GlobalContext)!;
+  const context = React.useContext(GlobalContext)!;
+  const settings = context.settings!;
+  const product = context.product!;
   const [count, setCount] = React.useState(0);
   const LazyPage = React.useMemo(
     () =>

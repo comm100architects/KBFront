@@ -14,7 +14,7 @@ import { CIcon } from "./components/Icons";
 const useStyles = makeStyles(theme => ({
   root: {
     flexShrink: 0,
-    backgroundColor: theme.palette.background.paper,
+    width: 240,
   },
   expander: {
     fontWeight: 700,
@@ -30,7 +30,7 @@ const makeMenuItem = (productName: string, item: RawMenuItem) => ({
     selected={selected === item.name}
     to={`/${productName}/${item.name}/`}
     primary={item.label}
-    icon={<CIcon name={item.icon || "dummy"} />}
+    icon={<CIcon name={item.icon || "blank"} />}
   ></ListItemLink>
 );
 
@@ -45,7 +45,7 @@ const makeSubMenu = (productName: string, menu: RawSubMenu) => {
       <>
         <ListItem button onClick={handleClick}>
           <ListItemIcon>
-            <CIcon name={menu.icon || "dummy"} />
+            <CIcon name={menu.icon || "blank"} />
           </ListItemIcon>
           <ListItemText primary={menu.label} />
           {isOpen ? <ExpandLess /> : <ExpandMore />}

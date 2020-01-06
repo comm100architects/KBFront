@@ -3,10 +3,8 @@ import { RawProduct } from "./gen/types";
 import { GlobalSettings } from "./gen/types";
 
 export interface GlobalContextValue {
-  readonly product: RawProduct;
-  readonly settings: GlobalSettings;
+  readonly product?: RawProduct;
+  readonly settings?: GlobalSettings;
 }
 
-export const GlobalContext = React.createContext(
-  null as GlobalContextValue | null,
-);
+export const GlobalContext = React.createContext({} as GlobalContextValue);

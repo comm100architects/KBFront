@@ -8,6 +8,10 @@
       "componentType": "input"
     },
     {
+      "fieldName": "featured",
+      "componentType": "checkbox"
+    },
+    {
       "fieldName": "customUrl",
       "componentType": "input"
     },
