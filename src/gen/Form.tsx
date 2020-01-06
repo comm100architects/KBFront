@@ -82,7 +82,7 @@ export const makeUIRow = async (
 ): Promise<React.ComponentType<any>> => {
   const component = await makeUIRowComponent(row);
   const { field, indent } = row;
-  return ({ initialValue, values, error }) => {
+  return ({ values, error }) => {
     const classes = useStyles();
     if (rowHiddenPred(row, values)) {
       return <></>;
@@ -100,6 +100,7 @@ export const makeUIRow = async (
             data-test-id={`form-field-${i}`}
             name={field.name}
             as={component}
+            autoFocus={i === 0}
           ></Field>
         </FormControl>
       );
