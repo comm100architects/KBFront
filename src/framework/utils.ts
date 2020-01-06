@@ -41,3 +41,12 @@ export const replaceVariables = (
         },
       )
     : temp;
+
+export const convertType = (type: string, value: String): any => {
+  if (type === "number" && typeof value === "string") {
+    return parseInt(value);
+  } else if (type === "boolean" && typeof value === "string") {
+    return value === "true";
+  }
+  return value;
+};

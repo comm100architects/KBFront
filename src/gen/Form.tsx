@@ -88,15 +88,6 @@ export const makeUIRow = async (
       }
       return <></>;
     } else {
-      const val = values[field.name];
-      if (typeof val === "string") {
-        if (field.type === "int" || field.type === "enum") {
-          setFieldValue(field.name, parseInt(val));
-        } else if (field.type === "bool") {
-          setFieldValue(field.name, val === "true");
-        }
-      }
-
       return (
         <FormControl
           className={
@@ -154,7 +145,7 @@ const LeaveConfirm = () => {
 
 const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   const rowComponents = await Promise.all(
-    rows!.map((row: UIRow, i: number) => makeUIRow(row, i)),
+    rows.map((row: UIRow, i: number) => makeUIRow(row, i)),
   );
   for (const r of rowComponents) {
     r.displayName = "UIRow";
@@ -163,11 +154,11 @@ const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
     <>
       {rowComponents.map((Row, i) => (
         <Row
-          key={i}
-          initialValue={initialValues[rows![i].field.name]}
+          key={rows[i].field.name}
+          initialValue={initialValues[rows[i].field.name]}
           setFieldValue={setFieldValue}
           values={values}
-          error={!!errors[rows![i].field.name]}
+          error={!!errors[rows[i].field.name]}
         />
       ))}
     </>
