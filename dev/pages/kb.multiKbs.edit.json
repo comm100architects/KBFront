@@ -16,7 +16,7 @@
       "fieldName": "homeCustomPageId",
       "componentType": "select",
       "indent": 1,
-      "conditionsToHide": ["homePageType===0"]
+      "conditionsToHide": ["homePageType==0"]
     },
     {
       "fieldName": "visibility",

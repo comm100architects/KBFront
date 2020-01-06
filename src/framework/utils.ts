@@ -50,3 +50,45 @@ export const convertType = (type: string, value: String): any => {
   }
   return value;
 };
+
+export const evalCondition = (expression: string, values: any) => {
+  const m = expression.match(/\s*([^\s]+?)\s*==\s*([^\s]+?)\s*$/);
+  if (m) {
+    const [_, variable, value] = m;
+    return values[variable] == value;
+  }
+
+  throw new Error("Eval condition error");
+};
+
+export const evalConditions = (
+  expressions: string[],
+  values: any,
+  andOp: boolean,
+) => {
+  if (andOp) {
+    for (const expression of expressions) {
+      if (!evalCondition(expression, values)) return false;
+    }
+    return true;
+  }
+
+  for (const expression of expressions) {
+    if (evalCondition(expression, values)) return true;
+  }
+  return false;
+};
+
+// ER field.type
+export const emptyValueOfType = (type: string) => {
+  switch (type) {
+    case "string":
+      return "";
+    case "int":
+      return 0;
+    case "bool":
+      return false;
+    default:
+      return undefined;
+  }
+};

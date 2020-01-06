@@ -23,7 +23,12 @@ import FormLabel from "@material-ui/core/FormLabel";
 import { CSelect } from "../components/Select";
 import Query from "query-string";
 import { CPage } from "../components/Page";
-import { hasVariable, replaceVariables } from "../framework/utils";
+import {
+  hasVariable,
+  replaceVariables,
+  evalConditions,
+  emptyValueOfType,
+} from "../framework/utils";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -68,24 +73,18 @@ export const makeUIRowComponent = async (
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
 };
+const rowHiddenPred = ({ conditionsToHide }: UIRow, values: any) => {
+  return conditionsToHide && evalConditions(conditionsToHide!, values, true);
+};
 export const makeUIRow = async (
   row: UIRow,
   i: number,
 ): Promise<React.ComponentType<any>> => {
   const component = await makeUIRowComponent(row);
-  let hiddenPred = (_: any) => false;
-  if (row.conditionsToHide) {
-    const expression = row.conditionsToHide[0];
-    const f = new Function(`return this.${expression}`);
-    hiddenPred = (self: any) => f.call(self);
-  }
   const { field, indent } = row;
-  return ({ initialValue, setFieldValue, values, error }) => {
+  return ({ initialValue, values, error }) => {
     const classes = useStyles();
-    if (hiddenPred(values)) {
-      if (initialValue !== values[field.name]) {
-        setFieldValue(field.name, initialValue);
-      }
+    if (rowHiddenPred(row, values)) {
       return <></>;
     } else {
       return (
@@ -150,13 +149,12 @@ const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   for (const r of rowComponents) {
     r.displayName = "UIRow";
   }
-  return ({ initialValues, setFieldValue, values, errors }) => (
+  return ({ initialValues, values, errors }) => (
     <>
       {rowComponents.map((Row, i) => (
         <Row
           key={rows[i].field.name}
           initialValue={initialValues[rows[i].field.name]}
-          setFieldValue={setFieldValue}
           values={values}
           error={!!errors[rows[i].field.name]}
         />
@@ -174,9 +172,13 @@ const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
 
     const handleValidation = (values: Entity) => {
       const errors: { [key: string]: string } = {};
-      for (let i = 0; i < rows!.length; i++) {
-        const { field } = rows![i];
-        if (field.isRequired && !values[field.name]) {
+      for (const row of rows) {
+        const { field } = row;
+        if (
+          field.isRequired &&
+          !rowHiddenPred(row, values) &&
+          !values[field.name]
+        ) {
           errors[field.name] = `${field.title} is required`;
         }
       }
@@ -215,7 +217,6 @@ const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
               initialValues={props.initialValues}
               values={props.values}
               errors={props.errors}
-              setFieldValue={props.setFieldValue}
             />
             <div className={classes.formFooter}>
               <CButton
@@ -253,6 +254,12 @@ export const makeNewFormComponent = async ({
   defaultValues,
 }: UIPage): Promise<React.ComponentType<any>> => {
   const Form = await makeForm(rows!);
+  const initialValues = rows!.reduce((res, row) => {
+    if (res[row.field.name] === undefined) {
+      return { ...res, [row.field.name]: emptyValueOfType(row.field.type) };
+    }
+    return res;
+  }, defaultValues);
 
   return () => {
     const handleSubmit = async (values: Entity) => {
@@ -273,7 +280,7 @@ export const makeNewFormComponent = async ({
     return (
       <CPage title={title} description={description}>
         <Form
-          initialValues={defaultValues}
+          initialValues={initialValues}
           onSubmit={handleSubmit}
           isDiscardOrCancel={false}
         />
