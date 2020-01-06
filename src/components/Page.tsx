@@ -16,6 +16,10 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       marginBottom: theme.spacing(5),
     },
+    footer: {
+      textAlign: "center",
+      marginTop: theme.spacing(2),
+    },
   }),
 );
 
@@ -34,6 +38,7 @@ export const CPage = ({
   const classes = useStyles({});
   const context = React.useContext(GlobalContext)!;
   const product = context.product!;
+  const { poweredByHtml } = context.settings!;
   React.useEffect(() => {
     if (title) document.title = documentTitle ?? `${product.label} » ${title}`;
   }, [product.label, title, documentTitle]);
@@ -53,6 +58,10 @@ export const CPage = ({
         )}
         {children}
       </Paper>
+      <footer
+        className={classes.footer}
+        dangerouslySetInnerHTML={{ __html: poweredByHtml }}
+      ></footer>
     </div>
   );
 };

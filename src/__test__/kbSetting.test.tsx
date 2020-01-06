@@ -17,6 +17,8 @@ const globalSettings: GlobalSettings = {
   endPointPrefix: "//localhost:3000",
   dateTimeFormat: "MM/dd/yyyy HH:mm:ss",
   menu: [],
+  poweredByHtml:
+    '<div style="COLOR: #555555; FONT-SIZE: 12px"><span style="color: #555555;">©2019 </span><a style="COLOR: #555555" href="http://www.comm100.com" target="_blank">Comm100</a>&nbsp;| <a style="COLOR: #555555" href="http://www.comm100.com/privacy" target="_blank">Privacy Policy</a> </div>',
 };
 const entities: UIEntity[] = [
   {

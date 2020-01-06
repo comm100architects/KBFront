@@ -40,6 +40,7 @@ export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
   menu: Array<RawProduct>;
+  poweredByHtml: string;
 }
 
 export interface UIGridFilter {
