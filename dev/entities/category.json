@@ -9,7 +9,7 @@
       "referenceEntityFieldNameForLabel": "name",
       "isRequired": true
     },
-    { "name": "title", "type": "string", "title": "Name" },
+    { "name": "title", "type": "string", "label": "Name" },
     {
       "name": "parentId",
       "type": "reference",

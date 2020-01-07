@@ -17,12 +17,12 @@ export interface UIEntityField {
     | "bool"
     | "reference"
     | "guid"
-    | "selfIncrementId"
+    | "selfIncreaseId"
     | "dateTime";
   minLength?: number;
   maxLength?: number;
   isRequired?: boolean;
-  title?: string;
+  label?: string;
   labelsForValue?: UIEntityFieldLabelForValue[];
   referenceEntityName?: string;
   referenceEntityFieldNameForLabel?: string;
@@ -32,7 +32,7 @@ export interface UIEntityField {
 
 export interface UIEntity {
   name: string;
-  title?: string;
+  label?: string;
   fields: UIEntityField[];
 }
 
@@ -167,7 +167,7 @@ export const normalizeRawUIPage = (
 interface RawParentEntity {
   name: string;
   fieldName: string;
-  title?: string;
+  label?: string;
   position: "topRightCorner" | "left";
 }
 
@@ -177,7 +177,7 @@ interface ParentEntity {
   position: "topRightCorner" | "left";
   repo: IRepository<Entity>;
   data: Entity[];
-  title?: string;
+  label?: string;
 }
 
 export interface UIPage {

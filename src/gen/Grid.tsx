@@ -65,7 +65,7 @@ const makeFilters = async (page: UIPage): Promise<React.ComponentType<any>> => {
           const field = page.entity.fields.find(
             ({ name }) => name === filter.fieldName,
           )!;
-          return makeSelect(field, field.title || "\u3000");
+          return makeSelect(field, field.label || "\u3000");
         case "keywordSearch":
           return makeKeywordSearch();
         default:
@@ -142,8 +142,8 @@ export const makeGridComponent = async (page: UIPage) => {
         {topRightParentEntity && (
           <div className={classes.topRightCorner}>
             <FormControl>
-              {topRightParentEntity.title && (
-                <InputLabel>{topRightParentEntity.title}</InputLabel>
+              {topRightParentEntity.label && (
+                <InputLabel>{topRightParentEntity.label}</InputLabel>
               )}
               <CSelect
                 value={parentEntityId}
@@ -291,7 +291,7 @@ const makeTableComponent = async (page: UIPage) => {
         header: column.headerIcon ? (
           <CIcon name={column.headerIcon} />
         ) : (
-          undefinedDefault(column.headerLabel, field.title)
+          undefinedDefault(column.headerLabel, field.label)
         ),
         sortable: undefinedDefault(column.isAllowSort, true),
         content: (row: Entity) =>

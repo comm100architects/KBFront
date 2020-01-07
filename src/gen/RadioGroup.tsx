@@ -12,7 +12,7 @@ export const makeRadioGroup = async (
         value: option.id,
         label: option[field.referenceEntityFieldNameForLabel!],
       })),
-      title: field.title,
+      title: field.label,
     });
   }
 
@@ -22,7 +22,7 @@ export const makeRadioGroup = async (
         value: key,
         label,
       })),
-      title: field.title,
+      title: field.label,
     });
   }
 

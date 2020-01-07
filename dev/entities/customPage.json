@@ -12,7 +12,7 @@
       "referenceEntityName": "knowledgeBases",
       "referenceEntityFieldNameForLabel": "name",
       "isRequired": true,
-      "title": "Knowledge Base"
+      "label": "Knowledge Base"
     },
     {
       "name": "title",
@@ -20,7 +20,7 @@
       "minLength": 0,
       "maxLength": 1024,
       "isRequired": true,
-      "title": "Title"
+      "label": "Title"
     },
     {
       "name": "status",
@@ -29,25 +29,25 @@
         { "key": 0, "label": "Draft", "icon": "dotSecondary" },
         { "key": 1, "label": "Published", "icon": "dotPrimary" }
       ],
-      "title": "Status",
+      "label": "Status",
       "default": 0
     },
     {
       "name": "customUrl",
       "type": "string",
-      "title": "Custom URL",
+      "label": "Custom URL",
       "default": ""
     },
     {
       "name": "body",
       "type": "string",
       "default": "",
-      "title": "Body"
+      "label": "Body"
     },
     {
       "name": "modified",
       "type": "dateTime",
-      "title": "Modified"
+      "label": "Modified"
     }
   ]
 }

@@ -31,7 +31,7 @@ const entities: UIEntity[] = [
         minLength: 0,
         maxLength: 64,
         isRequired: true,
-        title: "Name",
+        label: "Name",
       },
       {
         name: "homePageType",
@@ -41,7 +41,7 @@ const entities: UIEntity[] = [
           { key: 1, label: "Display a custom page" },
         ],
         isRequired: true,
-        title: "Home",
+        label: "Home",
       },
       {
         name: "homeCustomPageId",
@@ -49,7 +49,7 @@ const entities: UIEntity[] = [
         referenceEntityName: "customPages",
         referenceEntityFieldNameForLabel: "title",
         isRequired: true,
-        title: "",
+        label: "",
       },
       {
         name: "visibility",
@@ -59,7 +59,7 @@ const entities: UIEntity[] = [
           { key: 1, label: "Private" },
         ],
         isRequired: true,
-        title: "Visibility",
+        label: "Visibility",
       },
       {
         name: "allowFeedback",
@@ -76,7 +76,7 @@ const entities: UIEntity[] = [
           },
         ],
         isRequired: false,
-        title: "Feedback",
+        label: "Feedback",
       },
       {
         name: "status",
@@ -86,7 +86,7 @@ const entities: UIEntity[] = [
           { key: 1, label: "Open" },
         ],
         isRequired: true,
-        title: "Status",
+        label: "Status",
       },
     ],
   },

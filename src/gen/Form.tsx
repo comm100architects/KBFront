@@ -95,7 +95,7 @@ export const makeUIRow = async (
           required={field.isRequired}
           error={error}
         >
-          {field.title && <FormLabel component="div">{field.title}</FormLabel>}
+          {field.label && <FormLabel component="div">{field.label}</FormLabel>}
           <Field
             data-test-id={`form-field-${i}`}
             name={field.name}
@@ -180,7 +180,7 @@ const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
           !rowHiddenPred(row, values) &&
           !values[field.name]
         ) {
-          errors[field.name] = `${field.title} is required`;
+          errors[field.name] = `${field.label} is required`;
         }
       }
       return errors;
@@ -335,7 +335,7 @@ export const makeEditFormComponent = async ({
         {isDedicatedSingular && options.length > 1 && (
           <div className={classes.topRightCorner}>
             <FormControl>
-              {entity.title && <InputLabel>{entity.title}</InputLabel>}
+              {entity.label && <InputLabel>{entity.label}</InputLabel>}
               <CSelect
                 value={entityId}
                 options={options}

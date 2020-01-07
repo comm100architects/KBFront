@@ -53,6 +53,16 @@ const kbMenu = [
       { relatviePath: "edit", pageId: "kb.articles.edit" },
     ],
   },
+  {
+    name: "tags",
+    label: "Tags",
+    icon: "description",
+    pages: [
+      { relatviePath: "", pageId: "kb.tags" },
+      { relatviePath: "new", pageId: "kb.tags.new" },
+      { relatviePath: "edit", pageId: "kb.tags.edit" },
+    ],
+  },
   { name: "images", label: "Images", icon: "image" },
   {
     name: "designs",
