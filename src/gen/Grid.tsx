@@ -149,7 +149,9 @@ export const makeGridComponent = async (
           key: selectorField.name,
           value:
             (query[selectorField.name] as string) ||
+            (grandparentEntities && grandparentEntities[0].id) ||
             (parentEntities && parentEntities[0].id) ||
+            (selectorEntities && selectorEntities[0].id) ||
             "",
         },
       ]) ||
@@ -214,6 +216,7 @@ const getLabel = (
   field: EntityField,
   entity: Entity,
   data: { [id: string]: Entity },
+  fieldToBeDisplayedWhenReferenced?: string,
 ) => {
   if (field.labelsForValue) {
     return field.labelsForValue[entity[field.name]].label;
@@ -227,7 +230,10 @@ const getLabel = (
       const items = value as string[];
       return items
         .map(id => {
-          return data[id].name || data[id].title;
+          return (
+            fieldToBeDisplayedWhenReferenced &&
+            data[id][fieldToBeDisplayedWhenReferenced]
+          );
         })
         .toString();
     }
@@ -242,14 +248,32 @@ const rowContent = (
   column: UIGridColumn,
   row: Entity,
   fieldData: { [id: string]: Entity },
+  fieldToBeDisplayedWhenReferenced?: string,
 ) => {
   const field = column.field!;
   const textType = () => {
     if (column.link) {
       const to = replaceVariables(column.link!, row);
-      return <CLink text={getLabel(settings, field, row, fieldData)} to={to} />;
+      return (
+        <CLink
+          text={getLabel(
+            settings,
+            field,
+            row,
+            fieldData,
+            fieldToBeDisplayedWhenReferenced,
+          )}
+          to={to}
+        />
+      );
     }
-    return getLabel(settings, field, row, fieldData);
+    return getLabel(
+      settings,
+      field,
+      row,
+      fieldData,
+      fieldToBeDisplayedWhenReferenced,
+    );
   };
 
   const iconType = () => {
@@ -288,9 +312,12 @@ const makeTableComponent = async (
         ({ name }) => column.fieldName === name,
       )!;
 
+      const referenceEntity =
+        field.referenceEntity && (await field.referenceEntity());
+
       const list =
         field.type === "reference"
-          ? await (await field.referenceEntity!()).repo.getList()
+          ? (await referenceEntity?.repo.getList()) || []
           : [];
 
       const fieldData = list.reduce((res, item) => {
@@ -313,7 +340,14 @@ const makeTableComponent = async (
           undefinedDefault(column.headerLabel, field.label)
         ),
         sortable: undefinedDefault(column.isAllowSort, true),
-        content: (row: Entity) => rowContent(settings, column, row, fieldData),
+        content: (row: Entity) =>
+          rowContent(
+            settings,
+            column,
+            row,
+            fieldData,
+            referenceEntity?.fieldToBeDisplayedWhenReferenced,
+          ),
         width: getWidth(),
       };
     }),

@@ -60,18 +60,6 @@ const entities = fs
   )
   .map(entity => Object.assign(entity, { id: entity.name }));
 
-const pages = fs
-  .readdirSync(_p("./pages"))
-  .filter(name => /\.json$/.test(name))
-  .map(name => {
-    const page = JSON.parse(
-      fs.readFileSync(_p(`./pages/${name}`), { encoding: "utf-8" }),
-    );
-    return Object.assign(page, {
-      entity: entities.find(({ name }) => name === page.entity),
-    });
-  });
-
 const data = range(10)
   .map(() =>
     generate({
@@ -194,7 +182,6 @@ const data = range(10)
       customPages: [],
       designs: [],
       entities,
-      pages,
       menu: menu(),
       tags: [],
     },

@@ -1,9 +1,20 @@
 {
   "name": "design",
+  "nameForPlural": "designs",
+  "label": "Design",
+  "labelForPlural": "Designs",
   "fields": [
     {
       "name": "id",
       "type": "guid",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false,
+      "isRequired": true
+    },
+    {
+      "name": "kbId",
+      "type": "reference",
+      "referenceEntityName": "knowledgeBase",
       "isVisibleForNew": false,
       "isVisibleForEdit": false,
       "isRequired": true

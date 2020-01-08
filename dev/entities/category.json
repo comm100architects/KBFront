@@ -1,8 +1,9 @@
 {
-  "name": "categories",
-  "nameForPlural": "category",
+  "name": "category",
+  "nameForPlural": "categories",
   "label": "Category",
   "labelForPlural": "Categories",
+  "fieldToBeDisplayedWhenReferenced": "title",
   "fields": [
     { "name": "id", "type": "guid" },
     {

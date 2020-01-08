@@ -6,14 +6,6 @@
   "fields": [
     { "name": "id", "type": "guid" },
     {
-      "name": "kbId",
-      "type": "reference",
-      "referenceEntityName": "knowledgeBase",
-      "isVisibleForNew": false,
-      "isVisibleForEdit": false,
-      "isRequired": true
-    },
-    {
       "name": "title",
       "type": "string",
       "minLength": 0,
@@ -102,8 +94,7 @@
     {
       "name": "tagIds",
       "type": "reference",
-      "referenceEntityName": "tags",
-      "referenceEntityFieldNameForLabel": "name",
+      "referenceEntityName": "tag",
       "isVisibleForNew": true,
       "isVisibleForEdit": true,
       "label": "Tags"
@@ -167,6 +158,10 @@
       {
         "fieldName": "title",
         "componentType": "input"
+      },
+      {
+        "fieldName": "featured",
+        "componentType": "checkbox"
       },
       {
         "fieldName": "customUrl",

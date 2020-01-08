@@ -70,6 +70,11 @@ export class ReadonlyLocalRepository<
 export class RESTfulRepository<E> implements IRepository<E> {
   endPoint: string;
   constructor(url: string, entityName: string) {
+    if (!entityName) {
+      throw new Error(
+        "create RESTfulRepository failed, entityName is null or empty",
+      );
+    }
     this.endPoint = `${url}/${entityName}`;
   }
 

@@ -356,7 +356,15 @@ const parseRawEntityField = (
     ...rawEntityField,
     referenceEntity:
       type === "reference"
-        ? delay(() => fetchEntity(settings, referenceEntityName!))
+        ? delay(async () => {
+            const entity = await fetchEntity(settings, referenceEntityName!);
+            if (!entity.fieldToBeDisplayedWhenReferenced) {
+              throw new Error(
+                `Entity ${entity.name}'s fieldToBeDisplayedWhenReferenced MUST NOT be null or empty`,
+              );
+            }
+            return entity;
+          })
         : undefined,
   };
 };

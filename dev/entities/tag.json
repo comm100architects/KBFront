@@ -3,6 +3,7 @@
   "nameForPlural": "tags",
   "label": "Tag",
   "labelForPlural": "Tags",
+  "fieldToBeDisplayedWhenReferenced": "name",
   "fields": [
     { "name": "id", "type": "guid" },
     {
