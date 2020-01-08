@@ -1,19 +1,20 @@
-import { UIEntityField } from "./types";
-import { CSelect, CSelectProps } from "../components/Select";
+import { EntityField } from "./types";
+import { CSelect } from "../components/Select";
 import { withProps } from "../framework/hoc";
 
 export const makeSelect = async (
-  field: UIEntityField,
+  field: EntityField,
   nullOptionLabel?: string,
 ): Promise<React.ComponentType<any>> => {
   if (field.type === "reference") {
-    const options = await field.referenceRepo!.getList();
+    const entity = await field.referenceEntity!();
+    const options = await entity.repo.getList();
     return withProps(CSelect, {
       options: [
         { value: "", label: nullOptionLabel || "\u3000" },
         ...options.map(option => ({
           value: option.id as string,
-          label: option[field.referenceEntityFieldNameForLabel!],
+          label: option[entity.fieldToBeDisplayedWhenReferenced],
         })),
       ],
     });

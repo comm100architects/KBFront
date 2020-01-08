@@ -7,11 +7,11 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Collapse from "@material-ui/core/Collapse";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { RawProduct, RawMenuItem, RawSubMenu } from "./gen/types";
+import { TopMenu, SideMenu } from "./gen/types";
 import { ListItemLink } from "./components/ListItemLink";
 import { CIcon } from "./components/Icons";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(_ => ({
   root: {
     flexShrink: 0,
     width: 240,
@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const makeMenuItem = (productName: string, item: RawMenuItem) => ({
+const makeMenuItem = (productName: string, item: SideMenu) => ({
   selected,
 }: {
   selected: string;
@@ -34,11 +34,12 @@ const makeMenuItem = (productName: string, item: RawMenuItem) => ({
   ></ListItemLink>
 );
 
-const makeSubMenu = (productName: string, menu: RawSubMenu) => {
-  const menuItems = menu.items.map(item => makeMenuItem(productName, item));
+const makeSubMenu = (productName: string, menu: SideMenu) => {
+  const submenu = menu.submenu!;
+  const menuItems = submenu.map(item => makeMenuItem(productName, item));
   return ({ selected }: { selected: string }) => {
     const [isOpen, setIsOpen] = React.useState(
-      menu.items.some(({ name }) => name === selected),
+      submenu.some(({ name }) => name === selected),
     );
     const handleClick = () => setIsOpen(!isOpen);
     return (
@@ -62,12 +63,12 @@ const makeSubMenu = (productName: string, menu: RawSubMenu) => {
   };
 };
 
-export const makeMenu = ({ name, menu }: RawProduct) => {
+export const makeMenu = ({ name, menu }: TopMenu) => {
   const menus = menu.map(item => {
-    if ((item as RawSubMenu).items) {
-      return makeSubMenu(name, item as RawSubMenu);
+    if (item.submenu) {
+      return makeSubMenu(name, item);
     }
-    return makeMenuItem(name, item as RawMenuItem);
+    return makeMenuItem(name, item);
   });
 
   return ({ selected }: { selected: string }) => {

@@ -8,8 +8,7 @@
     {
       "name": "kbId",
       "type": "reference",
-      "referenceEntityName": "knowledgeBases",
-      "referenceEntityFieldNameForLabel": "name",
+      "referenceEntityName": "knowledgeBase",
       "isRequired": true
     },
     { "name": "name", "type": "string", "label": "Name", "isRequired": true }

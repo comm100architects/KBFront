@@ -1,266 +1,515 @@
 import _ from "lodash";
 import { IRepository, RESTfulRepository } from "../framework/repository";
 import { CIconName } from "../components/Icons";
+import {
+  UIAction,
+  RawTopMenu,
+  RawSideMenu,
+  RawEntityField,
+  RawGlobalSettings,
+  RawEntity,
+  RawUIGrid,
+  RawUIGridColumn,
+  RawUIRow,
+  RawUIForm,
+  RawUIGridFilter,
+  ComponentType,
+  RawUISelector,
+  EnumItem,
+} from "./rawTypes";
+import { fetchJson } from "../framework/network";
+import { evalConditions, wordsInsideSentence } from "../framework/utils";
 
-export interface UIEntityFieldLabelForValue {
-  key: number | boolean;
-  label: string;
-  icon?: string;
-}
-export interface UIEntityField {
+export interface EntityInfo {
   name: string;
-  type:
-    | "string"
-    | "int"
-    | "enum"
-    | "reference"
-    | "bool"
-    | "reference"
-    | "guid"
-    | "selfIncreaseId"
-    | "dateTime";
+  nameForPlural: string;
+  label: string;
+  labelForPlural: string;
+  titleForNew: string;
+  titleForEdit: string;
+  titleForMultiRowsUI: string;
+  description?: string;
+  repo: IRepository<Entity>;
+  isSingleRecord: boolean;
+  selector?: EntityField;
+  parentSelector?: () => Promise<UISelector>;
+  grandparentSelector?: () => Promise<UISelector>;
+  fields: EntityField[];
+  grid?: UIGrid;
+  newForm?: UINewForm;
+  updateForm?: UIUpdateForm;
+  fieldToBeDisplayedWhenReferenced: string;
+}
+
+export interface UISelector {
+  entity?: EntityInfo;
+  childField: EntityField;
+  componentType: "select" | "tree";
+  componentPosition: "topRightCorner" | "left";
+}
+
+export { UIAction, ComponentType };
+
+export interface EntityField {
+  isPrimary: boolean;
+  name: string;
+  label: string;
+  type: string;
   minLength?: number;
   maxLength?: number;
   isRequired?: boolean;
-  label?: string;
-  labelsForValue?: UIEntityFieldLabelForValue[];
+  labelsForValue?: EnumItem[];
+  isVisibleForNew: boolean;
+  isVisibleForEdit: boolean;
   referenceEntityName?: string;
-  referenceEntityFieldNameForLabel?: string;
-  referenceRepo?: IRepository<Entity>;
   default?: any;
+  referenceEntity?: () => Promise<EntityInfo>;
 }
 
-export interface UIEntity {
-  name: string;
-  label?: string;
-  fields: UIEntityField[];
+export interface EntityFormControl {
+  field: EntityField;
+  componentType: ComponentType;
+  indent: 0 | 1;
+  conditionPred(entity: Entity): boolean;
 }
+
+export interface UINewForm {
+  defaultValues: Entity;
+  rows: EntityFormControl[];
+}
+
+export interface UIUpdateForm {
+  isDiscardOrCancel: boolean;
+  rows: EntityFormControl[];
+}
+
+export type EntityFieldType =
+  | "string"
+  | "int"
+  | "enum"
+  | "reference"
+  | "bool"
+  | "reference"
+  | "guid"
+  | "selfIncreaseId"
+  | "dateTime";
 
 export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
-  menu: Array<RawProduct>;
   poweredByHtml: string;
+  selectedTopMenu: TopMenu;
+  menu: TopMenu[];
 }
 
 export interface UIGridFilter {
-  fieldName?: string;
+  fieldName: string;
+  field?: EntityField;
   componentType: "select" | "keywordSearch";
-}
-
-// structure: page include groups, each group include rows, each row is a control
-export interface RawUIPage {
-  title: string;
-  description?: string;
-  entity: UIEntity;
-  rows?: RawUIRow[];
-  grid?: UIGrid;
-  parentEntities?: RawParentEntity[];
 }
 
 export interface UIGrid {
   columns: UIGridColumn[];
   isAllowNew: boolean;
-  newEntityButtonLabel: string;
   isAllowEdit: boolean;
   isAllowDelete: boolean;
-  confirmDeleteMessage?: string;
+  labelForNewButton: string;
+  confirmDeleteMessage: string;
   filters: UIGridFilter[];
 }
 
 export interface UIGridColumn {
-  headerLabel?: string;
+  headerLabel: string;
   headerIcon?: CIconName;
-  isAllowSort?: boolean;
+  isAllowSort: boolean;
   fieldName: string;
-  cellComponentType: "link" | "text" | "icon";
-  linkPath?: string;
+  isIcon: boolean;
+  link?: string;
   width?: string;
+  field?: EntityField;
 }
 
-export interface RawUIRow {
-  fieldName: string;
-  componentType: ComponentType;
-  indent?: 0 | 1;
-  conditionsToHide?: string[];
+export type EntityKey = string | number;
+export type Entity = { id?: EntityKey; [key: string]: any };
+
+export interface TopMenu {
+  name: string;
+  label: string;
+  menu: SideMenu[];
 }
 
-type ComponentType =
-  | "input"
-  | "select"
-  | "radioGroup"
-  | "checkbox"
-  | "codeEditor"
-  // TODO:
-  | "label"
-  | "labelWithToggle";
-
-export interface UIRow {
-  field: UIEntityField;
-  componentType: ComponentType;
-  indent: 0 | 1;
-  conditionsToHide?: string[];
+export interface SideMenu {
+  name: string;
+  label: string;
+  icon?: CIconName;
+  submenu?: SideMenu[];
+  page: PageProps;
 }
 
-const normalizeRawUIRow = (
-  fields: UIEntityField[],
-  { indent, conditionsToHide, componentType, fieldName }: RawUIRow,
-): UIRow => {
-  const row: UIRow = {
-    componentType,
-    indent: indent || 0,
-    conditionsToHide,
-    field: fields.find(({ name }) => name === fieldName)!,
+export interface PageProps {
+  entity: () => Promise<EntityInfo>;
+  isMultiRowsUI: boolean;
+  actionForSingleRow?: UIAction;
+}
+
+const delayCache: { result?: any }[] = [];
+const delay = (fn: () => Promise<any>): (() => Promise<any>) => {
+  const i = delayCache.length;
+  delayCache.push({});
+  return () => {
+    const item = delayCache[i];
+    if (!item.result) {
+      item.result = fn();
+    }
+    return item.result;
   };
-  if (componentType === "codeEditor") {
-    return { ...row };
-  }
-  return row;
 };
 
-export const normalizeRawUIPage = (
-  settings: GlobalSettings,
-  { title, description, entity, rows, grid, parentEntities }: RawUIPage,
-  relatviePath = "",
-): UIPage => {
-  const entityFields = entity.fields.map(field => ({
-    ...field,
-    referenceRepo: field.referenceEntityName
-      ? new RESTfulRepository<Entity>(
-          settings.endPointPrefix,
-          field.referenceEntityName,
-        )
-      : undefined,
-  }));
-  const defaultValues = entityFields.reduce(
-    (res, field) => {
-      return {
-        ...res,
-        [field.name]: field.default,
-      };
-    },
-    { id: "" },
+const bindDelayedPromises = (
+  a: () => Promise<any>,
+  genb: (resa: any) => () => Promise<any>,
+): (() => Promise<any>) => {
+  return async () => {
+    const resa = await a();
+    return await genb(resa)();
+  };
+};
+
+export const parseRawGlobalSettings = async (
+  rawGlobalSettings: RawGlobalSettings,
+): Promise<GlobalSettings> => {
+  const { endPointPrefix, dateTimeFormat, poweredByHtml } = rawGlobalSettings;
+  const menu = await fetchJson(`${endPointPrefix}/menu`, "GET");
+  if (!menu || menu.length === 0) {
+    throw new Error("TopMenu not exist");
+  }
+
+  const topMenus = menu.map(parseRawTopMenu.bind(null, rawGlobalSettings));
+  return {
+    endPointPrefix,
+    dateTimeFormat,
+    poweredByHtml,
+    selectedTopMenu: topMenus[0],
+    menu: topMenus,
+  };
+};
+
+export const findMenu = (
+  { menu }: TopMenu,
+  menuName: string,
+): SideMenu | undefined => {
+  for (const sideMenu of menu) {
+    const item = sideMenu.submenu
+      ? sideMenu.submenu.find(({ name }) => name === menuName.toLowerCase())
+      : sideMenu.name === menuName.toLowerCase() && sideMenu;
+    if (item) return item;
+  }
+};
+
+export const fetchEntity = async (
+  settings: RawGlobalSettings,
+  name: string,
+): Promise<EntityInfo> => {
+  if (!name) {
+    throw new Error(
+      "When fetch an entity, entity's name MUST NOT be null or empty.",
+    );
+  }
+
+  const rawEntity = (await fetchJson(
+    `${settings.endPointPrefix}/entities/${name}`,
+    "GET",
+  )) as RawEntity;
+  return parseRawEntity(settings, rawEntity);
+};
+
+const parseRawEntity = (
+  settings: RawGlobalSettings,
+  rawEntity: RawEntity,
+): EntityInfo => {
+  try {
+    const {
+      name,
+      nameForPlural,
+      label,
+      labelForPlural,
+      selector,
+      parentSelector,
+      grandparentSelector,
+      isSingleRecord,
+      grid,
+      form,
+      fields,
+      fieldToBeDisplayedWhenReferenced,
+      description,
+    } = rawEntity;
+
+    const entityFields = fields.map(parseRawEntityField.bind(null, settings));
+
+    const parsedParentSelector =
+      parentSelector && delay(parseRawUISelector(entityFields, parentSelector));
+
+    const [newForm, updateForm] = form
+      ? parseRawUIForm(entityFields, form)
+      : [undefined, undefined];
+    return {
+      name,
+      nameForPlural,
+      label,
+      labelForPlural,
+      titleForNew: `New ${rawEntity.label}`,
+      titleForEdit: `Edit ${rawEntity.label}`,
+      titleForMultiRowsUI: rawEntity.labelForPlural,
+      description,
+      repo: new RESTfulRepository(
+        settings.endPointPrefix,
+        isSingleRecord ? name : nameForPlural,
+      ),
+      selector: selector
+        ? mustFindField(fields, selector, "selector")
+        : undefined,
+      parentSelector: parsedParentSelector,
+      grandparentSelector:
+        grandparentSelector &&
+        delay(
+          parseRawGrandparentUISelector(
+            parsedParentSelector!,
+            grandparentSelector,
+          ),
+        ),
+      isSingleRecord,
+      fields: entityFields,
+      grid: grid && parseRawUIGrid(entityFields, rawEntity, grid),
+      newForm,
+      updateForm,
+      fieldToBeDisplayedWhenReferenced,
+    };
+  } catch (err) {
+    // FIXME: not sure if the stack will be preserved.
+    throw new Error(`Parse entity ${name} failed: ${err.message}`);
+  }
+};
+
+const mustFindField = (
+  fields: EntityField[],
+  fieldName: string,
+  source: string,
+): EntityField => {
+  const field = fields.find(({ name }) => name === fieldName)!;
+  if (!field) {
+    throw new Error(`Field "${fieldName}"(read from ${source}) not exist.`);
+  }
+  return field;
+};
+
+const parseRawUISelector = (
+  fields: EntityField[],
+  rawUISelect: RawUISelector,
+) => async (): Promise<UISelector> => {
+  const { fieldName, componentType, componentPosition } = rawUISelect;
+  const childField = mustFindField(
+    fields,
+    fieldName,
+    "(grand)parentSelector.fieldName",
   );
   return {
-    type: rows ? (relatviePath === "new" ? "singularNew" : "singular") : "list",
-    settings,
-    title,
-    description,
-    entity: { ...entity, fields: entityFields },
-    entityRepo: new RESTfulRepository<Entity>(
-      settings.endPointPrefix,
-      entity.name,
-    ),
-    rows: rows?.map(row => normalizeRawUIRow(entityFields, row)),
-    grid,
-    defaultValues,
-    isDedicatedSingular: relatviePath === "",
-    parentEntities:
-      parentEntities?.map(e => ({
-        ...e,
-        repo: new RESTfulRepository<Entity>(settings.endPointPrefix, e.name),
-        data: [],
-      })) || [],
+    entity: await (childField.referenceEntity && childField.referenceEntity()),
+    childField,
+    componentType,
+    componentPosition,
   };
 };
 
-interface RawParentEntity {
-  name: string;
-  fieldName: string;
-  label?: string;
-  position: "topRightCorner" | "left";
-}
+const parseRawGrandparentUISelector = (
+  parsedParentSelector: () => Promise<UISelector>,
+  rawGrandparentUISelect: RawUISelector,
+): (() => Promise<UISelector>) => {
+  return bindDelayedPromises(
+    parsedParentSelector,
+    (parentSelector: UISelector) => {
+      if (!parentSelector.entity) {
+        throw new Error(
+          "If parentSelector is not a reference to another entity, there MUST NOT be a groundparentSeletor.",
+        );
+      }
+      return parseRawUISelector(
+        parentSelector.entity.fields,
+        rawGrandparentUISelect,
+      );
+    },
+  );
+};
 
-interface ParentEntity {
-  name: string;
-  fieldName: string;
-  position: "topRightCorner" | "left";
-  repo: IRepository<Entity>;
-  data: Entity[];
-  label?: string;
-}
-
-export interface UIPage {
-  type: "singular" | "singularNew" | "list";
-  parentEntities: ParentEntity[];
-  isDedicatedSingular: boolean;
-  settings: GlobalSettings;
-  title: string;
-  description?: string;
-  entity: UIEntity;
-  entityRepo: IRepository<Entity>;
-  rows?: UIRow[];
-  grid?: UIGrid;
-  defaultValues: Entity;
-}
-
-export type Entity = { id: string | number | undefined; [key: string]: any };
-
-export interface EntityInfo {
-  name: string;
-  source: string | Entity | Entity[];
-}
-
-export interface PageRef {
-  relatviePath: string;
-  pageId: string;
-  redirectTo?: string;
-}
-
-export interface RawMenuItem {
-  name: string; // for url
-  label: string; //
-  icon?: CIconName;
-  pages?: PageRef[];
-}
-
-export interface RawSubMenu {
-  label: string;
-  icon: CIconName;
-  items: Array<RawMenuItem>;
-  pages?: PageRef[];
-}
-
-export type RawMenu = Array<RawMenuItem | RawSubMenu>;
-
-export interface RawProduct {
-  name: string;
-  label: string;
-  defaultPage: string;
-  menu: RawMenu;
-}
-
-export function isMenuExist(menuName: string, menu: RawMenu): boolean {
-  for (var item of menu) {
-    if ((item as RawMenuItem).name === menuName) return true;
-    if ((item as RawSubMenu).items?.some(({ name }) => name === menuName))
-      return true;
-  }
-  return false;
-}
-
-export function getMenuPages(menuName: string, menu: RawMenu): PageRef[] {
-  for (var item of menu) {
-    if ((item as RawMenuItem).name === menuName) {
-      return item.pages || [];
-    }
-    const menuItem = (item as RawSubMenu).items?.find(
-      ({ name }) => name === menuName,
-    );
-    if (menuItem !== undefined) {
-      return menuItem.pages || [];
+const parseRawEntityField = (
+  settings: RawGlobalSettings,
+  rawEntityField: RawEntityField,
+): EntityField => {
+  const { type, referenceEntityName, name } = rawEntityField;
+  if (type === "reference") {
+    if (!referenceEntityName) {
+      throw new Error(
+        `Field "${name}" is reference to another entity but referenceEntityName is null or empty.`,
+      );
     }
   }
-  return [];
-}
+  return {
+    ...rawEntityField,
+    referenceEntity:
+      type === "reference"
+        ? delay(() => fetchEntity(settings, referenceEntityName!))
+        : undefined,
+  };
+};
 
-export function getMenuLabel(menuName: string, menu: RawMenu): string | null {
-  for (var item of menu) {
-    if ((item as RawMenuItem).name === menuName)
-      return (item as RawMenuItem).label;
-    if ((item as RawSubMenu).items?.some(({ name }) => name === menuName))
-      return (item as RawSubMenu).items!.find(({ name }) => name === menuName)!
-        .label;
-  }
-  return null;
-}
+const parseRawUIGrid = (
+  fields: EntityField[],
+  entity: RawEntity,
+  { isAllowNew, isAllowEdit, isAllowDelete, columns, filters }: RawUIGrid,
+): UIGrid => {
+  return {
+    columns: columns.map(parseRawUIGridColumn.bind(null, fields)),
+    isAllowNew,
+    isAllowEdit,
+    isAllowDelete,
+    filters: filters.map(parseRawUIGridFilter.bind(null, fields)),
+    labelForNewButton: isAllowNew ? `New ${entity.label}` : "",
+    confirmDeleteMessage: isAllowDelete
+      ? `Are you sure you want to delete this ${wordsInsideSentence(
+          entity.label,
+        )}?`
+      : "",
+  };
+};
+
+const parseRawUIGridFilter = (
+  fields: EntityField[],
+  rawUIGridFilter: RawUIGridFilter,
+): UIGridFilter => {
+  const { componentType, fieldName } = rawUIGridFilter;
+  const field =
+    componentType === "keywordSearch"
+      ? undefined
+      : mustFindField(fields, fieldName!, "gridFilter.fieldName");
+  return {
+    componentType,
+    fieldName: field?.name || "keyword",
+    field,
+  };
+};
+
+const parseRawUIGridColumn = (
+  fields: EntityField[],
+  rawUIGridColumn: RawUIGridColumn,
+): UIGridColumn => {
+  const {
+    headerIcon,
+    isAllowSort,
+    fieldName,
+    isIcon,
+    link,
+    width,
+  } = rawUIGridColumn;
+  // FIXME: should be HTTPResultField
+  const field = mustFindField(fields, fieldName, "column.fieldName");
+  return {
+    headerLabel: isIcon ? "" : field.label,
+    headerIcon,
+    isAllowSort,
+    fieldName,
+    isIcon,
+    link,
+    width,
+    field,
+  };
+};
+
+const parseRawUIForm = (
+  fields: EntityField[],
+  rawForm: RawUIForm,
+): [UINewForm, UIUpdateForm] => {
+  const { isDiscardOrCancel, rows } = rawForm;
+  const parsedRows = rows.map(parseRawUIRow.bind(null, fields));
+  return [
+    {
+      defaultValues: fields.reduce(
+        (res, field) => {
+          return {
+            ...res,
+            [field.name]: field.default,
+          };
+        },
+        { id: "" },
+      ),
+      rows: parsedRows.filter(row => row.field.isVisibleForNew),
+    },
+    {
+      isDiscardOrCancel,
+      rows: parsedRows.filter(row => row.field.isVisibleForEdit),
+    },
+  ];
+};
+
+const parseRawUIRow = (
+  fields: EntityField[],
+  {
+    indent,
+    conditionForShowing,
+    conditionLogic,
+    componentType,
+    fieldName,
+  }: RawUIRow,
+): EntityFormControl => {
+  return {
+    componentType,
+    indent: indent || 0,
+    conditionPred: conditionForShowing
+      ? (entity: Entity): boolean =>
+          evalConditions(
+            conditionForShowing,
+            entity,
+            (conditionLogic || "and") === "and",
+          )
+      : () => true,
+    field: mustFindField(fields, fieldName, "formRow.fieldName"),
+  };
+};
+
+const labelToName = (label: string): string => {
+  return label.replace(/[^\w]+/g, "").toLowerCase();
+};
+
+const parseRawTopMenu = (
+  settings: RawGlobalSettings,
+  { label, menu }: RawTopMenu,
+): TopMenu => {
+  const menu1 = menu
+    .filter(item => !item.parentMenuLabel)
+    .map(item => {
+      const sideMenu = parseSideMenu(settings, item);
+      const submenu = menu
+        .filter(({ parentMenuLabel }) => parentMenuLabel === sideMenu.label)
+        .map(parseSideMenu.bind(null, settings));
+
+      if (submenu.length === 0) {
+        return sideMenu;
+      }
+      return { ...sideMenu, submenu };
+    });
+  return { label, name: labelToName(label), menu: menu1 };
+};
+
+const parseSideMenu = (
+  settings: RawGlobalSettings,
+  { label, icon, entityName, isMultiRowsUI, actionForSingleRow }: RawSideMenu,
+): SideMenu => {
+  return {
+    name: labelToName(label),
+    label,
+    icon,
+    page: {
+      entity: delay(() => fetchEntity(settings, entityName)),
+      isMultiRowsUI,
+      actionForSingleRow,
+    },
+  };
+};

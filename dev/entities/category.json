@@ -1,20 +1,21 @@
 {
   "name": "categories",
+  "nameForPlural": "category",
+  "label": "Category",
+  "labelForPlural": "Categories",
   "fields": [
     { "name": "id", "type": "guid" },
     {
       "name": "kbId",
       "type": "reference",
-      "referenceEntityName": "knowledgeBases",
-      "referenceEntityFieldNameForLabel": "name",
+      "referenceEntityName": "knowledgeBase",
       "isRequired": true
     },
     { "name": "title", "type": "string", "label": "Name" },
     {
       "name": "parentId",
       "type": "reference",
-      "referenceEntityName": "categories",
-      "referenceEntityFieldNameForLabel": "name"
+      "referenceEntityName": "category"
     }
   ]
 }

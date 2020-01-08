@@ -1,16 +1,17 @@
-import { UIEntityField } from "./types";
+import { EntityField } from "./types";
 import { CRadioGroupProps, CRadioGroup } from "../components/RadioGroup";
 import { withProps } from "../framework/hoc";
 
 export const makeRadioGroup = async (
-  field: UIEntityField,
+  field: EntityField,
 ): Promise<React.ComponentType<CRadioGroupProps>> => {
   if (field.type === "reference") {
-    const options = await field.referenceRepo!.getList();
+    const entity = await field.referenceEntity!();
+    const options = await entity.repo.getList();
     return withProps(CRadioGroup, {
       options: options.map(option => ({
         value: option.id,
-        label: option[field.referenceEntityFieldNameForLabel!],
+        label: option[entity.fieldToBeDisplayedWhenReferenced],
       })),
       title: field.label,
     });

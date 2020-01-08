@@ -4,15 +4,9 @@ import { Suspense } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Spin from "./components/Spin";
 import LoadError from "./components/LoadError";
-import { isPromise } from "./framework/utils";
 import { makePageComponent } from "./gen";
 import { GlobalContext } from "./GlobalContext";
-
-interface PageRouterProps {
-  currentPage: string;
-  pageId?: string;
-  relatviePath: string;
-}
+import { PageProps } from "./gen/types";
 
 const useStyles = makeStyles((_: Theme) =>
   createStyles({
@@ -34,37 +28,29 @@ const Loading = (_: {}) => {
   );
 };
 
-export const PageRouter = (props: PageRouterProps) => {
-  const { currentPage, relatviePath, pageId } = props;
-  const context = React.useContext(GlobalContext)!;
-  const settings = context.settings!;
-  const product = context.product!;
+export const PageRouter = (props: PageProps) => {
   const [count, setCount] = React.useState(0);
+  const settings = React.useContext(GlobalContext);
   const LazyPage = React.useMemo(
     () =>
       React.lazy(async () => {
         try {
-          if (pageId) {
-            return {
-              default: await makePageComponent(
-                settings,
-                `${settings.endPointPrefix}/pages/${pageId}`,
-                relatviePath.toLowerCase(),
-              ),
-            };
-          } else {
-            const pack = await import(
-              /* webpackChunkName: "page" */
-              `./Products/${product.name}/${currentPage}/index.tsx`
-            );
-            if (isPromise(pack.default)) {
-              const component = await pack.default;
-              return { default: component };
-            }
-            return pack;
-          }
+          return {
+            default: await makePageComponent(settings, props),
+          };
+          // } else {
+          //   const pack = await import(
+          //     /* webpackChunkName: "page" */
+          //     `./Products/${product.name}/${currentPage}/index.tsx`
+          //   );
+          //   if (isPromise(pack.default)) {
+          //     const component = await pack.default;
+          //     return { default: component };
+          //   }
+          //   return pack;
+          // }
         } catch (e) {
-          console.log(e);
+          console.error(e);
           return {
             default: () => (
               <LoadError error={e} onReload={() => setCount(count + 1)} />
@@ -72,7 +58,7 @@ export const PageRouter = (props: PageRouterProps) => {
           };
         }
       }),
-    [currentPage, relatviePath, pageId, product, count],
+    [props.entity, props.isMultiRowsUI, props.actionForSingleRow, count],
   );
   return (
     <Suspense fallback={<Loading />}>

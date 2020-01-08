@@ -1,10 +1,9 @@
 import React from "react";
 import { makeInput } from "./Input";
-import { Entity } from "./types";
+import { Entity, EntityInfo, EntityFormControl } from "./types";
 import { makeRadioGroup } from "./RadioGroup";
 import { makeSelect } from "./Select";
 import { makeCheckbox } from "./Checkbox";
-import { UIPage, UIRow } from "./types";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import InputLabel from "@material-ui/core/InputLabel";
 import { Formik, Form, FormikHelpers, FormikProps, Field } from "formik";
@@ -23,12 +22,7 @@ import FormLabel from "@material-ui/core/FormLabel";
 import { CSelect } from "../components/Select";
 import Query from "query-string";
 import { CPage } from "../components/Page";
-import {
-  hasVariable,
-  replaceVariables,
-  evalConditions,
-  emptyValueOfType,
-} from "../framework/utils";
+import { emptyValueOfType } from "../framework/utils";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -56,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export const makeUIRowComponent = async (
-  row: UIRow,
+  row: EntityFormControl,
 ): Promise<React.ComponentType<any>> => {
   switch (row.componentType) {
     case "select":
@@ -73,20 +67,15 @@ export const makeUIRowComponent = async (
       throw new Error(`Unsupport componentType: ${row.componentType}`);
   }
 };
-const rowHiddenPred = ({ conditionsToHide }: UIRow, values: any) => {
-  return conditionsToHide && evalConditions(conditionsToHide!, values, true);
-};
 export const makeUIRow = async (
-  row: UIRow,
+  row: EntityFormControl,
   i: number,
 ): Promise<React.ComponentType<any>> => {
   const component = await makeUIRowComponent(row);
   const { field, indent } = row;
   return ({ values, error }) => {
     const classes = useStyles();
-    if (rowHiddenPred(row, values)) {
-      return <></>;
-    } else {
+    if (row.conditionPred(values)) {
       return (
         <FormControl
           className={
@@ -105,11 +94,12 @@ export const makeUIRow = async (
         </FormControl>
       );
     }
+    return <></>;
   };
 };
 
 const groupRows = (
-  rows: UIRow[],
+  rows: EntityFormControl[],
   components: React.ComponentType<any>[],
 ): React.ComponentType<any>[][] => {
   let lastIndent = rows[0].indent || 0;
@@ -143,9 +133,11 @@ const LeaveConfirm = () => {
   return <Prompt message={message} />;
 };
 
-const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
+const makeRows = async (
+  rows: EntityFormControl[],
+): Promise<React.ComponentType<any>> => {
   const rowComponents = await Promise.all(
-    rows.map((row: UIRow, i: number) => makeUIRow(row, i)),
+    rows.map((row: EntityFormControl, i: number) => makeUIRow(row, i)),
   );
   for (const r of rowComponents) {
     r.displayName = "UIRow";
@@ -164,7 +156,9 @@ const makeRows = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
   );
 };
 
-const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
+const makeForm = async (
+  rows: EntityFormControl[],
+): Promise<React.ComponentType<any>> => {
   const Rows = await makeRows(rows);
   return ({ initialValues, isDiscardOrCancel, onSubmit }) => {
     const classes = useStyles();
@@ -176,8 +170,8 @@ const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
       for (const row of rows) {
         const { field } = row;
         if (
+          row.conditionPred(values) &&
           field.isRequired &&
-          !rowHiddenPred(row, values) &&
           !values[field.name]
         ) {
           errors[field.name] = `${field.label} is required`;
@@ -247,13 +241,14 @@ const makeForm = async (rows: UIRow[]): Promise<React.ComponentType<any>> => {
 };
 
 export const makeNewFormComponent = async ({
-  title,
-  description,
-  rows,
-  entityRepo,
-  entity,
-  defaultValues,
-}: UIPage): Promise<React.ComponentType<any>> => {
+  titleForNew,
+  newForm,
+  repo,
+  fields,
+}: EntityInfo): Promise<React.ComponentType<any>> => {
+  const form = newForm!;
+  const defaultValues = form.defaultValues;
+  const rows = form.rows;
   const Form = await makeForm(rows!);
   const initialValues = rows!.reduce((res, row) => {
     if (res[row.field.name] === undefined) {
@@ -266,20 +261,18 @@ export const makeNewFormComponent = async ({
     const handleSubmit = async (values: Entity) => {
       const newValues = Object.keys(query).reduce((res, k) => {
         if (
-          entity.fields.some(
-            ({ name, type }) => name === k && type === "reference",
-          )
+          fields.some(({ name, type }) => name === k && type === "reference")
         ) {
           return { ...res, [k]: query[k] } as Entity;
         }
         return res;
       }, values);
-      await entityRepo.add(newValues);
+      await repo.add(newValues);
     };
     const location = useLocation();
     const query = Query.parse(location.search) as { [key: string]: string };
     return (
-      <CPage title={title} description={description}>
+      <CPage title={titleForNew} description="">
         <Form
           initialValues={initialValues}
           onSubmit={handleSubmit}
@@ -291,16 +284,15 @@ export const makeNewFormComponent = async ({
 };
 
 export const makeEditFormComponent = async ({
-  title,
-  description,
-  rows,
-  entityRepo,
-  isDedicatedSingular,
-  entity,
-}: UIPage): Promise<React.ComponentType<any>> => {
-  const list = isDedicatedSingular
-    ? ((await entityRepo.getList()) as Entity[])
-    : [];
+  titleForEdit,
+  updateForm,
+  repo,
+  selector,
+  label,
+}: EntityInfo): Promise<React.ComponentType<any>> => {
+  const form = updateForm!;
+  const { rows, isDiscardOrCancel } = form;
+  const list = selector ? ((await repo.getList()) as Entity[]) : [];
   const options = list.map(({ id, name, title }) => ({
     value: id,
     label: name || title,
@@ -319,23 +311,19 @@ export const makeEditFormComponent = async ({
     const initialValues = query.id ? undefined : firstEntity;
     const [values, setValues] = React.useState(initialValues);
     React.useEffect(() => {
-      if (entityId !== initialValues?.id)
-        entityRepo.get(entityId).then(setValues);
+      if (entityId !== initialValues?.id) repo.get(entityId).then(setValues);
     }, [entityId]);
 
     const handleSubmit = async (values: Entity) => {
-      setValues(await entityRepo.update(values.id!, values));
+      setValues(await repo.update(values.id!, values));
     };
 
-    const pageTitle = () =>
-      hasVariable(title) ? values && replaceVariables(title, values) : title;
-
     return (
-      <CPage title={pageTitle()} description={description}>
-        {isDedicatedSingular && options.length > 1 && (
+      <CPage title={titleForEdit}>
+        {selector && options.length > 1 && (
           <div className={classes.topRightCorner}>
             <FormControl>
-              {entity.label && <InputLabel>{entity.label}</InputLabel>}
+              {label && <InputLabel>{label}</InputLabel>}
               <CSelect
                 value={entityId}
                 options={options}
@@ -352,7 +340,7 @@ export const makeEditFormComponent = async ({
           <Form
             initialValues={values}
             onSubmit={handleSubmit}
-            isDiscardOrCancel={isDedicatedSingular}
+            isDiscardOrCancel={isDiscardOrCancel}
           />
         )}
       </CPage>

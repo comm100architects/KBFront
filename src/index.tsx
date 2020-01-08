@@ -11,13 +11,17 @@ import {
 } from "@material-ui/core/styles";
 import { makeHeader } from "./Header";
 import { makeMenu } from "./Menu";
-import { isMenuExist, RawProduct, getMenuPages } from "./gen/types";
+import {
+  TopMenu,
+  GlobalSettings,
+  SideMenu,
+  findMenu,
+  UIAction,
+} from "./gen/types";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import { PageRouter } from "./PageRouter";
-import { fetchJson } from "./framework/network";
-import { GlobalSettings } from "./gen/types";
-import { GlobalContext } from "./GlobalContext";
+import { GlobalContext, getGlobalSettings } from "./GlobalContext";
 import { Page404 } from "./components/Page404";
 import { CConfirmDialog } from "./components/Dialog";
 
@@ -54,46 +58,34 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface RootProps {
-  product: RawProduct;
-  currentPage: string;
-  relatviePath: string;
-  pageId?: string;
+  product: TopMenu;
+  sideMenu: SideMenu;
 }
 
 const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
   const Header = makeHeader(settings.menu);
-  return ({ product, currentPage, relatviePath, pageId }: RootProps) => {
+  return ({ product, sideMenu }: RootProps) => {
+    const page = {
+      ...sideMenu.page,
+      isMultiRowsUI: !sideMenu.page.actionForSingleRow,
+    };
     const Menu = React.useMemo(() => makeMenu(product), [product.name]);
     const classes = useStyles();
     return (
-      <GlobalContext.Provider value={{ product, settings }}>
+      <GlobalContext.Provider value={{ ...settings, selectedTopMenu: product }}>
         <Header selected={product.name} />
         <div className={classes.menuBackground}></div>
         <div className={classes.body}>
           <div className={classes.menu}>
-            <Menu selected={currentPage} />
+            <Menu selected={sideMenu.name} />
           </div>
           <div className={classes.content}>
-            <PageRouter
-              currentPage={currentPage}
-              pageId={pageId}
-              relatviePath={relatviePath}
-            />
+            <PageRouter {...page} />
           </div>
         </div>
       </GlobalContext.Provider>
     );
   };
-};
-
-const getGlobalSettings = async () => {
-  const res = (await fetchJson("/globalSettings", "GET")) as GlobalSettings;
-  const menu = (await fetchJson(
-    `${res.endPointPrefix}/menu`,
-    "GET",
-  )) as RawProduct[];
-  res.menu = menu;
-  return res;
 };
 
 const makeRedirectToProductDefaultPage = (settings: GlobalSettings) => ({
@@ -103,8 +95,8 @@ const makeRedirectToProductDefaultPage = (settings: GlobalSettings) => ({
   const product = settings.menu.find(
     product => product.name === currentProduct,
   );
-  if (product) {
-    return <Redirect to={`/${product!.name}/${product!.defaultPage}`} />;
+  if (product && product.menu && product.menu[0]) {
+    return <Redirect to={`/${product!.name}/${product.menu[0].name}`} />;
   }
   return <Page404 />;
 };
@@ -122,32 +114,22 @@ const makeCurrentPage = (settings: GlobalSettings) => {
     const product = settings.menu.find(
       product => product.name === currentProduct,
     );
-
-    if (!isMenuExist(currentPage, product?.menu ?? [])) {
+    const sideMenu = product && findMenu(product, currentPage);
+    const action = location.pathname.substring(
+      `/${currentProduct}/${currentPage}/`.length,
+    );
+    console.log(product, sideMenu, action, currentPage);
+    if (
+      !product ||
+      !sideMenu ||
+      ["new", "update", "view", ""].indexOf(action) === -1
+    ) {
       return <Page404 />;
     }
 
-    const relatviePath = location.pathname.substring(
-      `/${currentProduct}/${currentPage}/`.length,
-    );
+    sideMenu.page.actionForSingleRow = action as UIAction;
 
-    // pageRef could be null
-    const pageRef = getMenuPages(currentPage, product!.menu).find(
-      pageRef => pageRef.relatviePath === relatviePath,
-    );
-
-    if (pageRef?.redirectTo) {
-      history.replace(pageRef.redirectTo + location.search);
-    }
-
-    return (
-      <Root
-        product={product!}
-        currentPage={currentPage}
-        pageId={pageRef?.pageId}
-        relatviePath={relatviePath}
-      />
-    );
+    return <Root product={product} sideMenu={sideMenu} />;
   };
 };
 
@@ -160,9 +142,10 @@ const handleUserConfirm = async (
 
 getGlobalSettings()
   .then((settings: GlobalSettings) => {
+    console.log(settings);
     ReactDOM.render(
       <ThemeProvider theme={theme}>
-        <GlobalContext.Provider value={{ settings }}>
+        <GlobalContext.Provider value={settings}>
           <CssBaseline />
           <Router getUserConfirmation={handleUserConfirm}>
             <Switch>
@@ -187,6 +170,7 @@ getGlobalSettings()
       document.querySelector("#main"),
     );
   })
-  .catch(() => {
+  .catch(e => {
+    console.error(e);
     ReactDOM.render(<h2>Oops...</h2>, document.querySelector("#main"));
   });

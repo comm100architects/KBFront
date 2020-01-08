@@ -1,11 +1,7 @@
 import React from "react";
 import moxios from "moxios";
-import {
-  normalizeRawUIPage,
-  RawUIPage,
-  GlobalSettings,
-  UIEntity,
-} from "../gen/types";
+import { GlobalSettings } from "../gen/types";
+import { RawEntityInfo } from "../gen/rawTypes";
 import { makePageComponent } from "../gen";
 import { mount } from "enzyme";
 import { MemoryRouter as Router } from "react-router";
@@ -20,7 +16,7 @@ const globalSettings: GlobalSettings = {
   poweredByHtml:
     '<div style="COLOR: #555555; FONT-SIZE: 12px"><span style="color: #555555;">©2019 </span><a style="COLOR: #555555" href="http://www.comm100.com" target="_blank">Comm100</a>&nbsp;| <a style="COLOR: #555555" href="http://www.comm100.com/privacy" target="_blank">Privacy Policy</a> </div>',
 };
-const entities: UIEntity[] = [
+const entities: RawEntityInfo[] = [
   {
     name: "knowledgeBases",
     fields: [

@@ -6,7 +6,7 @@ import { ListItemLink } from "./components/ListItemLink";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
-import { RawProduct } from "./gen/types";
+import { TopMenu } from "./gen/types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const makeProductLink = (product: RawProduct) => ({
+const makeProductLink = (product: TopMenu) => ({
   selected,
 }: {
   selected: boolean;
@@ -38,14 +38,14 @@ const makeProductLink = (product: RawProduct) => ({
     <ListItemLink
       key={product.name}
       primary={product.label}
-      to={`/${product.name}/${product.defaultPage}/`}
+      to={`/${product.name}/${product.menu[0].name}/`}
       selected={selected}
       className={classes.link}
     />
   );
 };
 
-export const makeHeader = (menu: RawProduct[]) => {
+export const makeHeader = (menu: TopMenu[]) => {
   const productLinks = menu.map(makeProductLink);
   return ({ selected }: { selected: string }) => {
     const classes = useStyles();

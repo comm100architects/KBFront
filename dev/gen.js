@@ -3,7 +3,7 @@ import css from "./gencss";
 import html from "./genhtml";
 import { int, guidPool, words, range, chance, keywords } from "./genhelper";
 import menu from "./genmenu";
-import _ from "lodash";
+import _ from "lodash/fp";
 const fs = require("fs");
 const _p = s => path.join(__dirname, s);
 

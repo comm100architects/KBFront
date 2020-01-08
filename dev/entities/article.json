@@ -1,12 +1,16 @@
 {
-  "name": "articles",
+  "name": "article",
+  "nameForPlural": "articles",
+  "label": "Article",
+  "labelForPlural": "Articles",
   "fields": [
     { "name": "id", "type": "guid" },
     {
       "name": "kbId",
       "type": "reference",
-      "referenceEntityName": "knowledgeBases",
-      "referenceEntityFieldNameForLabel": "name",
+      "referenceEntityName": "knowledgeBase",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false,
       "isRequired": true
     },
     {
@@ -15,24 +19,31 @@
       "minLength": 0,
       "maxLength": 256,
       "isRequired": true,
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "label": "Title"
     },
     {
       "name": "body",
       "type": "string",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "default": ""
     },
     {
       "name": "customUrl",
       "type": "string",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "label": "URL"
     },
     {
       "name": "categoryId",
       "type": "reference",
-      "referenceEntityName": "categories",
-      "referenceEntityFieldNameForLabel": "title",
+      "referenceEntityName": "category",
       "label": "Category",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "isRequired": true
     },
     {
@@ -43,27 +54,37 @@
         { "key": 1, "label": "Published", "icon": "dotPrimary" }
       ],
       "label": "Status",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "default": 0
     },
     {
       "name": "modified",
       "type": "dateTime",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false,
       "label": "Modified"
     },
     {
       "name": "numOfHelpful",
       "type": "int",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false,
       "default": 0
     },
     {
       "name": "numOfNotHelpful",
       "type": "int",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false,
       "default": 0
     },
     {
       "name": "featured",
       "type": "bool",
       "default": false,
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "labelsForValue": [
         {
           "key": true,
@@ -83,7 +104,86 @@
       "type": "reference",
       "referenceEntityName": "tags",
       "referenceEntityFieldNameForLabel": "name",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true,
       "label": "Tags"
     }
-  ]
+  ],
+  "parentSelector": {
+    "fieldName": "categoryId",
+    "componentType": "tree",
+    "componentPosition": "left"
+  },
+  "grandparentSelector": {
+    "fieldName": "kbId",
+    "componentType": "select",
+    "componentPosition": "topRightCorner"
+  },
+  "grid": {
+    "columns": [
+      {
+        "fieldName": "featured",
+        "isIcon": true,
+        "isAllowSort": false
+      },
+      {
+        "fieldName": "status",
+        "isIcon": true,
+        "isAllowSort": false
+      },
+      {
+        "fieldName": "title",
+        "link": "update?id=$id&kbId=$kbId"
+      },
+      {
+        "fieldName": "categoryId"
+      },
+      {
+        "fieldName": "tagIds"
+      },
+      {
+        "fieldName": "numOfHelpful",
+        "headerIcon": "thumbUp"
+      },
+      {
+        "fieldName": "numOfNotHelpful",
+        "headerIcon": "thumbDown"
+      },
+      {
+        "fieldName": "modified"
+      }
+    ],
+    "filters": [
+      { "componentType": "select", "fieldName": "status" },
+      { "componentType": "keywordSearch" }
+    ],
+    "isAllowNew": true,
+    "newEntityButtonLabel": "New Article",
+    "isAllowEdit": true,
+    "isAllowDelete": true
+  },
+  "form": {
+    "rows": [
+      {
+        "fieldName": "title",
+        "componentType": "input"
+      },
+      {
+        "fieldName": "customUrl",
+        "componentType": "input"
+      },
+      {
+        "fieldName": "body",
+        "componentType": "codeEditor"
+      },
+      {
+        "fieldName": "categoryId",
+        "componentType": "select"
+      },
+      {
+        "fieldName": "status",
+        "componentType": "select"
+      }
+    ]
+  }
 }

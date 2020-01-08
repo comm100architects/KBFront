@@ -3,9 +3,8 @@ import { GlobalContext } from "../GlobalContext";
 import { makeHeader } from "../Header";
 
 export const Page404 = () => {
-  const context = React.useContext(GlobalContext);
-  const settings = context.settings!;
-  const Header = makeHeader(settings.menu);
+  const { menu } = React.useContext(GlobalContext);
+  const Header = makeHeader(menu);
   React.useEffect(() => {
     document.title = "Page Not Found";
   }, []);

@@ -1,9 +1,9 @@
 import React from "react";
-import { UIEntityField } from "./types";
+import { EntityField } from "./types";
 import { CCheckbox } from "../components/Checkbox";
 
 export const makeCheckbox = async (
-  field: UIEntityField,
+  field: EntityField,
 ): Promise<React.ComponentType<any>> => {
   return props => {
     return (

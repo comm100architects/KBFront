@@ -36,12 +36,11 @@ export const CPage = ({
   children,
 }: CPageProps): JSX.Element => {
   const classes = useStyles({});
-  const context = React.useContext(GlobalContext)!;
-  const product = context.product!;
-  const { poweredByHtml } = context.settings!;
+  const { poweredByHtml, selectedTopMenu } = React.useContext(GlobalContext)!;
   React.useEffect(() => {
-    if (title) document.title = documentTitle ?? `${product.label} » ${title}`;
-  }, [product.label, title, documentTitle]);
+    if (title)
+      document.title = documentTitle ?? `${selectedTopMenu.label} » ${title}`;
+  }, [selectedTopMenu.label, title, documentTitle]);
   return (
     <div className={classes.root}>
       <Paper component="main" className={classes.main}>

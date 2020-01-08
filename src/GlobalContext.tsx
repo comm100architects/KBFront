@@ -1,10 +1,11 @@
 import React from "react";
-import { RawProduct } from "./gen/types";
-import { GlobalSettings } from "./gen/types";
+import { GlobalSettings, parseRawGlobalSettings } from "./gen/types";
+import { RawGlobalSettings } from "./gen/rawTypes";
+import { fetchJson } from "./framework/network";
 
-export interface GlobalContextValue {
-  readonly product?: RawProduct;
-  readonly settings?: GlobalSettings;
-}
+export const GlobalContext = React.createContext({} as GlobalSettings);
 
-export const GlobalContext = React.createContext({} as GlobalContextValue);
+export const getGlobalSettings = async () =>
+  parseRawGlobalSettings(
+    (await fetchJson("/globalSettings", "GET")) as RawGlobalSettings,
+  );

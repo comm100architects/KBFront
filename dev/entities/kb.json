@@ -1,6 +1,9 @@
 {
-  "name": "knowledgeBases",
+  "name": "knowledgeBase",
+  "nameForPlural": "knowledgeBases",
   "label": "Knowledge Base",
+  "labelForPlural": "Knowledge Bases",
+  "fieldToBeDisplayedWhenReferenced": "name",
   "fields": [
     { "name": "id", "type": "guid" },
     {
@@ -9,7 +12,9 @@
       "minLength": 0,
       "maxLength": 64,
       "isRequired": true,
-      "label": "Name"
+      "label": "Name",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true
     },
     {
       "name": "homePageType",
@@ -19,15 +24,17 @@
         { "key": 1, "label": "Display a custom page" }
       ],
       "label": "Home",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": true
     },
     {
       "name": "homeCustomPageId",
       "type": "reference",
-      "referenceEntityName": "customPages",
-      "referenceEntityFieldNameForLabel": "title",
+      "referenceEntityName": "customPage",
       "isRequired": true,
-      "label": ""
+      "isVisibleForNew": false,
+      "isVisibleForEdit": true
     },
     {
       "name": "visibility",
@@ -37,7 +44,9 @@
         { "key": 1, "label": "Private" }
       ],
       "label": "Visibility",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": true
     },
     {
       "name": "status",
@@ -47,25 +56,33 @@
         { "key": 1, "label": "Open" }
       ],
       "label": "Status",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": true
     },
     {
       "name": "numOfArticles",
       "type": "int",
       "label": "Articles",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false
     },
     {
       "name": "numOfCustomPages",
       "type": "int",
       "label": "Custom Pages",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false
     },
     {
       "name": "numOfImages",
       "type": "int",
       "label": "Images",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false
     },
     {
       "name": "allowFeedback",
@@ -81,7 +98,71 @@
           "label": "Do not allow visitors to rate Helpful or Not Helpful on articles"
         }
       ],
-      "default": false
+      "default": false,
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false
     }
-  ]
+  ],
+  "grid": {
+    "columns": [
+      {
+        "fieldName": "name",
+        "link": "./update?id=$id"
+      },
+      {
+        "fieldName": "numOfArticles",
+        "link": "../articles?kbId=$id"
+      },
+      {
+        "fieldName": "numOfCustomPages",
+        "link": "../customPages?kbId=$id"
+      },
+      {
+        "fieldName": "numOfImages",
+        "link": "../images?kbId=$id"
+      },
+      {
+        "fieldName": "status"
+      },
+      {
+        "fieldName": "visibility"
+      }
+    ],
+    "filters": [],
+    "isAllowNew": true,
+    "isAllowEdit": true,
+    "isAllowDelete": true
+  },
+  "form": {
+    "isDiscardOrCancel": false,
+    "rows": [
+      {
+        "fieldName": "name",
+        "componentType": "input"
+      },
+      {
+        "fieldName": "homePageType",
+        "componentType": "radioGroup"
+      },
+      {
+        "fieldName": "homeCustomPageId",
+        "componentType": "select",
+        "indent": 1,
+        "conditionForShowing": ["homePageType==1"],
+        "conditionLogic": "and"
+      },
+      {
+        "fieldName": "visibility",
+        "componentType": "radioGroup"
+      },
+      {
+        "fieldName": "allowFeedback",
+        "componentType": "checkbox"
+      },
+      {
+        "fieldName": "status",
+        "componentType": "radioGroup"
+      }
+    ]
+  }
 }

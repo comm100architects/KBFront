@@ -51,7 +51,7 @@ export const convertType = (type: string, value: String): any => {
   return value;
 };
 
-export const evalCondition = (expression: string, values: any) => {
+const evalCondition = (expression: string, values: any) => {
   const m = expression.match(/\s*([^\s]+?)\s*==\s*([^\s]+?)\s*$/);
   if (m) {
     const [_, variable, value] = m;
@@ -65,7 +65,7 @@ export const evalConditions = (
   expressions: string[],
   values: any,
   andOp: boolean,
-) => {
+): boolean => {
   if (andOp) {
     for (const expression of expressions) {
       if (!evalCondition(expression, values)) return false;
@@ -92,3 +92,16 @@ export const emptyValueOfType = (type: string) => {
       return undefined;
   }
 };
+
+export const tocamelCase = (s: string): string => {
+  if (s.length > 0) return s[0].toLowerCase() + s.substr(1);
+  return s;
+};
+
+export const toCamelCase = (s: string): string => {
+  if (s.length > 0) return s[0].toUpperCase() + s.substr(1);
+  return s;
+};
+
+export const wordsInsideSentence = (words: string): string =>
+  words.replace(/(\w+)/g, word => tocamelCase(word));

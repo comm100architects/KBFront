@@ -1,11 +1,11 @@
 import React from "react";
 import _ from "lodash";
 import {
-  UIPage,
   Entity,
-  UIEntityField,
   GlobalSettings,
   UIGridColumn,
+  EntityInfo,
+  EntityField,
 } from "./types";
 import { CButton, CIconButton, CLink } from "../components/Buttons";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -57,14 +57,15 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const makeFilters = async (page: UIPage): Promise<React.ComponentType<any>> => {
+const makeFilters = async ({
+  grid,
+  fields,
+}: EntityInfo): Promise<React.ComponentType<any>> => {
   const filters = await Promise.all(
-    page.grid!.filters.map(filter => {
+    grid!.filters.map(filter => {
       switch (filter.componentType) {
         case "select":
-          const field = page.entity.fields.find(
-            ({ name }) => name === filter.fieldName,
-          )!;
+          const field = fields.find(({ name }) => name === filter.fieldName)!;
           return makeSelect(field, field.label || "\u3000");
         case "keywordSearch":
           return makeKeywordSearch();
@@ -93,7 +94,7 @@ const makeFilters = async (page: UIPage): Promise<React.ComponentType<any>> => {
     return (
       <>
         {filters.map((Filter, i) => {
-          const name = page.grid!.filters[i].fieldName || "keyword";
+          const name = grid!.filters[i].fieldName;
           return (
             <div className={classes.tableFilterRoot} key={name}>
               <Filter
@@ -108,60 +109,82 @@ const makeFilters = async (page: UIPage): Promise<React.ComponentType<any>> => {
   };
 };
 
-export const makeGridComponent = async (page: UIPage) => {
-  const grid = page.grid!;
-  const parentEntities = page.parentEntities;
-  const { isAllowNew, newEntityButtonLabel } = grid;
-  for (const parentEntity of parentEntities) {
-    parentEntity.data = await parentEntity.repo.getList();
-  }
-  const topRightParentEntity = parentEntities.find(
-    ({ position }) => position === "topRightCorner",
-  );
-  const Table = await makeTableComponent(page);
-  const Filters = await makeFilters(page);
+export const makeGridComponent = async (
+  settings: GlobalSettings,
+  entity: EntityInfo,
+) => {
+  const grid = entity.grid!;
+  const { isAllowNew, labelForNewButton } = grid;
+  // const parentEntities = await (
+  //   await entity.parentSelector!
+  // ).entity?.repo.getList();
+  // const topRightParentEntity = parentEntities.find(
+  //   ({ position }) => position === "topRightCorner",
+  // );
+  const Table = await makeTableComponent(settings, entity);
+  const Filters = await makeFilters(entity);
+  const selectorEntities = await (
+    entity.selector &&
+    entity.selector.referenceEntity &&
+    (await entity.selector.referenceEntity())
+  )?.repo.getList();
+  const parentSelector =
+    entity.parentSelector && (await entity.parentSelector());
+  const parentEntities = await parentSelector?.entity?.repo.getList();
+  const grandparentSelector =
+    entity.grandparentSelector && (await entity.grandparentSelector());
+  const grandparentEntities = await grandparentSelector?.entity?.repo.getList();
+  const selectorField =
+    (grandparentSelector || parentSelector)?.childField || entity.selector;
+  const selectorFieldName = selectorField?.name;
   return () => {
     const classes = useStyles();
     const history = useHistory();
     const query = Query.parse(history.location.search);
-    const parentEntityId = query[
-      topRightParentEntity?.fieldName || ""
-    ] as string;
-
-    const queryItems: QueryItem[] = parentEntities.map(
-      ({ fieldName, data }) => ({
-        key: fieldName,
-        value: (query[fieldName] as string) || data[0]?.id!,
-      }),
-    );
+    const parentEntityId =
+      selectorFieldName && (query[selectorFieldName] as string);
+    const queryItems: QueryItem[] =
+      (selectorField && [
+        {
+          key: selectorField.name,
+          value:
+            (query[selectorField.name] as string) ||
+            (parentEntities && parentEntities[0].id) ||
+            "",
+        },
+      ]) ||
+      [];
 
     const [parameters, setParameters] = React.useState({});
 
     return (
-      <CPage title={page.title} description={page.description}>
-        {topRightParentEntity && (
+      <CPage
+        title={entity.titleForMultiRowsUI}
+        description={entity.description}
+      >
+        {selectorField && (
           <div className={classes.topRightCorner}>
             <FormControl>
-              {topRightParentEntity.label && (
-                <InputLabel>{topRightParentEntity.label}</InputLabel>
+              {selectorField.label && (
+                <InputLabel>{selectorField.label}</InputLabel>
               )}
               <CSelect
                 value={parentEntityId}
-                options={topRightParentEntity.data.map(
-                  ({ id, name, title }) => ({
-                    value: id,
-                    label: name || title,
-                  }),
-                )}
+                options={(
+                  grandparentEntities ||
+                  parentEntities ||
+                  selectorEntities ||
+                  []
+                ).map(({ id, name, title }) => ({
+                  value: id,
+                  label: name || title,
+                }))}
                 onChange={({
                   target,
                 }: React.ChangeEvent<{ value: string | number }>) => {
                   goToSearch(
                     history,
-                    withQueryParam(
-                      topRightParentEntity.fieldName,
-                      target.value,
-                    ),
+                    withQueryParam(selectorField.name, target.value),
                   );
                 }}
               />
@@ -172,11 +195,7 @@ export const makeGridComponent = async (page: UIPage) => {
           <div className={classes.tableToolbar}>
             <div className={classes.tableToolbarLeft}>
               {isAllowNew && (
-                <CButton
-                  primary
-                  text={newEntityButtonLabel}
-                  to={toPath("new")}
-                />
+                <CButton primary text={labelForNewButton} to={toPath("new")} />
               )}
             </div>
             <div className={classes.tableToolbarRight}>
@@ -192,7 +211,7 @@ export const makeGridComponent = async (page: UIPage) => {
 
 const getLabel = (
   settings: GlobalSettings,
-  field: UIEntityField,
+  field: EntityField,
   entity: Entity,
   data: { [id: string]: Entity },
 ) => {
@@ -220,18 +239,17 @@ const getLabel = (
 
 const rowContent = (
   settings: GlobalSettings,
-  field: UIEntityField,
   column: UIGridColumn,
   row: Entity,
   fieldData: { [id: string]: Entity },
 ) => {
+  const field = column.field!;
   const textType = () => {
+    if (column.link) {
+      const to = replaceVariables(column.link!, row);
+      return <CLink text={getLabel(settings, field, row, fieldData)} to={to} />;
+    }
     return getLabel(settings, field, row, fieldData);
-  };
-
-  const linkType = () => {
-    const to = replaceVariables(column.linkPath!, row);
-    return <CLink text={getLabel(settings, field, row, fieldData)} to={to} />;
   };
 
   const iconType = () => {
@@ -240,8 +258,8 @@ const rowContent = (
       ({ key }) => key === value,
     )!;
     const iconName = icon! as CIconName;
-    if (column.linkPath) {
-      const to = replaceVariables(column.linkPath!, row);
+    if (column.link) {
+      const to = replaceVariables(column.link, row);
       return <CIconButton title={label} icon={iconName} to={to} />;
     }
     return (
@@ -251,28 +269,29 @@ const rowContent = (
     );
   };
 
-  switch (column.cellComponentType) {
-    case "text":
-      return textType();
-    case "link":
-      return linkType();
-    case "icon":
-      return iconType();
+  if (column.isIcon) {
+    return iconType();
   }
+  return textType();
 };
 
-const makeTableComponent = async (page: UIPage) => {
-  const grid = page.grid!;
+const makeTableComponent = async (
+  settings: GlobalSettings,
+  entity: EntityInfo,
+) => {
+  const grid = entity.grid!;
   const { columns, isAllowEdit, isAllowDelete } = grid;
-  const entityRepo = page.entityRepo;
+  const entityRepo = entity.repo;
   const tableColumns: CTableColumn<Entity>[] = await Promise.all(
     columns.map(async column => {
-      const field = page.entity.fields.find(
+      const field = entity.fields.find(
         ({ name }) => column.fieldName === name,
       )!;
 
       const list =
-        field.type === "reference" ? await field.referenceRepo!.getList() : [];
+        field.type === "reference"
+          ? await (await field.referenceEntity!()).repo.getList()
+          : [];
 
       const fieldData = list.reduce((res, item) => {
         return { ...res, [item.id!]: item };
@@ -280,9 +299,9 @@ const makeTableComponent = async (page: UIPage) => {
 
       const getWidth = () => {
         if (column.width) return column.width;
-        if (column.cellComponentType === "icon") return "16px";
+        if (column.isIcon) return "16px";
         if (field?.type === "dateTime") {
-          return `${page.settings.dateTimeFormat.length + 3}ch`;
+          return `${settings.dateTimeFormat.length + 3}ch`;
         }
       };
 
@@ -294,8 +313,7 @@ const makeTableComponent = async (page: UIPage) => {
           undefinedDefault(column.headerLabel, field.label)
         ),
         sortable: undefinedDefault(column.isAllowSort, true),
-        content: (row: Entity) =>
-          rowContent(page.settings, field, column, row, fieldData),
+        content: (row: Entity) => rowContent(settings, column, row, fieldData),
         width: getWidth(),
       };
     }),
@@ -311,7 +329,7 @@ const makeTableComponent = async (page: UIPage) => {
             <CIconButton
               title="Edit"
               icon="edit"
-              to={toPath("edit", withQueryParam("id", row.id))}
+              to={toPath("update", withQueryParam("id", row.id))}
             />
           )}
           {isAllowDelete && (

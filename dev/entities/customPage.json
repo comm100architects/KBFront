@@ -1,18 +1,25 @@
 {
-  "name": "customPages",
+  "name": "customPage",
+  "nameForPlural": "customPages",
+  "label": "Custom Page",
+  "labelForPlural": "Custom Pages",
+  "fieldToBeDisplayedWhenReferenced": "title",
   "fields": [
     {
       "name": "id",
       "type": "guid",
-      "isRequired": true
+      "isRequired": true,
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true
     },
     {
       "name": "kbId",
       "type": "reference",
-      "referenceEntityName": "knowledgeBases",
-      "referenceEntityFieldNameForLabel": "name",
+      "referenceEntityName": "knowledgeBase",
       "isRequired": true,
-      "label": "Knowledge Base"
+      "label": "Knowledge Base",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false
     },
     {
       "name": "title",
@@ -20,7 +27,9 @@
       "minLength": 0,
       "maxLength": 1024,
       "isRequired": true,
-      "label": "Title"
+      "label": "Title",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true
     },
     {
       "name": "status",
@@ -30,24 +39,81 @@
         { "key": 1, "label": "Published", "icon": "dotPrimary" }
       ],
       "label": "Status",
-      "default": 0
+      "default": 0,
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true
     },
     {
       "name": "customUrl",
       "type": "string",
       "label": "Custom URL",
-      "default": ""
+      "default": "",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true
     },
     {
       "name": "body",
       "type": "string",
       "default": "",
-      "label": "Body"
+      "label": "Body",
+      "isVisibleForNew": true,
+      "isVisibleForEdit": true
     },
     {
       "name": "modified",
       "type": "dateTime",
-      "label": "Modified"
+      "label": "Modified",
+      "isVisibleForNew": false,
+      "isVisibleForEdit": false
     }
-  ]
+  ],
+  "parentSelector": {
+    "fieldName": "kbId",
+    "componentType": "select",
+    "componentPosition": "topRightCorner"
+  },
+  "grid": {
+    "columns": [
+      {
+        "fieldName": "status",
+        "isIcon": true,
+        "isAllowSort": false
+      },
+      {
+        "fieldName": "title",
+        "link": "update?id=$id&kbId=$kbId"
+      },
+      {
+        "fieldName": "modified"
+      }
+    ],
+    "filters": [
+      { "componentType": "select", "fieldName": "status" },
+      { "componentType": "keywordSearch" }
+    ],
+    "isAllowNew": true,
+    "isAllowEdit": true,
+    "isAllowDelete": true
+  },
+  "form": {
+    "isDiscardOrCancel": false,
+    "rows": [
+      {
+        "fieldName": "title",
+        "componentType": "input"
+      },
+      {
+        "fieldName": "customUrl",
+        "componentType": "input"
+      },
+      {
+        "fieldName": "body",
+        "componentType": "codeEditor"
+      },
+      {
+        "fieldName": "status",
+        "componentType": "select"
+      }
+    ]
+  }
 }

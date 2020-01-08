@@ -1,12 +1,12 @@
 import { fetchJson } from "./network";
 import _ from "lodash";
 
-export interface IRepository<Entity> {
-  add(obj: Entity): Promise<Entity>;
-  update(id: string | number, obj: Entity): Promise<Entity>;
-  get(id?: string | number): Promise<Entity>;
+export interface IRepository<E> {
+  add(obj: E): Promise<E>;
+  update(id: string | number, obj: E): Promise<E>;
+  get(id?: string | number): Promise<E>;
   delete(id: string | number): Promise<void>;
-  getList(params?: QueryItem[]): Promise<Entity[]>;
+  getList(params?: QueryItem[]): Promise<E[]>;
   execute(
     action: string,
     objectId: string | number,
@@ -20,17 +20,17 @@ export interface QueryItem {
 }
 
 export class ReadonlyLocalRepository<
-  Entity extends { id: string | number; [key: string]: any }
-> implements IRepository<Entity> {
-  private entities: Entity[];
-  constructor(entities: Entity[]) {
+  E extends { id: string | number; [key: string]: any }
+> implements IRepository<E> {
+  private entities: E[];
+  constructor(entities: E[]) {
     this.entities = entities;
   }
 
-  add(): Promise<Entity> {
+  add(): Promise<E> {
     return Promise.reject("readonly");
   }
-  update(): Promise<Entity> {
+  update(): Promise<E> {
     return Promise.reject("readonly");
   }
 
@@ -42,7 +42,7 @@ export class ReadonlyLocalRepository<
     return Promise.reject("readonly");
   }
 
-  get(id?: string): Promise<Entity> {
+  get(id?: string): Promise<E> {
     if (id) {
       const res = this.entities.find(entity => entity.id === id);
       if (res) {
@@ -54,7 +54,7 @@ export class ReadonlyLocalRepository<
     }
   }
 
-  getList(params?: QueryItem[]): Promise<Entity[]> {
+  getList(params?: QueryItem[]): Promise<E[]> {
     if (!params) {
       return Promise.resolve(this.entities);
     }
@@ -67,19 +67,19 @@ export class ReadonlyLocalRepository<
   }
 }
 
-export class RESTfulRepository<Entity> implements IRepository<Entity> {
+export class RESTfulRepository<E> implements IRepository<E> {
   endPoint: string;
   constructor(url: string, entityName: string) {
     this.endPoint = `${url}/${entityName}`;
   }
 
-  add(obj: Entity): Promise<Entity> {
+  add(obj: E): Promise<E> {
     return fetchJson(this.endPoint, "POST", obj);
   }
-  update(id: string | number, obj: Entity): Promise<Entity> {
+  update(id: string | number, obj: E): Promise<E> {
     return fetchJson(`${this.endPoint}/${id}`, "PUT", obj);
   }
-  async get(id?: string | number): Promise<Entity> {
+  async get(id?: string | number): Promise<E> {
     if (id) {
       return await fetchJson(`${this.endPoint}/${id}`, "GET");
     } else {
@@ -93,7 +93,7 @@ export class RESTfulRepository<Entity> implements IRepository<Entity> {
   delete(id: string | number): Promise<void> {
     return fetchJson(`${this.endPoint}/${id}`, "DELETE");
   }
-  getList(params?: QueryItem[]): Promise<Entity[]> {
+  getList(params?: QueryItem[]): Promise<E[]> {
     const query = params
       ?.map(
         ({ key, value }) =>
