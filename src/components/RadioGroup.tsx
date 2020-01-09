@@ -4,7 +4,7 @@ import Radio from "@material-ui/core/Radio";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { CElementProps } from "./Base";
 import { FieldInputProps } from "formik";
-import { convertType } from "../framework/utils.ts";
+import { convertType } from "../framework/utils";
 
 export interface CRadioOption extends CElementProps {
   value: string | number;

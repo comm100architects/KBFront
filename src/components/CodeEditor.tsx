@@ -53,7 +53,7 @@ const CCodeEditor: React.ComponentType<CCodeEditorProps> = (
       onBeforeChange={handleBeforeChange}
       onBlur={handleBlur}
       options={{
-        lineNumbers: 20,
+        lineNumbers: true,
         lineWrapping: true,
         mode: lang,
       }}

@@ -65,5 +65,6 @@ const watch = (globs, cmd, doNotRunAtStart) => {
 };
 
 gulp.task("default", () => {
-  watch(["dev/server.js", "dev/webpack.config"], "npm run server");
+  exec("npx tsc --noEmit --watch");
+  watch(["dev/server.js"], "npm run server");
 });

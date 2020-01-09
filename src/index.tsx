@@ -118,7 +118,6 @@ const makeCurrentPage = (settings: GlobalSettings) => {
     const action = location.pathname.substring(
       `/${currentProduct}/${currentPage}/`.length,
     );
-    console.log(product, sideMenu, action, currentPage);
     if (
       !product ||
       !sideMenu ||
@@ -142,7 +141,6 @@ const handleUserConfirm = async (
 
 getGlobalSettings()
   .then((settings: GlobalSettings) => {
-    console.log(settings);
     ReactDOM.render(
       <ThemeProvider theme={theme}>
         <GlobalContext.Provider value={settings}>

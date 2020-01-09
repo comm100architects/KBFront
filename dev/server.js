@@ -1,9 +1,8 @@
+import Bundler from "parcel-bundler";
+
 import path from "path";
 import { port } from "./ports";
-import webpack from "webpack";
-import WebpackDevServer from "webpack-dev-server";
 import jsonServer from "json-server";
-import config from "./webpack.config";
 import chokidar from "chokidar";
 import dynamicMiddleware from "express-dynamic-middleware";
 import { spawn } from "child_process";
@@ -54,21 +53,18 @@ const installMiddlewares = app => {
 
   app.get("/favicon.ico", serveFile("../favicon.ico"));
   app.get("/globalSettings", serveFile("./settings.json"));
+
+  const bundler = new Bundler(_p("../src/index.html"), {});
+  app.use(bundler.middleware());
 };
 
-const server = new WebpackDevServer(webpack(config), {
-  publicPath: config.output.publicPath,
-  hot: true,
-  historyApiFallback: true,
-  before: installMiddlewares,
-  stats: {
-    colors: true,
-  },
-});
+console.log(`Server running at http://localhost:${port}/`);
+
+const server = jsonServer.create();
+installMiddlewares(server);
 
 server.listen(port, "0.0.0.0", function(err) {
   if (err) {
     console.log(err);
   }
-  console.log(`Server running at http://localhost:${port}/`);
 });

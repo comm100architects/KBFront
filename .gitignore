@@ -5,4 +5,5 @@ dev/db.json
 .vrepl_temp
 .vrepl_temp.v
 .undodir/
+.cache/
 

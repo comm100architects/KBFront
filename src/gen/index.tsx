@@ -24,6 +24,5 @@ export const makePageComponent = async (
   settings: GlobalSettings,
   page: PageProps,
 ): Promise<React.ComponentType<any>> => {
-  console.log("makePageComponent");
   return await makePage(settings, page);
 };
