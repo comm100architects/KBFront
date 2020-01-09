@@ -46,7 +46,7 @@ export const CDialog = (props: CDialogProps) => {
   return (
     <Dialog onClose={handleCancel} open={open}>
       <DialogTitle>{props.title || ""}</DialogTitle>
-      <Paper component="div" className={classes.content}>
+      <Paper component="div" elevation={0} className={classes.content}>
         {props.children}
       </Paper>
       <DialogActions>

@@ -412,13 +412,7 @@ const makeTableComponent = async (
       fetchSource();
     }, [queryItems, filters]);
     const handleDelete = async (row: Entity) => {
-      if (
-        await CConfirmDialog("Are you sure you want to delete this record?")
-        // window.confirm(
-        //   grid.confirmDeleteMessage ||
-        //     "Are you sure you want to delete this record?",
-        // )
-      ) {
+      if (await CConfirmDialog(grid.confirmDeleteMessage)) {
         await entityRepo.delete(row.id!);
         fetchSource();
       }
