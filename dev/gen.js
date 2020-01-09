@@ -6,6 +6,7 @@ import menu from "./genmenu";
 import _ from "lodash/fp";
 const fs = require("fs");
 const _p = s => path.join(__dirname, s);
+import { genIcons } from "./genicon";
 
 const generate = sc => {
   if (Array.isArray(sc)) {
@@ -184,6 +185,7 @@ const data = range(10)
       entities,
       menu: menu(),
       tags: [],
+      icons: genIcons(),
     },
   );
 

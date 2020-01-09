@@ -66,7 +66,7 @@ const server = new WebpackDevServer(webpack(config), {
   },
 });
 
-server.listen(port, "localhost", function(err) {
+server.listen(port, "0.0.0.0", function(err) {
   if (err) {
     console.log(err);
   }

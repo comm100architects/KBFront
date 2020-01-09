@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { IRepository, RESTfulRepository } from "../framework/repository";
-import { CIconName } from "../components/Icons";
+import { CIconName, fetchAndCacheIcons } from "../components/Icons";
 import {
   UIAction,
   RawTopMenu,
@@ -94,6 +94,11 @@ export type EntityFieldType =
   | "selfIncreaseId"
   | "dateTime";
 
+export interface IconSvg {
+  name: string;
+  svg: string;
+}
+
 export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
@@ -179,7 +184,8 @@ export const parseRawGlobalSettings = async (
   rawGlobalSettings: RawGlobalSettings,
 ): Promise<GlobalSettings> => {
   const { endPointPrefix, dateTimeFormat, poweredByHtml } = rawGlobalSettings;
-  const menu = await fetchJson(`${endPointPrefix}/menu`, "GET");
+  await fetchAndCacheIcons(`${endPointPrefix}/icons`);
+  const menu = await fetchJson<RawTopMenu[]>(`${endPointPrefix}/menu`, "GET");
   if (!menu || menu.length === 0) {
     throw new Error("TopMenu not exist");
   }

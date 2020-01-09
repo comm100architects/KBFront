@@ -17,7 +17,7 @@ import {
 } from "../components/Table/CTableSource";
 import { CConfirmDialog } from "../components/Dialog";
 import { CTable, CTableColumn } from "../components/Table";
-import { CIcon, CIconName } from "../components/Icons";
+import { CIcon } from "../components/Icons";
 import moment from "moment";
 import { undefinedDefault, replaceVariables } from "../framework/utils";
 import {
@@ -281,14 +281,20 @@ const rowContent = (
     const { label, icon } = field.labelsForValue!.find(
       ({ key }) => key === value,
     )!;
-    const iconName = icon! as CIconName;
+
+    if (!icon) {
+      throw new Error(
+        `Field ${field.name} renderred as icon but no icon in labelsForValue field`,
+      );
+    }
+
     if (column.link) {
       const to = replaceVariables(column.link, row);
-      return <CIconButton title={label} icon={iconName} to={to} />;
+      return <CIconButton title={label} icon={icon} to={to} />;
     }
     return (
       <Tooltip title={label}>
-        <CIcon name={iconName} />
+        <CIcon name={icon} />
       </Tooltip>
     );
   };
