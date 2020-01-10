@@ -1,25 +1,25 @@
 import * as React from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import CircularProgress, {
-  CircularProgressProps
+  CircularProgressProps,
 } from "@material-ui/core/CircularProgress";
 
 // Inspired by the Facebook spinners.
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      position: "relative"
+      position: "relative",
     },
     top: {
-      color: theme.palette.primary.main
+      color: theme.palette.primary.main,
     },
     bottom: {
       color: "#6798e5",
       animationDuration: "750ms",
       position: "absolute",
-      left: 0
-    }
-  })
+      left: 0,
+    },
+  }),
 );
 
 export default function(props: CircularProgressProps) {

@@ -7,4 +7,3 @@ export function withProps<Props, PartialProps>(
   return (restProps: Exclude<Props, PartialProps>) =>
     React.createElement(component, { ...props, ...restProps });
 }
-

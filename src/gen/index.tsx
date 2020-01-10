@@ -19,4 +19,3 @@ export const makePageComponent = async (
 
   return Promise.resolve(() => <></>);
 };
-

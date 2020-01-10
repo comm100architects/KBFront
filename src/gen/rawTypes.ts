@@ -109,4 +109,3 @@ export interface RawGlobalSettings {
   dateTimeFormat: string;
   poweredByHtml: string;
 }
-

@@ -191,4 +191,3 @@ const data = range(10)
 
 fs.writeFileSync(_p("./db.json"), JSON.stringify(data, null, 2));
 console.log("Generate success. dev/db.json written.");
-
