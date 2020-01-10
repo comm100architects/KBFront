@@ -23,7 +23,13 @@ const Loading = (_: {}) => {
   );
 };
 
-export const DelayChild: React.ComponentType<any> = (props: any) => {
+interface DelayChildProps {
+  children: () => Promise<React.ComponentType<any>>;
+}
+
+export const DelayChild: React.ComponentType<DelayChildProps> = (
+  props: DelayChildProps,
+) => {
   const [count, setCount] = React.useState(0);
   const LazyChild = React.lazy(async () => {
     try {

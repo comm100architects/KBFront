@@ -28,6 +28,9 @@ import { DelayChild } from "./components/LazyLoader";
 import { makePageComponent } from "./gen";
 declare const module: any;
 
+import db from "../dev/db.json";
+if (false) db; // for hot reload when db.json changes
+
 const theme = createMuiTheme();
 
 interface UrlParam {

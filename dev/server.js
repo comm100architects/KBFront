@@ -32,7 +32,7 @@ const installMiddlewares = app => {
   loadDb(dbPath);
 
   chokidar.watch([dbPath]).on("change", p => {
-    console.log(`${path} changed, reload db`);
+    console.log(`${p} changed, reload db`);
     loadDb(p);
   });
 
