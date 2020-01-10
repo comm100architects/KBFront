@@ -105,3 +105,11 @@ export const toCamelCase = (s: string): string => {
 
 export const wordsInsideSentence = (words: string): string =>
   words.replace(/(\w+)/g, word => tocamelCase(word));
+
+export const ifValidFile = (
+  fileName: string,
+  acceptExTenssion: string[] = [],
+): boolean => {
+  const reg = new RegExp(`\.(${acceptExTenssion.join("|")})$`, "i");
+  return reg.test(fileName);
+};

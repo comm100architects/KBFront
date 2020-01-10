@@ -22,8 +22,10 @@ import HistoryIcon from "@material-ui/icons/History";
 import GroupWorkIcon from "@material-ui/icons/GroupWork";
 import CreateIcon from "@material-ui/icons/Create";
 import CodeIcon from "@material-ui/icons/Code";
+import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import { withProps } from "../framework/hoc";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
+import CheckBoxOutlinedIcon from "@material-ui/icons/CheckBoxOutlined";
 
 const allIcons: { [id: string]: (props: SvgIconProps) => JSX.Element } = {
   starPrimary: withProps(StarIcon, { color: "primary" }),
@@ -33,6 +35,7 @@ const allIcons: { [id: string]: (props: SvgIconProps) => JSX.Element } = {
   send: SendIcon,
   inbox: InboxIcon,
   edit: EditIcon,
+  checkBox: CheckBoxOutlinedIcon,
   delete: DeleteForeverIcon,
   view: ViewIcon,
   add: AddIcon,
@@ -51,6 +54,7 @@ const allIcons: { [id: string]: (props: SvgIconProps) => JSX.Element } = {
   groupWork: GroupWorkIcon,
   create: CreateIcon,
   code: CodeIcon,
+  category: FolderOpenIcon,
   blank: withProps(CodeIcon, { style: { visibility: "hidden" } }),
 };
 
@@ -80,13 +84,17 @@ export type CIconName =
   | "groupWork"
   | "create"
   | "code"
+  | "category"
+  | "checkBox"
   | "blank";
 
+export interface CIconProps {
+  name: CIconName;
+  onClick?: () => void;
+}
+
 export const CIcon = React.forwardRef(
-  (
-    props: { name: CIconName },
-    ref: React.Ref<HTMLOrSVGElement>,
-  ): JSX.Element => {
+  (props: CIconProps, ref: React.Ref<HTMLOrSVGElement>): JSX.Element => {
     const Icon = allIcons[props.name];
     return <Icon {...props} innerRef={ref} fontSize="small" />;
   },

@@ -7,9 +7,11 @@ import "codemirror/mode/css/css";
 import "codemirror/mode/javascript/javascript";
 import "codemirror/mode/htmlmixed/htmlmixed";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
+import Container from "@material-ui/core/Container";
 import hljs from "highlight.js/lib/highlight";
 import xml from "highlight.js/lib/languages/xml";
 import css from "highlight.js/lib/languages/css";
+import CCodeEditorToolBar from "./CodeEditorToolBar";
 
 hljs.registerLanguage("css", css);
 hljs.registerLanguage("htmlmixed", xml);
@@ -20,11 +22,16 @@ const useStyles = makeStyles((theme: Theme) =>
       fontFamily: "Consolas, monospace",
       fontSize: 16,
       width: "100%",
-      border: `solid 1px ${theme.palette.divider}`,
-      borderRadius: theme.shape.borderRadius,
     },
   }),
 );
+
+const useContainerStyles = makeStyles((theme: Theme) => ({
+  root: {
+    border: "1px solid #ccc",
+    padding: "0px",
+  },
+}));
 
 interface CCodeEditorProps extends FieldInputProps<string> {}
 
@@ -42,22 +49,30 @@ const CCodeEditor: React.ComponentType<CCodeEditorProps> = (
     props.onChange({ target: { value: val, name: props.name } });
   };
   const classes = useStyles();
+  const containerCSS = useContainerStyles();
   const lang = React.useMemo(
     () => hljs.highlightAuto(props.value || "").language || "mixedhtml",
     [],
   );
   return (
-    <CodeMirror
-      className={classes.codeMirror}
-      value={props.value}
-      onBeforeChange={handleBeforeChange}
-      onBlur={handleBlur}
-      options={{
-        lineNumbers: 20,
-        lineWrapping: true,
-        mode: lang,
-      }}
-    />
+    <Container className={containerCSS.root}>
+      <CCodeEditorToolBar
+        onAddImages={_ => void 0}
+        onAddArticles={_ => void 0}
+        onAddCategorys={_ => void 0}
+      />
+      <CodeMirror
+        className={classes.codeMirror}
+        value={props.value}
+        onBeforeChange={handleBeforeChange}
+        onBlur={handleBlur}
+        options={{
+          lineNumbers: 20,
+          lineWrapping: true,
+          mode: lang,
+        }}
+      />
+    </Container>
   );
 };
 CCodeEditor.displayName = "CCodeEditor";
