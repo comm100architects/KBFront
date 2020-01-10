@@ -189,4 +189,6 @@ const data = range(10)
     },
   );
 
-console.log(JSON.stringify(data, null, 2));
+fs.writeFileSync(_p("./db.json"), JSON.stringify(data, null, 2));
+console.log("dev/db.json written");
+

@@ -66,5 +66,6 @@ const watch = (globs, cmd, doNotRunAtStart) => {
 
 gulp.task("default", () => {
   exec("npx tsc --noEmit --watch");
+  watch(["dev/gen*.js", "dev/entities/*.json"], "npm run gen", true);
   watch(["dev/server.js"], "npm run server");
 });
