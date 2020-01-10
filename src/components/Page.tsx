@@ -59,10 +59,12 @@ export const CPage = ({
         )}
         {children}
       </Paper>
-    {footerHtml && <footer
-        className={classes.footer}
-        dangerouslySetInnerHTML={{ __html: footerHtml }}
-      ></footer>}
+      {footerHtml && (
+        <footer
+          className={classes.footer}
+          dangerouslySetInnerHTML={{ __html: footerHtml }}
+        ></footer>
+      )}
     </div>
   );
 };

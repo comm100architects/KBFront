@@ -18,7 +18,11 @@ import {
   EnumItem,
 } from "./rawTypes";
 import { fetchJson } from "../framework/network";
-import { evalConditions, wordsInsideSentence } from "../framework/utils";
+import {
+  undefinedDefault,
+  evalConditions,
+  wordsInsideSentence,
+} from "../framework/utils";
 
 export interface EntityInfo {
   name: string;
@@ -433,7 +437,7 @@ const parseRawUIGridColumn = (
   return {
     headerLabel: isIcon ? "" : field.label,
     headerIcon,
-    isAllowSort,
+    isAllowSort: undefinedDefault(isAllowSort, true),
     fieldName,
     isIcon,
     link,

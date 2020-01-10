@@ -19,7 +19,7 @@ import { CConfirmDialog } from "../components/Dialog";
 import { CTable, CTableColumn } from "../components/Table";
 import { CIcon } from "../components/Icons";
 import moment from "moment";
-import { undefinedDefault, replaceVariables } from "../framework/utils";
+import { replaceVariables } from "../framework/utils";
 import {
   toPath,
   goToSearch,
@@ -344,9 +344,9 @@ const makeTableComponent = async (
         header: column.headerIcon ? (
           <CIcon name={column.headerIcon} />
         ) : (
-          undefinedDefault(column.headerLabel, field.label)
+          column.headerLabel
         ),
-        sortable: undefinedDefault(column.isAllowSort, true),
+        sortable: column.isAllowSort,
         content: (row: Entity) =>
           rowContent(
             settings,
@@ -374,11 +374,7 @@ const makeTableComponent = async (
             />
           )}
           {isAllowDelete && (
-            <CIconButton
-              title="Delete"
-              icon="delete"
-              onClick={() => onDelete!()}
-            />
+            <CIconButton title="Delete" icon="delete" onClick={onDelete} />
           )}
         </span>
       );

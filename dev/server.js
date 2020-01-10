@@ -3,6 +3,7 @@ import Bundler from "parcel-bundler";
 import path from "path";
 import { port } from "./ports";
 import jsonServer from "json-server";
+import fs from "fs";
 
 import chokidar from "chokidar";
 import dynamicMiddleware from "express-dynamic-middleware";
@@ -25,7 +26,7 @@ const installMiddlewares = app => {
 
   const loadDb = p => {
     dynamicJsonServer.clean();
-    dynamicJsonServer.use(jsonServer.router(p));
+    dynamicJsonServer.use(jsonServer.router(JSON.parse(fs.readFileSync(p))));
   };
 
   const dbPath = _p("./db.json");

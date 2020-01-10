@@ -104,7 +104,7 @@ export const toCamelCase = (s: string): string => {
 };
 
 export const wordsInsideSentence = (words: string): string =>
-  words.replace(/(\w+)/g, word => tocamelCase(word));
+  words?.replace(/(\w+)/g, word => tocamelCase(word));
 
 export const isLocalHost =
   window.location.host.toLowerCase().indexOf("localhost") !== -1 ||
