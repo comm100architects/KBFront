@@ -34,22 +34,24 @@ const makeProductLink = (product: TopMenu) => ({
   selected: boolean;
 }) => {
   const classes = useStyles();
+  const defaultMenuName =
+    product.menus && product.menus[0] && `${product.menus[0].name}/`;
   return (
     <ListItemLink
       key={product.name}
       primary={product.label}
-      to={`/${product.name}/${product.menu[0].name}/`}
+      to={`/${product.name}/${defaultMenuName}`}
       selected={selected}
       className={classes.link}
     />
   );
 };
 
-export const makeHeader = (menu: TopMenu[]) => {
-  const productLinks = menu.map(makeProductLink);
+export const makeHeader = (topMenus: TopMenu[]) => {
+  const productLinks = topMenus.map(makeProductLink);
   return ({ selected }: { selected: string }) => {
     const classes = useStyles();
-    const selectedIndex = menu.findIndex(({ name }) => name === selected);
+    const selectedIndex = topMenus.findIndex(({ name }) => name === selected);
     return (
       <AppBar elevation={0} position="absolute" className={classes.header}>
         <Toolbar>

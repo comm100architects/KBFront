@@ -63,8 +63,8 @@ const makeSubMenu = (productName: string, menu: SideMenu) => {
   };
 };
 
-export const makeMenu = ({ name, menu }: TopMenu) => {
-  const menus = menu.map(item => {
+export const makeMenu = ({ name, menus }: TopMenu) => {
+  const menus1 = menus.map(item => {
     if (item.submenu) {
       return makeSubMenu(name, item);
     }
@@ -76,7 +76,7 @@ export const makeMenu = ({ name, menu }: TopMenu) => {
 
     return (
       <List component="nav" className={classes.root}>
-        {menus.map((Menu, i) => (
+        {menus1.map((Menu, i) => (
           <Menu key={i} selected={selected} />
         ))}
       </List>

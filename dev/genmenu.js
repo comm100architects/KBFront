@@ -94,16 +94,16 @@ const accountMenu = [
 export default () => [
   {
     label: "Live Chat",
-    menu: livechatMenu,
+    menus: livechatMenu,
   },
   {
     label: "Ticket",
-    menu: ticketMenu,
+    menus: ticketMenu,
   },
-  { label: "Bot", menu: botMenu },
-  { label: "KB", menu: kbMenu },
+  { label: "Bot", menus: botMenu },
+  { label: "KB", menus: kbMenu },
   {
     label: "Account",
-    menu: accountMenu,
+    menus: accountMenu,
   },
 ];

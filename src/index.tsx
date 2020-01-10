@@ -63,7 +63,7 @@ interface RootProps {
 }
 
 const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
-  const Header = makeHeader(settings.menu);
+  const Header = makeHeader(settings.topMenus);
   return ({ product, sideMenu }: RootProps) => {
     const page = {
       ...sideMenu.page,
@@ -92,11 +92,11 @@ const makeRedirectToProductDefaultPage = (settings: GlobalSettings) => ({
   match,
 }: RouteChildrenProps<UrlParam>) => {
   const currentProduct = match?.params.currentProduct;
-  const product = settings.menu.find(
+  const product = settings.topMenus.find(
     product => product.name === currentProduct,
   );
-  if (product && product.menu && product.menu[0]) {
-    return <Redirect to={`/${product!.name}/${product.menu[0].name}`} />;
+  if (product && product.menus && product.menus[0]) {
+    return <Redirect to={`/${product!.name}/${product.menus[0].name}`} />;
   }
   return <Page404 />;
 };
@@ -111,7 +111,7 @@ const makeCurrentPage = (settings: GlobalSettings) => {
       history.replace(`/${currentProduct}/${currentPage}/${location.search}`);
     }
 
-    const product = settings.menu.find(
+    const product = settings.topMenus.find(
       product => product.name === currentProduct,
     );
     const sideMenu = product && findMenu(product, currentPage);
@@ -149,7 +149,7 @@ getGlobalSettings()
             <Switch>
               <Route exact path="/">
                 () => (
-                <Redirect to={`/${settings.menu[0].name}`} />
+                <Redirect to={`/${settings.topMenus[0].name}`} />
                 );
               </Route>
               <Route exact path="/:currentProduct">

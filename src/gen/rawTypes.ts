@@ -92,7 +92,7 @@ export interface RawUIRow {
 
 export interface RawTopMenu {
   label: string;
-  menu: RawSideMenu[];
+  menus: RawSideMenu[];
 }
 
 export interface RawSideMenu {

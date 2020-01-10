@@ -104,7 +104,7 @@ export interface GlobalSettings {
   dateTimeFormat: string;
   poweredByHtml: string;
   selectedTopMenu: TopMenu;
-  menu: TopMenu[];
+  topMenus: TopMenu[];
 }
 
 export interface UIGridFilter {
@@ -140,7 +140,7 @@ export type Entity = { id?: EntityKey; [key: string]: any };
 export interface TopMenu {
   name: string;
   label: string;
-  menu: SideMenu[];
+  menus: SideMenu[];
 }
 
 export interface SideMenu {
@@ -185,26 +185,29 @@ export const parseRawGlobalSettings = async (
 ): Promise<GlobalSettings> => {
   const { endPointPrefix, dateTimeFormat, poweredByHtml } = rawGlobalSettings;
   await fetchAndCacheIcons(`${endPointPrefix}/icons`);
-  const menu = await fetchJson<RawTopMenu[]>(`${endPointPrefix}/menu`, "GET");
-  if (!menu || menu.length === 0) {
-    throw new Error("TopMenu not exist");
+  const menus = await fetchJson<RawTopMenu[]>(
+    `${endPointPrefix}/topMenus`,
+    "GET",
+  );
+  if (!menus || menus.length === 0) {
+    throw new Error("TopMenu is empty.");
   }
 
-  const topMenus = menu.map(parseRawTopMenu.bind(null, rawGlobalSettings));
+  const topMenus = menus.map(parseRawTopMenu.bind(null, rawGlobalSettings));
   return {
     endPointPrefix,
     dateTimeFormat,
     poweredByHtml,
     selectedTopMenu: topMenus[0],
-    menu: topMenus,
+    topMenus,
   };
 };
 
 export const findMenu = (
-  { menu }: TopMenu,
+  { menus }: TopMenu,
   menuName: string,
 ): SideMenu | undefined => {
-  for (const sideMenu of menu) {
+  for (const sideMenu of menus) {
     const item = sideMenu.submenu
       ? sideMenu.submenu.find(({ name }) => name === menuName.toLowerCase())
       : sideMenu.name === menuName.toLowerCase() && sideMenu;
@@ -494,13 +497,13 @@ const labelToName = (label: string): string => {
 
 const parseRawTopMenu = (
   settings: RawGlobalSettings,
-  { label, menu }: RawTopMenu,
+  { label, menus }: RawTopMenu,
 ): TopMenu => {
-  const menu1 = menu
+  const menus1 = menus
     .filter(item => !item.parentMenuLabel)
     .map(item => {
       const sideMenu = parseSideMenu(settings, item);
-      const submenu = menu
+      const submenu = menus
         .filter(({ parentMenuLabel }) => parentMenuLabel === sideMenu.label)
         .map(parseSideMenu.bind(null, settings));
 
@@ -509,7 +512,7 @@ const parseRawTopMenu = (
       }
       return { ...sideMenu, submenu };
     });
-  return { label, name: labelToName(label), menu: menu1 };
+  return { label, name: labelToName(label), menus: menus1 };
 };
 
 const parseSideMenu = (

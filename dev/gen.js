@@ -183,12 +183,12 @@ const data = range(10)
       customPages: [],
       designs: [],
       entities,
-      menu: menu(),
+      topMenus: menu(),
       tags: [],
       icons: genIcons(),
     },
   );
 
 fs.writeFileSync(_p("./db.json"), JSON.stringify(data, null, 2));
-console.log("dev/db.json written");
+console.log("Generate success. dev/db.json written.");
 
