@@ -28,51 +28,60 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const makeProductLink = (product: TopMenu) => ({
+const ProductLink = ({
+  topMenu,
   selected,
 }: {
+  topMenu: TopMenu;
   selected: boolean;
 }) => {
   const classes = useStyles();
   const defaultMenuName =
-    product.menus && product.menus[0] && `${product.menus[0].name}/`;
+    topMenu.menus && topMenu.menus[0] && `${topMenu.menus[0].name}/`;
   return (
     <ListItemLink
-      key={product.name}
-      primary={product.label}
-      to={`/${product.name}/${defaultMenuName}`}
+      key={topMenu.name}
+      primary={topMenu.label}
+      to={`/${topMenu.name}/${defaultMenuName}`}
       selected={selected}
       className={classes.link}
     />
   );
 };
 
-export const makeHeader = (topMenus: TopMenu[]) => {
-  const productLinks = topMenus.map(makeProductLink);
-  return ({ selected }: { selected: string }) => {
-    const classes = useStyles();
-    const selectedIndex = topMenus.findIndex(({ name }) => name === selected);
-    return (
-      <AppBar elevation={0} position="absolute" className={classes.header}>
-        <Toolbar>
-          <div className={classes.grow}>
-            <Link href="https://comm100.com" target="_blank">
-              <img
-                alt="Comm100"
-                width="130"
-                src="https://hosted.comm100.com/resources/comm100.png"
+export const Header = ({
+  topMenus,
+  selected,
+}: {
+  topMenus: TopMenu[];
+  selected: string;
+}) => {
+  const classes = useStyles();
+  const selectedIndex = topMenus.findIndex(({ name }) => name === selected);
+  return (
+    <AppBar elevation={0} position="absolute" className={classes.header}>
+      <Toolbar>
+        <div className={classes.grow}>
+          <Link href="https://comm100.com" target="_blank">
+            <img
+              alt="Comm100"
+              width="130"
+              src="https://hosted.comm100.com/resources/comm100.png"
+            />
+          </Link>
+        </div>
+        <Typography component="div" noWrap>
+          <List component="nav" className={classes.horizontalList}>
+            {topMenus.map((topMenu, i) => (
+              <ProductLink
+                key={topMenu.label}
+                topMenu={topMenu}
+                selected={selectedIndex === i}
               />
-            </Link>
-          </div>
-          <Typography component="div" noWrap>
-            <List component="nav" className={classes.horizontalList}>
-              {productLinks.map((ProductLink, i) => (
-                <ProductLink key={i} selected={selectedIndex === i} />
-              ))}
-            </List>
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    );
-  };
+            ))}
+          </List>
+        </Typography>
+      </Toolbar>
+    </AppBar>
+  );
 };

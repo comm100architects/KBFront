@@ -163,6 +163,7 @@ export const makeGridComponent = async (
       <CPage
         title={entity.titleForMultiRowsUI}
         description={entity.description}
+        footerHtml={settings.poweredByHtml}
       >
         {selectorField && (
           <div className={classes.topRightCorner}>

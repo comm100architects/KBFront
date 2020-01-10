@@ -1,6 +1,6 @@
 import React from "react";
 import { makeInput } from "./Input";
-import { Entity, EntityInfo, EntityFormControl } from "./types";
+import { Entity, EntityInfo, EntityFormControl, GlobalSettings } from "./types";
 import { makeRadioGroup } from "./RadioGroup";
 import { makeSelect } from "./Select";
 import { makeCheckbox } from "./Checkbox";
@@ -240,12 +240,10 @@ const makeForm = async (
   };
 };
 
-export const makeNewFormComponent = async ({
-  titleForNew,
-  newForm,
-  repo,
-  fields,
-}: EntityInfo): Promise<React.ComponentType<any>> => {
+export const makeNewFormComponent = async (
+  settings: GlobalSettings,
+  { titleForNew, newForm, repo, fields }: EntityInfo,
+): Promise<React.ComponentType<any>> => {
   const form = newForm!;
   const defaultValues = form.defaultValues;
   const rows = form.rows;
@@ -272,7 +270,11 @@ export const makeNewFormComponent = async ({
     const location = useLocation();
     const query = Query.parse(location.search) as { [key: string]: string };
     return (
-      <CPage title={titleForNew} description="">
+      <CPage
+        title={titleForNew}
+        description=""
+        footerHtml={settings.poweredByHtml}
+      >
         <Form
           initialValues={initialValues}
           onSubmit={handleSubmit}
@@ -283,13 +285,10 @@ export const makeNewFormComponent = async ({
   };
 };
 
-export const makeEditFormComponent = async ({
-  titleForEdit,
-  updateForm,
-  repo,
-  selector,
-  label,
-}: EntityInfo): Promise<React.ComponentType<any>> => {
+export const makeEditFormComponent = async (
+  settings: GlobalSettings,
+  { titleForEdit, updateForm, repo, selector, label }: EntityInfo,
+): Promise<React.ComponentType<any>> => {
   const form = updateForm!;
   const { rows, isDiscardOrCancel } = form;
   const list = selector ? ((await repo.getList()) as Entity[]) : [];
@@ -319,7 +318,7 @@ export const makeEditFormComponent = async ({
     };
 
     return (
-      <CPage title={titleForEdit}>
+      <CPage title={titleForEdit} footerHtml={settings.poweredByHtml}>
         {selector && options.length > 1 && (
           <div className={classes.topRightCorner}>
             <FormControl>

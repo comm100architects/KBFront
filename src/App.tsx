@@ -9,8 +9,8 @@ import {
   createMuiTheme,
   Theme,
 } from "@material-ui/core/styles";
-import { makeHeader } from "./Header";
-import { makeMenu } from "./Menu";
+import { Header } from "./Header";
+import { Menu } from "./Menu";
 import {
   TopMenu,
   GlobalSettings,
@@ -20,11 +20,12 @@ import {
 } from "./gen/types";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
-import { PageRouter } from "./PageRouter";
 import { GlobalContext } from "./GlobalContext";
 import { Page404 } from "./components/Page404";
 import { CConfirmDialog } from "./components/Dialog";
 import { hot } from "react-hot-loader";
+import { DelayChild } from "./components/LazyLoader";
+import { makePageComponent } from "./gen";
 declare const module: any;
 
 const theme = createMuiTheme();
@@ -60,52 +61,45 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface RootProps {
-  product: TopMenu;
-  sideMenu: SideMenu;
+  selectedTopMenu: TopMenu;
+  selectedSideMenu: SideMenu;
+  settings: GlobalSettings;
 }
 
-const makeRoot = (settings: GlobalSettings): React.ComponentType<RootProps> => {
-  const Header = makeHeader(settings.topMenus);
-  return ({ product, sideMenu }: RootProps) => {
-    const page = {
-      ...sideMenu.page,
-      isMultiRowsUI: !sideMenu.page.actionForSingleRow,
-    };
-    const Menu = React.useMemo(() => makeMenu(product), [product.name]);
-    const classes = useStyles();
-    return (
-      <GlobalContext.Provider value={{ ...settings, selectedTopMenu: product }}>
-        <Header selected={product.name} />
-        <div className={classes.menuBackground}></div>
-        <div className={classes.body}>
-          <div className={classes.menu}>
-            <Menu selected={sideMenu.name} />
-          </div>
-          <div className={classes.content}>
-            <PageRouter {...page} />
-          </div>
+const Root = ({ selectedTopMenu, selectedSideMenu, settings }: RootProps) => {
+  const { topMenus } = settings;
+  const classes = useStyles();
+  return (
+    <GlobalContext.Provider value={{ selectedTopMenu, selectedSideMenu }}>
+      <Header topMenus={topMenus} selected={selectedTopMenu.name} />
+      <div className={classes.menuBackground}></div>
+      <div className={classes.body}>
+        <div className={classes.menu}>
+          <Menu topMenu={selectedTopMenu} selected={selectedSideMenu.name} />
         </div>
-      </GlobalContext.Provider>
-    );
-  };
+        <div className={classes.content}>
+          <DelayChild>
+            {() => makePageComponent(settings, selectedSideMenu.page)}
+          </DelayChild>
+        </div>
+      </div>
+    </GlobalContext.Provider>
+  );
 };
+Root.displayName = "Root";
 
-const makeRedirectToProductDefaultPage = (settings: GlobalSettings) => ({
+const makeRedirectToProductDefaultPage = (topMenus: TopMenu[]) => ({
   match,
 }: RouteChildrenProps<UrlParam>) => {
   const currentProduct = match?.params.currentProduct;
-  const product = settings.topMenus.find(
-    product => product.name === currentProduct,
-  );
+  const product = topMenus.find(product => product.name === currentProduct);
   if (product && product.menus && product.menus[0]) {
     return <Redirect to={`/${product!.name}/${product.menus[0].name}`} />;
   }
-  return <Page404 />;
+  return <Page404 topMenus={topMenus} />;
 };
 
 const makeCurrentPage = (settings: GlobalSettings) => {
-  const Root = makeRoot(settings);
-  Root.displayName = "Root";
   return ({ match, location, history }: RouteChildrenProps<UrlParam>) => {
     const { currentProduct, currentPage } = match!.params;
     // make sure add slash after currentPage, much easier for relative path
@@ -113,24 +107,38 @@ const makeCurrentPage = (settings: GlobalSettings) => {
       history.replace(`/${currentProduct}/${currentPage}/${location.search}`);
     }
 
-    const product = settings.topMenus.find(
-      product => product.name === currentProduct,
+    const selectedTopMenu = settings.topMenus.find(
+      ({ name }) => name === currentProduct,
     );
-    const sideMenu = product && findMenu(product, currentPage);
+    const selectedSideMenu =
+      selectedTopMenu && findMenu(selectedTopMenu, currentPage);
     const action = location.pathname.substring(
       `/${currentProduct}/${currentPage}/`.length,
     );
     if (
-      !product ||
-      !sideMenu ||
+      !selectedTopMenu ||
+      !selectedSideMenu ||
       ["new", "update", "view", ""].indexOf(action) === -1
     ) {
-      return <Page404 />;
+      return <Page404 topMenus={settings.topMenus} />;
     }
 
-    sideMenu.page.actionForSingleRow = action as UIAction;
+    const selectedSideMenu2 = {
+      ...selectedSideMenu,
+      page: {
+        ...selectedSideMenu.page,
+        actionForSingleRow: action as UIAction,
+        isMultiRowsUI: !action,
+      },
+    };
 
-    return <Root product={product} sideMenu={sideMenu} />;
+    return (
+      <Root
+        settings={settings}
+        selectedTopMenu={selectedTopMenu}
+        selectedSideMenu={selectedSideMenu2}
+      />
+    );
   };
 };
 
@@ -141,46 +149,34 @@ const handleUserConfirm = async (
   callback(await CConfirmDialog(message));
 };
 
-const App = (settings: GlobalSettings) => (
-  <ThemeProvider theme={theme}>
-    <GlobalContext.Provider value={settings}>
+export default hot(module)(() => {
+  return (
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router getUserConfirmation={handleUserConfirm}>
-        <Switch>
-          <Route exact path="/">
-            () => (
-            <Redirect to={`/${settings.topMenus[0].name}`} />
-            );
-          </Route>
-          <Route exact path="/:currentProduct">
-            {makeRedirectToProductDefaultPage(settings)}
-          </Route>
-          <Route path="/:currentProduct/:currentPage">
-            {makeCurrentPage(settings)}
-          </Route>
-          <Route path="*">
-            <Page404 />
-          </Route>
-        </Switch>
-      </Router>
-    </GlobalContext.Provider>
-  </ThemeProvider>
-);
-
-const LazyApp = React.lazy(async () => {
-  try {
-    const settings = await getGlobalSettings();
-    return {
-      default: () => <App {...settings} />,
-    };
-  } catch (e) {
-    console.error(e);
-    return { default: () => <h2>Oops...</h2> };
-  }
+      <DelayChild>
+        {async () => {
+          const settings = await getGlobalSettings();
+          return () => (
+            <Router getUserConfirmation={handleUserConfirm}>
+              <Switch>
+                <Route exact path="/">
+                  () => (<Redirect to={`/${settings.topMenus[0].name}`} />
+                  );
+                </Route>
+                <Route exact path="/:currentProduct">
+                  {makeRedirectToProductDefaultPage(settings.topMenus)}
+                </Route>
+                <Route path="/:currentProduct/:currentPage">
+                  {makeCurrentPage(settings)}
+                </Route>
+                <Route path="*">
+                  <Page404 topMenus={settings.topMenus} />
+                </Route>
+              </Switch>
+            </Router>
+          );
+        }}
+      </DelayChild>
+    </ThemeProvider>
+  );
 });
-
-export default hot(module)(() => (
-  <React.Suspense fallback={<></>}>
-    <LazyApp />
-  </React.Suspense>
-));

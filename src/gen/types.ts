@@ -103,7 +103,6 @@ export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
   poweredByHtml: string;
-  selectedTopMenu: TopMenu;
   topMenus: TopMenu[];
 }
 
@@ -186,20 +185,22 @@ export const parseRawGlobalSettings = async (
 ): Promise<GlobalSettings> => {
   const { endPointPrefix, dateTimeFormat, poweredByHtml } = rawGlobalSettings;
   await fetchAndCacheIcons(`${endPointPrefix}/icons`);
-  const menus = await fetchJson<RawTopMenu[]>(
+  const rawTopMenus = await fetchJson<RawTopMenu[]>(
     `${endPointPrefix}/topMenus`,
     "GET",
   );
-  if (!menus || menus.length === 0) {
+
+  if (!rawTopMenus || rawTopMenus.length === 0) {
     throw new Error("TopMenu is empty.");
   }
 
-  const topMenus = menus.map(parseRawTopMenu.bind(null, rawGlobalSettings));
+  const topMenus = rawTopMenus.map(
+    parseRawTopMenu.bind(null, rawGlobalSettings),
+  );
   return {
     endPointPrefix,
     dateTimeFormat,
     poweredByHtml,
-    selectedTopMenu: topMenus[0],
     topMenus,
   };
 };

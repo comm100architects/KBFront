@@ -21,65 +21,92 @@ const useStyles = makeStyles(_ => ({
   },
 }));
 
-const makeMenuItem = (productName: string, item: SideMenu) => ({
+const MenuItem = ({
+  topMenuName,
+  item,
   selected,
 }: {
+  topMenuName: string;
+  item: SideMenu;
   selected: string;
 }) => (
   <ListItemLink
     selected={selected === item.name}
-    to={`/${productName}/${item.name}/`}
+    to={`/${topMenuName}/${item.name}/`}
     primary={item.label}
     icon={<CIcon name={item.icon || "blank"} />}
   ></ListItemLink>
 );
 
-const makeSubMenu = (productName: string, menu: SideMenu) => {
+const SubMenu = ({
+  topMenuName,
+  menu,
+  selected,
+}: {
+  topMenuName: string;
+  menu: SideMenu;
+  selected: string;
+}) => {
   const submenu = menu.submenu!;
-  const menuItems = submenu.map(item => makeMenuItem(productName, item));
-  return ({ selected }: { selected: string }) => {
-    const [isOpen, setIsOpen] = React.useState(
-      submenu.some(({ name }) => name === selected),
-    );
-    const handleClick = () => setIsOpen(!isOpen);
-    return (
-      <>
-        <ListItem button onClick={handleClick}>
-          <ListItemIcon>
-            <CIcon name={menu.icon || "blank"} />
-          </ListItemIcon>
-          <ListItemText primary={menu.label} />
-          {isOpen ? <ExpandLess /> : <ExpandMore />}
-        </ListItem>
-        <Collapse in={isOpen} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            {menuItems.map((Item, i) => (
-              <Item key={i} selected={selected} />
-            ))}
-          </List>
-        </Collapse>
-      </>
-    );
-  };
+  const [isOpen, setIsOpen] = React.useState(
+    submenu.some(({ name }) => name === selected),
+  );
+  const handleClick = () => setIsOpen(!isOpen);
+  return (
+    <>
+      <ListItem button onClick={handleClick}>
+        <ListItemIcon>
+          <CIcon name={menu.icon || "blank"} />
+        </ListItemIcon>
+        <ListItemText primary={menu.label} />
+        {isOpen ? <ExpandLess /> : <ExpandMore />}
+      </ListItem>
+      <Collapse in={isOpen} timeout="auto" unmountOnExit>
+        <List component="div" disablePadding>
+          {submenu.map((item, i) => (
+            <MenuItem
+              key={item.name}
+              topMenuName={topMenuName}
+              selected={selected}
+              item={item}
+            />
+          ))}
+        </List>
+      </Collapse>
+    </>
+  );
 };
 
-export const makeMenu = ({ name, menus }: TopMenu) => {
-  const menus1 = menus.map(item => {
-    if (item.submenu) {
-      return makeSubMenu(name, item);
-    }
-    return makeMenuItem(name, item);
-  });
-
-  return ({ selected }: { selected: string }) => {
-    const classes = useStyles();
-
-    return (
-      <List component="nav" className={classes.root}>
-        {menus1.map((Menu, i) => (
-          <Menu key={i} selected={selected} />
-        ))}
-      </List>
-    );
-  };
+export const Menu = ({
+  selected,
+  topMenu,
+}: {
+  topMenu: TopMenu;
+  selected: string;
+}) => {
+  const classes = useStyles();
+  return (
+    <List component="nav" className={classes.root}>
+      {topMenu.menus.map((item, i) => {
+        if (item.submenu) {
+          return (
+            <SubMenu
+              key={item.name}
+              topMenuName={topMenu.name}
+              selected={selected}
+              menu={item}
+            />
+          );
+        }
+        return (
+          <MenuItem
+            key={item.name}
+            topMenuName={topMenu.name}
+            selected={selected}
+            item={item}
+          />
+        );
+      })}
+    </List>
+  );
 };
