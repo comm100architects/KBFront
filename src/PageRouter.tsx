@@ -8,6 +8,10 @@ import { makePageComponent } from "./gen";
 import { GlobalContext } from "./GlobalContext";
 import { PageProps } from "./gen/types";
 
+// for hot reload when db.json changes
+import db from "../dev/db.json";
+if (false) db;
+
 const useStyles = makeStyles((_: Theme) =>
   createStyles({
     content: {
@@ -66,4 +70,3 @@ export const PageRouter = (props: PageProps) => {
     </Suspense>
   );
 };
-

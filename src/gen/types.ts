@@ -159,15 +159,16 @@ export interface PageProps {
 
 const delayCache: { result?: any }[] = [];
 const delay = (fn: () => Promise<any>): (() => Promise<any>) => {
-  const i = delayCache.length;
-  delayCache.push({});
-  return () => {
-    const item = delayCache[i];
-    if (!item.result) {
-      item.result = fn();
-    }
-    return item.result;
-  };
+  return fn;
+  // const i = delayCache.length;
+  // delayCache.push({});
+  // return () => {
+  //   const item = delayCache[i];
+  //   if (!item.result) {
+  //     item.result = fn();
+  //   }
+  //   return item.result;
+  // };
 };
 
 const bindDelayedPromises = (

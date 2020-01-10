@@ -149,7 +149,6 @@
       { "componentType": "keywordSearch" }
     ],
     "isAllowNew": true,
-    "newEntityButtonLabel": "New Article",
     "isAllowEdit": true,
     "isAllowDelete": true
   },
