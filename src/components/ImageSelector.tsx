@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import immutable, { Map } from "immutable";
-import { Theme, makeStyles } from "@material-ui/core/styles";
+import React, { useEffect, useState, useMemo } from "react";
+import { Map } from "immutable";
+import { Theme, makeStyles, styled } from "@material-ui/core/styles";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
@@ -42,12 +42,36 @@ const useStyles = makeStyles((theme: Theme) => ({
   gridList: {
     width: 500,
     height: 400,
+    marginTop: "20px !important",
   },
-  uploadButton: {
-    backgroundColor: "#329fd9",
-    textTransform: "none",
+  summary: {
+    margin: "10px 0px",
+    padding: 0,
+    listStyle: "none",
+  },
+  status: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 20,
+    height: 20,
+    overflow: "hidden",
+    color: "#329fd9",
   },
 }));
+
+const CActions = styled(DialogActions)({
+  justifyContent: "center",
+});
+const NormalButton = styled(Button)({
+  backgroundColor: "#329fd9",
+  color: "#fff",
+  textTransform: "none",
+});
+const CancelButton = styled(Button)({
+  backgroundColor: "#fafafa",
+  textTransform: "none",
+});
 
 let uploadFiles: Map<string, InternalCImage> = Map<string, InternalCImage>({});
 
@@ -122,6 +146,18 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
     );
     others.onClose();
   };
+  const onClickTile = (id: string | undefined) => {
+    const img = imageList.get(id as string);
+    if (!img) return;
+    setImageList(
+      imageList.set(
+        img.id,
+        Object.assign({}, img, {
+          isSelected: !img.isSelected,
+        }),
+      ),
+    );
+  };
 
   return (
     <Dialog
@@ -131,19 +167,11 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
     >
       <DialogTitle>Images</DialogTitle>
       <DialogContent>
-        <List>
-          <ListItem>
-            <ListItemText
-              primary={`Formats supported: ${acceptFileExtension.join(",")}`}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText primary="Max files at a time: 10" />
-          </ListItem>
-          <ListItem>
-            <ListItemText primary="Max size of a file: 200KB" />
-          </ListItem>
-        </List>
+        <ul className={classes.summary}>
+          <li>{`Formats supported: ${acceptFileExtension.join(",")}`}</li>
+          <li>Max files at a time: 10</li>
+          <li>{`Max size of a file: ${maxSize}KB`}</li>
+        </ul>
         <Upload
           multiple
           uploadUrl={uploadUrl}
@@ -152,28 +180,35 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
           onProgress={onProgress}
           onError={onError}
         >
-          <Button className={classes.uploadButton}>Upload Image</Button>
+          <NormalButton>Upload Image</NormalButton>
         </Upload>
         <GridList className={classes.gridList} cellHeight={160} cols={4}>
           {imageList.map(img => {
             return (
-              <GridListTile key={img?.id} cols={1}>
+              <GridListTile
+                onClick={() => {
+                  onClickTile(img?.id);
+                }}
+                key={img?.id}
+                cols={1}
+              >
                 <img src={img?.url} alt={img?.name} />
-                <GridListTileBar
-                  titlePosition="top"
-                  actionIcon={<CIcon name="checkBox" />}
-                />
+                {img?.isSelected && (
+                  <div className={classes.status}>
+                    <CIcon name="checkBox" />
+                  </div>
+                )}
               </GridListTile>
             );
           })}
         </GridList>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onSelected} color="primary">
+      <CActions>
+        <NormalButton onClick={onSelected} color="primary">
           OK
-        </Button>
-        <Button onClick={others.onClose}>Cancel</Button>
-      </DialogActions>
+        </NormalButton>
+        <CancelButton onClick={others.onClose}>Cancel</CancelButton>
+      </CActions>
     </Dialog>
   );
 };
