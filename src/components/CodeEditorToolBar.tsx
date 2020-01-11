@@ -56,7 +56,7 @@ const CCodeEditorToolBar: React.ComponentType<CCodeEditorToolBarProps> = (
           <CIcon name="description" />
         </ListItem>
         <ListItem>
-          <CIcon name="category" />
+          <CIcon name="folderOpen" />
         </ListItem>
       </List>
       {ifOpen && (
