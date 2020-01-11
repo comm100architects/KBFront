@@ -4,11 +4,12 @@
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "esnext",
-    "target": "es6",
+    "target": "es5",
     "jsx": "react",
     "removeComments": false,
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "resolveJsonModule": true
   }
 }

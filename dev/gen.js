@@ -6,6 +6,7 @@ import menu from "./genmenu";
 import _ from "lodash/fp";
 const fs = require("fs");
 const _p = s => path.join(__dirname, s);
+import { genIcons } from "./genicon";
 
 const generate = sc => {
   if (Array.isArray(sc)) {
@@ -182,9 +183,11 @@ const data = range(10)
       customPages: [],
       designs: [],
       entities,
-      menu: menu(),
+      topMenus: menu(),
       tags: [],
+      icons: genIcons(),
     },
   );
 
-console.log(JSON.stringify(data, null, 2));
+fs.writeFileSync(_p("./db.json"), JSON.stringify(data, null, 2));
+console.log("Generate success. dev/db.json written.");

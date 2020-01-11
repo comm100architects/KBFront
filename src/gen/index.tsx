@@ -4,7 +4,7 @@ import { PageProps, GlobalSettings } from "./types";
 import { makeEditFormComponent, makeNewFormComponent } from "./Form";
 import { makeGridComponent } from "./Grid";
 
-const makePage = async (
+export const makePageComponent = async (
   settings: GlobalSettings,
   page: PageProps,
 ): Promise<React.ComponentType<any>> => {
@@ -12,18 +12,10 @@ const makePage = async (
   if (page.isMultiRowsUI) {
     return await makeGridComponent(settings, entity);
   } else if (page.actionForSingleRow === "new") {
-    return await makeNewFormComponent(entity);
+    return await makeNewFormComponent(settings, entity);
   } else if (page.actionForSingleRow === "update") {
-    return await makeEditFormComponent(entity);
+    return await makeEditFormComponent(settings, entity);
   }
 
   return Promise.resolve(() => <></>);
-};
-
-export const makePageComponent = async (
-  settings: GlobalSettings,
-  page: PageProps,
-): Promise<React.ComponentType<any>> => {
-  console.log("makePageComponent");
-  return await makePage(settings, page);
 };

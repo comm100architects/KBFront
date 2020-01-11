@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { CIconName } from "../components/Icons";
 
 export type UIAction = "new" | "update" | "view";
 
@@ -38,7 +37,7 @@ export interface RawUISelector {
 export interface EnumItem {
   key: number | boolean;
   label: string;
-  icon?: CIconName;
+  icon?: string;
 }
 
 export interface RawEntityField {
@@ -58,7 +57,7 @@ export interface RawEntityField {
 
 export interface RawUIGridColumn {
   fieldName: string;
-  headerIcon?: CIconName;
+  headerIcon?: string;
   isAllowSort: boolean;
   isIcon: boolean;
   link?: string;
@@ -93,12 +92,12 @@ export interface RawUIRow {
 
 export interface RawTopMenu {
   label: string;
-  menu: RawSideMenu[];
+  menus: RawSideMenu[];
 }
 
 export interface RawSideMenu {
   label: string;
-  icon: CIconName;
+  icon: string;
   entityName: string;
   isMultiRowsUI: boolean;
   actionForSingleRow: UIAction;
@@ -110,4 +109,3 @@ export interface RawGlobalSettings {
   dateTimeFormat: string;
   poweredByHtml: string;
 }
-

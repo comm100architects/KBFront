@@ -27,16 +27,18 @@ interface CPageProps extends React.Props<{}> {
   title?: string;
   description?: string;
   documentTitle?: string;
+  footerHtml?: string;
 }
 
 export const CPage = ({
   title,
   documentTitle,
   description,
+  footerHtml,
   children,
 }: CPageProps): JSX.Element => {
   const classes = useStyles({});
-  const { poweredByHtml, selectedTopMenu } = React.useContext(GlobalContext)!;
+  const { selectedTopMenu } = React.useContext(GlobalContext)!;
   React.useEffect(() => {
     if (title)
       document.title = documentTitle ?? `${selectedTopMenu.label} » ${title}`;
@@ -57,10 +59,12 @@ export const CPage = ({
         )}
         {children}
       </Paper>
-      <footer
-        className={classes.footer}
-        dangerouslySetInnerHTML={{ __html: poweredByHtml }}
-      ></footer>
+      {footerHtml && (
+        <footer
+          className={classes.footer}
+          dangerouslySetInnerHTML={{ __html: footerHtml }}
+        ></footer>
+      )}
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import * as React from "react";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
+import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import {
   Link as RouterLink,
   LinkProps as RouterLinkProps,
@@ -9,6 +10,14 @@ import * as H from "history";
 import { CIcon, CIconName } from "./Icons";
 import { CElementProps } from "./Base";
 import Tooltip from "@material-ui/core/Tooltip";
+
+const useStyles = makeStyles((_: Theme) =>
+  createStyles({
+    root: {
+      whiteSpace: "nowrap",
+    },
+  }),
+);
 
 interface CLinkBaseProps extends CElementProps {
   onClick?: React.MouseEventHandler<{}>;
@@ -28,6 +37,7 @@ export interface CButtonProps extends CLinkBaseProps {
 }
 
 export const CButton = (props: CButtonProps) => {
+  const classes = useStyles();
   if (props.onClick || props.type) {
     return (
       <Button
@@ -37,6 +47,7 @@ export const CButton = (props: CButtonProps) => {
         disabled={props.disabled}
         color={props.primary ? "primary" : "default"}
         onClick={props.onClick}
+        className={classes.root}
       >
         {props.text}
       </Button>
@@ -53,6 +64,7 @@ export const CButton = (props: CButtonProps) => {
         to={props.to!}
         target={props.external ? "_blank" : ""}
         component={Link}
+        className={classes.root}
       >
         {props.text}
       </Button>

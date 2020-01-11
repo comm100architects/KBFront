@@ -34,4 +34,3 @@ export const repeat = (n, fn, sep = "") =>
 export const keywords = words => {
   return words[int(0, words.length - 1)()];
 };
-

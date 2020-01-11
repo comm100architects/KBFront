@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { IRepository, RESTfulRepository } from "../framework/repository";
-import { CIconName } from "../components/Icons";
+import { CIconName, fetchAndCacheIcons } from "../components/Icons";
 import {
   UIAction,
   RawTopMenu,
@@ -18,7 +18,11 @@ import {
   EnumItem,
 } from "./rawTypes";
 import { fetchJson } from "../framework/network";
-import { evalConditions, wordsInsideSentence } from "../framework/utils";
+import {
+  undefinedDefault,
+  evalConditions,
+  wordsInsideSentence,
+} from "../framework/utils";
 
 export interface EntityInfo {
   name: string;
@@ -94,12 +98,16 @@ export type EntityFieldType =
   | "selfIncreaseId"
   | "dateTime";
 
+export interface IconSvg {
+  name: string;
+  svg: string;
+}
+
 export interface GlobalSettings {
   endPointPrefix: string;
   dateTimeFormat: string;
   poweredByHtml: string;
-  selectedTopMenu: TopMenu;
-  menu: TopMenu[];
+  topMenus: TopMenu[];
 }
 
 export interface UIGridFilter {
@@ -135,7 +143,7 @@ export type Entity = { id?: EntityKey; [key: string]: any };
 export interface TopMenu {
   name: string;
   label: string;
-  menu: SideMenu[];
+  menus: SideMenu[];
 }
 
 export interface SideMenu {
@@ -154,15 +162,16 @@ export interface PageProps {
 
 const delayCache: { result?: any }[] = [];
 const delay = (fn: () => Promise<any>): (() => Promise<any>) => {
-  const i = delayCache.length;
-  delayCache.push({});
-  return () => {
-    const item = delayCache[i];
-    if (!item.result) {
-      item.result = fn();
-    }
-    return item.result;
-  };
+  return fn;
+  // const i = delayCache.length;
+  // delayCache.push({});
+  // return () => {
+  //   const item = delayCache[i];
+  //   if (!item.result) {
+  //     item.result = fn();
+  //   }
+  //   return item.result;
+  // };
 };
 
 const bindDelayedPromises = (
@@ -179,26 +188,32 @@ export const parseRawGlobalSettings = async (
   rawGlobalSettings: RawGlobalSettings,
 ): Promise<GlobalSettings> => {
   const { endPointPrefix, dateTimeFormat, poweredByHtml } = rawGlobalSettings;
-  const menu = await fetchJson(`${endPointPrefix}/menu`, "GET");
-  if (!menu || menu.length === 0) {
-    throw new Error("TopMenu not exist");
+  await fetchAndCacheIcons(`${endPointPrefix}/icons`);
+  const rawTopMenus = await fetchJson<RawTopMenu[]>(
+    `${endPointPrefix}/topMenus`,
+    "GET",
+  );
+
+  if (!rawTopMenus || rawTopMenus.length === 0) {
+    throw new Error("TopMenu is empty.");
   }
 
-  const topMenus = menu.map(parseRawTopMenu.bind(null, rawGlobalSettings));
+  const topMenus = rawTopMenus.map(
+    parseRawTopMenu.bind(null, rawGlobalSettings),
+  );
   return {
     endPointPrefix,
     dateTimeFormat,
     poweredByHtml,
-    selectedTopMenu: topMenus[0],
-    menu: topMenus,
+    topMenus,
   };
 };
 
 export const findMenu = (
-  { menu }: TopMenu,
+  { menus }: TopMenu,
   menuName: string,
 ): SideMenu | undefined => {
-  for (const sideMenu of menu) {
+  for (const sideMenu of menus) {
     const item = sideMenu.submenu
       ? sideMenu.submenu.find(({ name }) => name === menuName.toLowerCase())
       : sideMenu.name === menuName.toLowerCase() && sideMenu;
@@ -422,7 +437,7 @@ const parseRawUIGridColumn = (
   return {
     headerLabel: isIcon ? "" : field.label,
     headerIcon,
-    isAllowSort,
+    isAllowSort: undefinedDefault(isAllowSort, true),
     fieldName,
     isIcon,
     link,
@@ -488,13 +503,13 @@ const labelToName = (label: string): string => {
 
 const parseRawTopMenu = (
   settings: RawGlobalSettings,
-  { label, menu }: RawTopMenu,
+  { label, menus }: RawTopMenu,
 ): TopMenu => {
-  const menu1 = menu
+  const menus1 = menus
     .filter(item => !item.parentMenuLabel)
     .map(item => {
       const sideMenu = parseSideMenu(settings, item);
-      const submenu = menu
+      const submenu = menus
         .filter(({ parentMenuLabel }) => parentMenuLabel === sideMenu.label)
         .map(parseSideMenu.bind(null, settings));
 
@@ -503,7 +518,7 @@ const parseRawTopMenu = (
       }
       return { ...sideMenu, submenu };
     });
-  return { label, name: labelToName(label), menu: menu1 };
+  return { label, name: labelToName(label), menus: menus1 };
 };
 
 const parseSideMenu = (

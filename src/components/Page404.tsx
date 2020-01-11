@@ -1,16 +1,14 @@
 import React from "react";
-import { GlobalContext } from "../GlobalContext";
-import { makeHeader } from "../Header";
+import { Header } from "../Header";
+import { TopMenu } from "../gen/types";
 
-export const Page404 = () => {
-  const { menu } = React.useContext(GlobalContext);
-  const Header = makeHeader(menu);
+export const Page404 = ({ topMenus }: { topMenus: TopMenu[] }) => {
   React.useEffect(() => {
     document.title = "Page Not Found";
   }, []);
   return (
     <>
-      <Header selected="" />
+      <Header topMenus={topMenus} selected="" />
       <h1> Page Not Found</h1>
     </>
   );

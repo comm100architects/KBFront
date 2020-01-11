@@ -1,10 +1,10 @@
 import axios from "axios";
 
-export const fetchJson = async (
+export const fetchJson = async <T = any>(
   url: string,
   method: "GET" | "DELETE" | "POST" | "PUT",
-  body?: any,
-): Promise<any> => {
+  body?: T,
+): Promise<T> => {
   const resp = await axios({
     url,
     method,
@@ -13,4 +13,3 @@ export const fetchJson = async (
   });
   return resp.data;
 };
-
