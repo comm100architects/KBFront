@@ -23,6 +23,8 @@ import HistoryIcon from "@material-ui/icons/History";
 import GroupWorkIcon from "@material-ui/icons/GroupWork";
 import CreateIcon from "@material-ui/icons/Create";
 import CodeIcon from "@material-ui/icons/Code";
+import CheckBoxOutlinedIcon from "@material-ui/icons/CheckBoxOutlined";
+import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 
 const allIcons = {
   star: StarIcon,
@@ -48,6 +50,8 @@ const allIcons = {
   groupWork: GroupWorkIcon,
   create: CreateIcon,
   code: CodeIcon,
+  checkBox: CheckBoxOutlinedIcon,
+  folderOpen: FolderOpenIcon,
 };
 
 const stripSvgTag = svg => {

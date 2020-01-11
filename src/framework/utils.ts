@@ -106,6 +106,14 @@ export const toCamelCase = (s: string): string => {
 export const wordsInsideSentence = (words: string): string =>
   words?.replace(/(\w+)/g, word => tocamelCase(word));
 
+export const ifValidFile = (
+  fileName: string,
+  acceptExTenssion: string[] = [],
+): boolean => {
+  const reg = new RegExp(`\.(${acceptExTenssion.join("|")})$`, "i");
+  return reg.test(fileName);
+};
+
 export const isLocalHost =
   window.location.host.toLowerCase().indexOf("localhost") !== -1 ||
   window.location.host.toLowerCase().indexOf("127.0.0.1") !== -1;

@@ -3,6 +3,7 @@ import createSvgIcon from "@material-ui/icons/utils/createSvgIcon";
 import StarIcon from "@material-ui/icons/Star";
 import DotIcon from "@material-ui/icons/FiberManualRecord";
 import CodeIcon from "@material-ui/icons/Code";
+import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import { withProps } from "../framework/hoc";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import { fetchJson } from "../framework/network";
@@ -35,11 +36,13 @@ export const fetchAndCacheIcons = async (url: string) => {
 
 export type CIconName = string;
 
+export interface CIconProps {
+  name: CIconName;
+  onClick?: () => void;
+}
+
 export const CIcon = React.forwardRef(
-  (
-    props: { name: CIconName },
-    ref: React.Ref<HTMLOrSVGElement>,
-  ): JSX.Element => {
+  (props: CIconProps, ref: React.Ref<HTMLOrSVGElement>): JSX.Element => {
     const Icon = allIcons[props.name];
     if (!Icon) {
       throw new Error(`Icon "${name}" does not exist.`);
