@@ -84,7 +84,6 @@ const CurrentPage = ({
   const { isExact, url } = match!;
   const { currentProduct, currentPage } = match!.params;
   const { topMenus } = settings;
-  console.log(match);
   // make sure add slash after currentPage, much easier for relative path
   if (isExact && !_.endsWith(url, "/")) {
     history.replace(`${url}/${location.search}`);
@@ -123,7 +122,7 @@ const CurrentPage = ({
           <Menu topMenu={topMenu} selected={sideMenu.name} />
         </div>
         <div className={classes.content}>
-          <DelayChild>
+          <DelayChild depends={[currentPage, currentProduct]}>
             {makePageComponent.bind(null, settings, page)}
           </DelayChild>
         </div>

@@ -25,26 +25,33 @@ const Loading = (_: {}) => {
 
 interface DelayChildProps {
   children: () => Promise<React.ComponentType<any>>;
+  depends?: any[];
 }
 
-export const DelayChild: React.ComponentType<DelayChildProps> = (
-  props: DelayChildProps,
-) => {
+export const DelayChild: React.ComponentType<DelayChildProps> = ({
+  depends,
+  children,
+}: DelayChildProps) => {
   const [count, setCount] = React.useState(0);
-  const LazyChild = React.lazy(async () => {
-    try {
-      return {
-        default: await props.children(),
-      };
-    } catch (e) {
-      console.error(e);
-      return {
-        default: () => (
-          <LoadError error={e} onReload={() => setCount(count + 1)} />
-        ),
-      };
-    }
-  });
+  const makeLazyChild = () =>
+    React.lazy(async () => {
+      try {
+        return {
+          default: await children(),
+        };
+      } catch (e) {
+        console.error(e);
+        return {
+          default: () => (
+            <LoadError error={e} onReload={() => setCount(count + 1)} />
+          ),
+        };
+      }
+    });
+  const LazyChild =
+    depends === undefined
+      ? makeLazyChild()
+      : React.useMemo(makeLazyChild, depends!);
   return (
     <React.Suspense fallback={<Loading />}>
       <LazyChild />
