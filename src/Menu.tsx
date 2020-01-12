@@ -87,7 +87,7 @@ export const Menu = ({
   const classes = useStyles();
   return (
     <List component="nav" className={classes.root}>
-      {topMenu.menus.map((item, i) => {
+      {topMenu.menus.map(item => {
         if (item.submenu) {
           return (
             <SubMenu

@@ -11,13 +11,7 @@ import {
 } from "@material-ui/core/styles";
 import { Header } from "./Header";
 import { Menu } from "./Menu";
-import {
-  TopMenu,
-  GlobalSettings,
-  SideMenu,
-  findMenu,
-  UIAction,
-} from "./gen/types";
+import { TopMenu, GlobalSettings, findMenu, UIAction } from "./gen/types";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Route, Switch, RouteChildrenProps, Redirect } from "react-router";
 import { GlobalContext } from "./GlobalContext";
@@ -63,37 +57,13 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-interface RootProps {
-  selectedTopMenu: TopMenu;
-  selectedSideMenu: SideMenu;
-  settings: GlobalSettings;
-}
-
-const Root = ({ selectedTopMenu, selectedSideMenu, settings }: RootProps) => {
-  const { topMenus } = settings;
-  const classes = useStyles();
-  return (
-    <GlobalContext.Provider value={{ selectedTopMenu, selectedSideMenu }}>
-      <Header topMenus={topMenus} selected={selectedTopMenu.name} />
-      <div className={classes.menuBackground}></div>
-      <div className={classes.body}>
-        <div className={classes.menu}>
-          <Menu topMenu={selectedTopMenu} selected={selectedSideMenu.name} />
-        </div>
-        <div className={classes.content}>
-          <DelayChild>
-            {() => makePageComponent(settings, selectedSideMenu.page)}
-          </DelayChild>
-        </div>
-      </div>
-    </GlobalContext.Provider>
-  );
-};
-Root.displayName = "Root";
-
-const makeRedirectToProductDefaultPage = (topMenus: TopMenu[]) => ({
+const RedirectToDefaultPage = ({
   match,
-}: RouteChildrenProps<UrlParam>) => {
+  topMenus,
+}: {
+  match: any;
+  topMenus: TopMenu[];
+}) => {
   const currentProduct = match?.params.currentProduct;
   const product = topMenus.find(product => product.name === currentProduct);
   if (product && product.menus && product.menus[0]) {
@@ -102,47 +72,64 @@ const makeRedirectToProductDefaultPage = (topMenus: TopMenu[]) => ({
   return <Page404 topMenus={topMenus} />;
 };
 
-const makeCurrentPage = (settings: GlobalSettings) => {
-  return ({ match, location, history }: RouteChildrenProps<UrlParam>) => {
-    const { currentProduct, currentPage } = match!.params;
-    // make sure add slash after currentPage, much easier for relative path
-    if (match!.isExact && !_.endsWith(location.pathname, "/")) {
-      history.replace(`/${currentProduct}/${currentPage}/${location.search}`);
-    }
+const CurrentPage = ({
+  route,
+  settings,
+}: {
+  route: RouteChildrenProps<UrlParam>;
+  settings: GlobalSettings;
+}) => {
+  const classes = useStyles();
+  const { match, location, history } = route;
+  const { currentProduct, currentPage } = match!.params;
+  const { topMenus } = settings;
+  // make sure add slash after currentPage, much easier for relative path
+  if (match!.isExact && !_.endsWith(location.pathname, "/")) {
+    history.replace(`/${currentProduct}/${currentPage}/${location.search}`);
+  }
+  const action = location.pathname.substring(
+    `/${currentProduct}/${currentPage}/`.length,
+  );
 
-    const selectedTopMenu = settings.topMenus.find(
-      ({ name }) => name === currentProduct,
-    );
-    const selectedSideMenu =
-      selectedTopMenu && findMenu(selectedTopMenu, currentPage);
-    const action = location.pathname.substring(
-      `/${currentProduct}/${currentPage}/`.length,
-    );
-    if (
-      !selectedTopMenu ||
-      !selectedSideMenu ||
-      ["new", "update", "view", ""].indexOf(action) === -1
-    ) {
-      return <Page404 topMenus={settings.topMenus} />;
-    }
+  const topMenu = topMenus.find(({ name }) => name === currentProduct);
+  const sideMenu = topMenu && findMenu(topMenu, currentPage);
+  if (
+    !topMenu ||
+    !sideMenu ||
+    ["new", "update", "view", ""].indexOf(action) === -1
+  ) {
+    return <Page404 topMenus={topMenus} />;
+  }
 
-    const selectedSideMenu2 = {
-      ...selectedSideMenu,
-      page: {
-        ...selectedSideMenu.page,
-        actionForSingleRow: action as UIAction,
-        isMultiRowsUI: !action,
-      },
-    };
-
-    return (
-      <Root
-        settings={settings}
-        selectedTopMenu={selectedTopMenu}
-        selectedSideMenu={selectedSideMenu2}
-      />
-    );
+  const page = {
+    ...sideMenu.page,
+    actionForSingleRow: action as UIAction,
+    isMultiRowsUI: !action,
   };
+  const globalContextValue = {
+    selectedTopMenu: topMenu,
+    selectedSideMenu: {
+      ...sideMenu,
+      page,
+    },
+  };
+
+  return (
+    <GlobalContext.Provider value={globalContextValue}>
+      <Header topMenus={topMenus} selected={topMenu.name} />
+      <div className={classes.menuBackground}></div>
+      <div className={classes.body}>
+        <div className={classes.menu}>
+          <Menu topMenu={topMenu} selected={sideMenu.name} />
+        </div>
+        <div className={classes.content}>
+          <DelayChild>
+            {makePageComponent.bind(null, settings, page)}
+          </DelayChild>
+        </div>
+      </div>
+    </GlobalContext.Provider>
+  );
 };
 
 const handleUserConfirm = async (
@@ -163,14 +150,18 @@ export default hot(module)(() => {
             <Router getUserConfirmation={handleUserConfirm}>
               <Switch>
                 <Route exact path="/">
-                  () => (<Redirect to={`/${settings.topMenus[0].name}`} />
-                  );
+                  {() => <Redirect to={`/${settings.topMenus[0].name}`} />}
                 </Route>
                 <Route exact path="/:currentProduct">
-                  {makeRedirectToProductDefaultPage(settings.topMenus)}
+                  {({ match }) => (
+                    <RedirectToDefaultPage
+                      match={match}
+                      topMenus={settings.topMenus}
+                    />
+                  )}
                 </Route>
                 <Route path="/:currentProduct/:currentPage">
-                  {makeCurrentPage(settings)}
+                  {props => <CurrentPage settings={settings} route={props} />}
                 </Route>
                 <Route path="*">
                   <Page404 topMenus={settings.topMenus} />
