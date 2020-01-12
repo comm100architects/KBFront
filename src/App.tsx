@@ -84,11 +84,12 @@ const CurrentPage = ({
   const { isExact, url } = match!;
   const { currentProduct, currentPage } = match!.params;
   const { topMenus } = settings;
+  console.log(match);
   // make sure add slash after currentPage, much easier for relative path
   if (isExact && !_.endsWith(url, "/")) {
     history.replace(`${url}/${location.search}`);
   }
-  const action = location.pathname.substring(url.length);
+  const action = _.trimStart(location.pathname.substring(url.length), "/");
 
   const topMenu = topMenus.find(({ name }) => name === currentProduct);
   const sideMenu = topMenu && findMenu(topMenu, currentPage);
