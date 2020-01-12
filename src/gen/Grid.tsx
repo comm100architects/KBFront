@@ -272,7 +272,7 @@ const RowContent = ({
         />
       );
     }
-    return <>getLabel( settings, field, row, fieldData, fieldName)</>;
+    return <>{getLabel(settings, field, row, fieldData, fieldName)}</>;
   };
 
   const iconType = () => {
