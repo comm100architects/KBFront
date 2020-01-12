@@ -65,9 +65,9 @@ const RedirectToDefaultPage = ({
   topMenus: TopMenu[];
 }) => {
   const currentProduct = match?.params.currentProduct;
-  const product = topMenus.find(product => product.name === currentProduct);
-  if (product && product.menus && product.menus[0]) {
-    return <Redirect to={`/${product!.name}/${product.menus[0].name}`} />;
+  const topMenu = topMenus.find(topMenu => topMenu.name === currentProduct);
+  if (topMenu && topMenu.menus && topMenu.menus[0]) {
+    return <Redirect to={`/${topMenu!.name}/${topMenu.menus[0].name}`} />;
   }
   return <Page404 topMenus={topMenus} />;
 };
@@ -81,15 +81,14 @@ const CurrentPage = ({
 }) => {
   const classes = useStyles();
   const { match, location, history } = route;
+  const { isExact, url } = match!;
   const { currentProduct, currentPage } = match!.params;
   const { topMenus } = settings;
   // make sure add slash after currentPage, much easier for relative path
-  if (match!.isExact && !_.endsWith(location.pathname, "/")) {
-    history.replace(`/${currentProduct}/${currentPage}/${location.search}`);
+  if (isExact && !_.endsWith(url, "/")) {
+    history.replace(`${url}/${location.search}`);
   }
-  const action = location.pathname.substring(
-    `/${currentProduct}/${currentPage}/`.length,
-  );
+  const action = location.pathname.substring(url.length);
 
   const topMenu = topMenus.find(({ name }) => name === currentProduct);
   const sideMenu = topMenu && findMenu(topMenu, currentPage);

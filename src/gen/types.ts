@@ -104,7 +104,6 @@ export interface IconSvg {
 }
 
 export interface GlobalSettings {
-  endPointPrefix: string;
   dateTimeFormat: string;
   poweredByHtml: string;
   topMenus: TopMenu[];
@@ -202,7 +201,6 @@ export const parseRawGlobalSettings = async (
     parseRawTopMenu.bind(null, rawGlobalSettings),
   );
   return {
-    endPointPrefix,
     dateTimeFormat,
     poweredByHtml,
     topMenus,

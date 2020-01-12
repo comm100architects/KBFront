@@ -6,7 +6,7 @@ import { FieldInputProps } from "formik";
 
 export interface CCheckboxProps
   extends FieldInputProps<string | number | boolean>,
-    CElementProps {
+  CElementProps {
   label: string;
 }
 

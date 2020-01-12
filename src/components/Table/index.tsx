@@ -37,13 +37,15 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+export interface CTableColumnContentProps<T> {
+  row: T;
+  onDelete?: () => void;
+}
+
 export interface CTableColumn<T extends Row> {
   id: string;
   header?: string | JSX.Element;
-  content?(
-    arg: T,
-    onDelete?: () => void,
-  ): null | undefined | string | JSX.Element;
+  content?: React.ComponentType<CTableColumnContentProps<T>>;
   sortable?: boolean;
   width?: string;
 }
@@ -56,21 +58,6 @@ export interface CTableProps<T> extends CElementProps {
   pagination?: boolean;
   defaultSort?: Sort<T>;
   onDelete?(row: T): void;
-}
-
-function renderContent<T extends Row>(
-  col: CTableColumn<T>,
-  row: T,
-  onDelete?: () => void,
-): JSX.Element {
-  if (col.content) {
-    const s = col.content(row, onDelete);
-    if (typeof s === "string") {
-      return <>{s as string}</>;
-    }
-    return s as JSX.Element;
-  }
-  return <>{row[col.id]}</>;
 }
 
 export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
@@ -143,11 +130,13 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
                       {props.columns.map(col => {
                         return (
                           <TableCell key={col.id as string} align="left">
-                            {renderContent(
-                              col,
-                              row,
-                              props.onDelete && (() => props.onDelete!(row)),
-                            )}
+                            {col.content &&
+                              React.createElement(col.content, {
+                                row,
+                                onDelete:
+                                  props.onDelete &&
+                                  (() => props.onDelete!(row)),
+                              })}
                           </TableCell>
                         );
                       })}
@@ -171,6 +160,11 @@ export function CTable<T extends Row>(props: CTableProps<T>): JSX.Element {
   );
 }
 
+//
+// sorting
+//
+// sorting
+//
 //
 // sorting
 //

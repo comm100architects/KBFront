@@ -16,7 +16,11 @@ import {
   LocalTableSource,
 } from "../components/Table/CTableSource";
 import { CConfirmDialog } from "../components/Dialog";
-import { CTable, CTableColumn } from "../components/Table";
+import {
+  CTable,
+  CTableColumn,
+  CTableColumnContentProps,
+} from "../components/Table";
 import { CIcon } from "../components/Icons";
 import moment from "moment";
 import { replaceVariables } from "../framework/utils";
@@ -244,37 +248,31 @@ const getLabel = (
   return entity[field.name] + "";
 };
 
-const rowContent = (
-  settings: GlobalSettings,
-  column: UIGridColumn,
-  row: Entity,
-  fieldData: { [id: string]: Entity },
-  fieldToBeDisplayedWhenReferenced?: string,
-) => {
+const RowContent = ({
+  settings,
+  column,
+  row,
+  fieldData,
+  fieldName,
+}: {
+  settings: GlobalSettings;
+  column: UIGridColumn;
+  row: Entity;
+  fieldData: { [id: string]: Entity };
+  fieldName?: string;
+}) => {
   const field = column.field!;
   const textType = () => {
     if (column.link) {
       const to = replaceVariables(column.link!, row);
       return (
         <CLink
-          text={getLabel(
-            settings,
-            field,
-            row,
-            fieldData,
-            fieldToBeDisplayedWhenReferenced,
-          )}
+          text={getLabel(settings, field, row, fieldData, fieldName)}
           to={to}
         />
       );
     }
-    return getLabel(
-      settings,
-      field,
-      row,
-      fieldData,
-      fieldToBeDisplayedWhenReferenced,
-    );
+    return <>getLabel( settings, field, row, fieldData, fieldName)</>;
   };
 
   const iconType = () => {
@@ -347,14 +345,15 @@ const makeTableComponent = async (
           column.headerLabel
         ),
         sortable: column.isAllowSort,
-        content: (row: Entity) =>
-          rowContent(
-            settings,
-            column,
-            row,
-            fieldData,
-            referenceEntity?.fieldToBeDisplayedWhenReferenced,
-          ),
+        content: ({ row }: CTableColumnContentProps<Entity>) => (
+          <RowContent
+            settings={settings}
+            column={column}
+            row={row}
+            fieldData={fieldData}
+            fieldName={referenceEntity?.fieldToBeDisplayedWhenReferenced}
+          />
+        ),
         width: getWidth(),
       };
     }),
@@ -363,22 +362,20 @@ const makeTableComponent = async (
     id: "operations",
     header: "Operations",
     sortable: false,
-    content: (row: Entity, onDelete?: () => void) => {
-      return (
-        <span style={{ whiteSpace: "nowrap" }}>
-          {isAllowEdit && (
-            <CIconButton
-              title="Edit"
-              icon="edit"
-              to={toPath("update", withQueryParam("id", row.id))}
-            />
-          )}
-          {isAllowDelete && (
-            <CIconButton title="Delete" icon="delete" onClick={onDelete} />
-          )}
-        </span>
-      );
-    },
+    content: ({ row, onDelete }: CTableColumnContentProps<Entity>) => (
+      <span style={{ whiteSpace: "nowrap" }}>
+        {isAllowEdit && (
+          <CIconButton
+            title="Edit"
+            icon="edit"
+            to={toPath("update", withQueryParam("id", row.id))}
+          />
+        )}
+        {isAllowDelete && (
+          <CIconButton title="Delete" icon="delete" onClick={onDelete} />
+        )}
+      </span>
+    ),
     width: "1px",
   });
 

@@ -16,7 +16,6 @@ import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import Divider from "@material-ui/core/Divider";
 import { CTable } from "../../../components/Table";
-import { emptyTableSource } from "../../../components/Table/CTableSource";
 import { Article, ArticleStatus } from "./Entity/Article";
 import { DomainContext } from "./context";
 import { ArticleFilter } from "./Domain/ArticleDomain";
@@ -32,10 +31,13 @@ import {
 } from "../../../framework/locationHelper";
 import { useHistory } from "react-router";
 import * as Query from "query-string";
-import { ITableSource } from "../../../components/Table/CTableSource";
+import {
+  ITableSource,
+  emptyTableSource,
+} from "../../../components/Table/CTableSource";
+import { CTableColumnContentProps } from "../../../components/Table";
 import FormControl from "@material-ui/core/FormControl";
 import { StatusSelect } from "./StatusSelect";
-import { CDialog } from "../../../components/Dialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -111,13 +113,13 @@ const ArticlesTable = ({
       columns={[
         {
           id: "featured",
-          content: (row: Article) => (
+          content: ({ row }: CTableColumnContentProps<Article>) => (
             <CIcon name={row.featured ? "starPrimary" : "starAction"} />
           ),
         },
         {
           id: "status",
-          content: (row: Article) => {
+          content: ({ row }: CTableColumnContentProps<Article>) => {
             if (row.status === ArticleStatus.draft) {
               return <CIcon name="dotSecondary" />;
             }
@@ -129,17 +131,17 @@ const ArticlesTable = ({
           id: "category",
           header: "Category",
           sortable: true,
-          content: row => {
-            if (category) {
-              return getCategory(row.categoryId, category!)?.title || "";
-            }
-          },
+          content: ({ row }: CTableColumnContentProps<Article>) => (
+            <>{category && getCategory(row.categoryId, category!)?.title}</>
+          ),
         },
         {
           id: "tags",
           header: "Tag",
           sortable: true,
-          content: row => row.tags.toString(),
+          content: ({ row }: CTableColumnContentProps<Article>) => (
+            <>{row.tags.toString()}</>
+          ),
         },
         {
           id: "helpful",
@@ -155,14 +157,15 @@ const ArticlesTable = ({
           id: "modifiedTime",
           header: "Modified Time",
           sortable: true,
-          content: (row: Article) =>
-            moment(row.modifiedTime as Date).format("lll"),
+          content: ({ row }) => (
+            <>{moment(row.modifiedTime as Date).format("lll")}</>
+          ),
         },
         {
           id: "actions",
           header: "Actions",
           sortable: false,
-          content: (row: Article) => {
+          content: ({ row }: CTableColumnContentProps<Article>) => {
             return (
               <>
                 <CIconButton
