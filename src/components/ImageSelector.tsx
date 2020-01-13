@@ -146,8 +146,8 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
     );
     others.onClose();
   };
-  const onClickTile = (id: string | undefined) => {
-    const img = imageList.get(id as string);
+  const onClickTile = (id: string) => {
+    const img = imageList.get(id);
     if (!img) return;
     setImageList(
       imageList.set(
@@ -187,7 +187,7 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
             return (
               <GridListTile
                 onClick={() => {
-                  onClickTile(img?.id);
+                  onClickTile(img!.id);
                 }}
                 key={img?.id}
                 cols={1}
