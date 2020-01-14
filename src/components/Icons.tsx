@@ -1,9 +1,5 @@
 import * as React from "react";
 import createSvgIcon from "@material-ui/icons/utils/createSvgIcon";
-import StarIcon from "@material-ui/icons/Star";
-import DotIcon from "@material-ui/icons/FiberManualRecord";
-import CodeIcon from "@material-ui/icons/Code";
-import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import { withProps } from "../framework/hoc";
 import { SvgIconProps } from "@material-ui/core/SvgIcon";
 import { fetchJson } from "../framework/network";

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Map } from "immutable";
+import React, { useEffect, useState } from "react";
+import _ from "lodash/fp";
 import { Theme, makeStyles, styled } from "@material-ui/core/styles";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -8,23 +8,20 @@ import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 import GridList from "@material-ui/core/GridList";
 import GridListTile from "@material-ui/core/GridListTile";
-import GridListTileBar from "@material-ui/core/GridListTileBar";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
+import CheckBoxOutlinedIcon from "@material-ui/icons/CheckBoxOutlined";
 import Upload, { CFile } from "./Upload";
 import { ifValidFile } from "../framework/utils";
-import { CIcon } from "./Icons";
+import Image from "./Image";
 
 export interface CImage {
   id: string;
   name: string;
-  url: string;
+  fileKey?: string;
 }
 
 interface InternalCImage extends CImage {
+  file?: CFile;
   isSelected: boolean;
-  isUploaded: boolean;
   percent: number;
 }
 
@@ -34,6 +31,7 @@ interface ImageSelectorProps {
   images?: CImage[];
   acceptFileExtension?: string[];
   maxSize?: number; // unit KB
+  token?: string;
   onSelected: (images: CImage[]) => void;
   onClose: () => void;
 }
@@ -73,39 +71,31 @@ const CancelButton = styled(Button)({
   textTransform: "none",
 });
 
-let uploadFiles: Map<string, InternalCImage> = Map<string, InternalCImage>({});
-
 const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
   uploadUrl,
   images = [],
   acceptFileExtension = [],
   maxSize = 200,
+  token,
   ...others
 }) => {
   const classes = useStyles();
   // state
-  const [imageList, setImageList] = useState<Map<string, InternalCImage>>(
-    Map<string, InternalCImage>({}),
-  );
+  const [imageList, setImageList] = useState<InternalCImage[]>([]);
   // effect
   useEffect(() => {
-    uploadFiles = uploadFiles.clear();
-  }, []);
-  useEffect(() => {
     setImageList(
-      images.reduce(
-        (map, img) =>
-          map.set(img.id, {
-            ...img,
-            isSelected: false,
-            isUploaded: true,
-            percent: 100,
-          }),
-        Map<string, InternalCImage>(),
-      ),
+      images.map(img => ({
+        ...img,
+        isSelected: false,
+        percent: 100,
+      })),
     );
   }, []);
-  const beforeUpload = (file: CFile) => {
+  const beforeUpload = (file: CFile, files: CFile[]) => {
+    if (files.indexOf(file) >= 10) {
+      return false;
+    }
     if (
       (acceptFileExtension.length > 0 &&
         !ifValidFile(file.name, acceptFileExtension)) ||
@@ -113,21 +103,16 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
     ) {
       return false;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (!uploadFiles.has(file.uid)) {
-        uploadFiles = uploadFiles.set(file.uid, {
-          id: file.uid,
-          name: file.name,
-          url: reader.result as string,
-          isSelected: true,
-          isUploaded: false,
-          percent: 0,
-        });
-        setImageList(uploadFiles);
-      }
-    };
-    reader.readAsDataURL(file);
+    if (files.indexOf(file) === 0) {
+      const uploadFiles = files.slice(0, 10).map(item => ({
+        id: item.uid,
+        name: item.name,
+        isSelected: true,
+        file: item,
+        percent: 0,
+      }));
+      setImageList([...imageList, ...uploadFiles]);
+    }
     return true;
   };
   const onSuccess = (rsp: any, file: CFile) => {};
@@ -137,26 +122,22 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
     others.onSelected(
       imageList
         .filter(img => !!img?.isSelected)
-        .toArray()
         .map(o => ({
           id: o.id,
           name: o.name,
-          url: o.url,
+          fileKey: o.fileKey,
         })),
     );
     others.onClose();
   };
-  const onClickTile = (id: string | undefined) => {
-    const img = imageList.get(id as string);
-    if (!img) return;
-    setImageList(
-      imageList.set(
-        img.id,
-        Object.assign({}, img, {
-          isSelected: !img.isSelected,
-        }),
-      ),
-    );
+  const onClickTile = (id: string) => {
+    const img = imageList.find(item => item.id === id);
+    setImageList([
+      ...imageList.filter(item => item.id !== id),
+      Object.assign({}, img, {
+        isSelected: !img!.isSelected,
+      }),
+    ]);
   };
 
   return (
@@ -174,6 +155,7 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
         </ul>
         <Upload
           multiple
+          token={token}
           uploadUrl={uploadUrl}
           beforeUpload={beforeUpload}
           onSuccess={onSuccess}
@@ -187,15 +169,15 @@ const ImageSelector: React.ComponentType<ImageSelectorProps> = ({
             return (
               <GridListTile
                 onClick={() => {
-                  onClickTile(img?.id);
+                  onClickTile(img!.id);
                 }}
                 key={img?.id}
                 cols={1}
               >
-                <img src={img?.url} alt={img?.name} />
+                <Image src={img?.file!} alt={img?.name} />
                 {img?.isSelected && (
                   <div className={classes.status}>
-                    <CIcon name="checkBox" />
+                    <CheckBoxOutlinedIcon fontSize="small" />
                   </div>
                 )}
               </GridListTile>

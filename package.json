@@ -83,7 +83,6 @@
     "formik": "^2.0.6",
     "formik-material-ui": "^1.0.0",
     "highlight.js": "^9.17.1",
-    "immutable": "^4.0.0-rc.12",
     "lodash": "^4.17.15",
     "material-ui-chip-input": "^2.0.0-beta.1",
     "moment": "^2.24.0",
