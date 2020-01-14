@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
-import { CIcon } from "./Icons";
+import ImageIcon from "@material-ui/icons/Image";
 import ImageSelector, { CImage } from "./ImageSelector";
+import DescriptionIcon from "@material-ui/icons/Description";
+import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -45,18 +47,18 @@ const CCodeEditorToolBar: React.ComponentType<CCodeEditorToolBarProps> = (
     <>
       <List disablePadding className={classes.root}>
         <ListItem>
-          <CIcon
+          <ImageIcon
             onClick={() => {
               setIfOpen(true);
             }}
-            name="image"
+            fontSize="small"
           />
         </ListItem>
         <ListItem>
-          <CIcon name="description" />
+          <DescriptionIcon fontSize="small" />
         </ListItem>
         <ListItem>
-          <CIcon name="folderOpen" />
+          <FolderOpenIcon fontSize="small" />
         </ListItem>
       </List>
       {ifOpen && (
