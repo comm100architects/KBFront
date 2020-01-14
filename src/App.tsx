@@ -122,7 +122,7 @@ const CurrentPage = ({
           <Menu topMenu={topMenu} selected={sideMenu.name} />
         </div>
         <div className={classes.content}>
-          <DelayChild depends={[currentPage, currentProduct]}>
+          <DelayChild>
             {makePageComponent.bind(null, settings, page)}
           </DelayChild>
         </div>

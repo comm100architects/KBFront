@@ -392,7 +392,7 @@ const parseRawUIGrid = (
     isAllowNew,
     isAllowEdit,
     isAllowDelete,
-    filters: filters.map(parseRawUIGridFilter.bind(null, fields)),
+    filters: filters?.map(parseRawUIGridFilter.bind(null, fields)) || [],
     labelForNewButton: isAllowNew ? `New ${entity.label}` : "",
     confirmDeleteMessage: isAllowDelete
       ? `Are you sure you want to delete this ${wordsInsideSentence(
